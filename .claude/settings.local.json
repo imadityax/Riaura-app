@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(New-Item *)",
+      "PowerShell(Get-ChildItem -Recurse \"C:\\\\RiauraAPP\\\\src\" | Where-Object { -not $_.PSIsContainer } | Select-Object FullName | ForEach-Object { $_.FullName.Replace\\(\"C:\\\\RiauraAPP\\\\\", \"\"\\) })",
+      "PowerShell(Get-ChildItem -Recurse \"C:\\\\RiauraAPP\" | Where-Object { -not $_.PSIsContainer } | Measure-Object | Select-Object Count)",
+      "WebFetch(domain:riaura.vercel.app)",
+      "mcp__claude_ai_Vercel__web_fetch_vercel_url"
+    ]
+  }
+}
