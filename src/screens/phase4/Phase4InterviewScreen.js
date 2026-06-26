@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, SafeAreaView, StatusBar } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, SafeAreaView, StatusBar, Alert } from 'react-native';
 import { colors, ui } from '../../theme/colors';
 import { calcHII } from '../../utils/scoreEngine';
 import { storage } from '../../utils/storage';
@@ -22,6 +22,17 @@ export default function Phase4InterviewScreen({ route, navigation }) {
   const [current, setCurrent]   = useState(0);
   const [ratings, setRatings]   = useState(Array(8).fill(0));
   const q = INTERVIEW_QUESTIONS[current];
+
+  function handleExit() {
+    Alert.alert(
+      'Exit Interview?',
+      'Your progress will not be saved. You can view your current results instead.',
+      [
+        { text: 'Continue', style: 'cancel' },
+        { text: 'Exit to Report', style: 'destructive', onPress: () => navigation.replace('FinalReport', { scores }) },
+      ]
+    );
+  }
 
   function handleRate(val) {
     const nr = [...ratings]; nr[current] = val; setRatings(nr);
@@ -49,6 +60,9 @@ export default function Phase4InterviewScreen({ route, navigation }) {
       <StatusBar barStyle="dark-content" backgroundColor={ui.offWhite} />
 
       <View style={styles.topBar}>
+        <TouchableOpacity onPress={handleExit} activeOpacity={0.7}>
+          <Text style={styles.exitBtn}>✕ Exit</Text>
+        </TouchableOpacity>
         <View style={styles.phaseBadge}>
           <Text style={styles.phaseText}>PHASE 4 INTERVIEW</Text>
         </View>
@@ -110,6 +124,7 @@ export default function Phase4InterviewScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   safe:    { flex: 1, backgroundColor: ui.offWhite },
   topBar:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 10 },
+  exitBtn: { color: '#F44336', fontWeight: '700', fontSize: 13 },
   phaseBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: ui.challengeBg, borderWidth: 1, borderColor: ui.primaryBlue + '60' },
   phaseText:  { color: ui.primaryBlue, fontSize: 10, fontWeight: '700', letterSpacing: 0.5 },
   progress:   { color: ui.midText, fontWeight: '700', fontSize: 13 },

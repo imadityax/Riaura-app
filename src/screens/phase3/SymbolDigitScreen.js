@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { colors } from '../../theme/colors';
 import { ui } from '../../theme/colors';
 import PhaseHeader from '../../components/PhaseHeader';
@@ -12,6 +12,13 @@ const TRIALS = 15;
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 function generateTrials() {
   return Array.from({ length: TRIALS }, () => SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)]);
+}
+
+function handleBack(navigation) {
+  Alert.alert('Exit Assessment?', 'Your cognitive task progress will not be saved if you exit now.', [
+    { text: 'Stay', style: 'cancel' },
+    { text: 'Exit', style: 'destructive', onPress: () => navigation.navigate('Main') },
+  ]);
 }
 
 export default function SymbolDigitScreen({ route, navigation }) {
@@ -76,7 +83,7 @@ export default function SymbolDigitScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
-      <PhaseHeader phase={3} title="Symbol Digit Matching" subtitle={`Processing · ${timeLeft}s left`} progress={(taskIndex + 1) / 8} />
+      <PhaseHeader phase={3} title="Symbol Digit Matching" subtitle={`Processing · ${timeLeft}s left`} progress={(taskIndex + 1) / 8} onBack={() => handleBack(navigation)} />
 
       <View style={styles.keyRow}>
         {SYMBOLS.slice(0, 4).map(sym => (

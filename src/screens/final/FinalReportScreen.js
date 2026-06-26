@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, SafeAreaView, StatusBar } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { signOut } from 'firebase/auth';
+import { auth } from '../../firebase/config';
 import { colors, ui } from '../../theme/colors';
 import CircularProgress from '../../components/CircularProgress';
 import RadarChart from '../../components/RadarChart';
@@ -40,6 +42,7 @@ export default function FinalReportScreen({ route, navigation }) {
 
   async function handleRestart() {
     await storage.clearAll();
+    await signOut(auth).catch(() => {});
     navigation.replace('Splash');
   }
 

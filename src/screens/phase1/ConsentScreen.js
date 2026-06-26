@@ -36,6 +36,10 @@ const CONSENT_ITEMS = [
 export default function ConsentScreen({ navigation }) {
   const [checked, setChecked] = useState({});
 
+  function handleBack() {
+    navigation.goBack();
+  }
+
   function toggle(id) {
     setChecked(c => ({ ...c, [id]: !c[id] }));
   }
@@ -54,7 +58,7 @@ export default function ConsentScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <PhaseHeader phase={1} title="Informed Consent" subtitle="Please read and agree to all items" progress={0.5} />
+        <PhaseHeader phase={1} title="Informed Consent" subtitle="Please read and agree to all items" progress={0.5} onBack={handleBack} />
 
         <View style={styles.secureBox}>
           <Text style={styles.secureEmoji}>🔒</Text>

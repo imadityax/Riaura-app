@@ -24,7 +24,31 @@ const ARCHETYPES = [
   { minScore: 0,  name: 'Rising Intellect',     desc: 'Your intelligence profile is developing. Every assessment sharpens the picture of your unique cognitive strengths.' },
 ];
 
-const CAREER_PATHS = ['Data Scientist', 'Product Manager', 'Systems Architect', 'UX Researcher', 'Strategy Consultant'];
+const DOMAIN_CAREERS = [
+  { careers: ['Data Scientist', 'Research Analyst', 'AI Engineer', 'Quantitative Analyst'] },         // Analytical
+  { careers: ['UX Designer', 'Product Designer', 'Creative Director', 'Innovation Consultant'] },     // Creative
+  { careers: ['Product Manager', 'Executive Leader', 'NGO Director', 'Team Lead'] },                  // Leadership
+  { careers: ['Operations Manager', 'Project Manager', 'Programme Director', 'Logistics Head'] },     // Execution
+  { careers: ['Startup Founder', 'Change Manager', 'Business Analyst', 'Venture Capitalist'] },       // Agility
+  { careers: ['Marketing Director', 'PR Strategist', 'Brand Manager', 'Journalist'] },                // Comms
+  { careers: ['Strategy Consultant', 'Policy Analyst', 'Investment Banker', 'Management Consultant'] }, // Decision
+];
+
+const DEFAULT_CAREERS = ['Data Scientist', 'Product Manager', 'Systems Architect', 'UX Researcher', 'Strategy Consultant'];
+
+function getCareerPaths(scores) {
+  const ranked = scores
+    .map((s, i) => ({ score: s, careers: DOMAIN_CAREERS[i]?.careers ?? [] }))
+    .sort((a, b) => b.score - a.score);
+  const result = [];
+  const seen = new Set();
+  for (const { careers } of ranked.slice(0, 3)) {
+    for (const c of careers.slice(0, 2)) {
+      if (!seen.has(c) && result.length < 6) { seen.add(c); result.push(c); }
+    }
+  }
+  return result.length ? result : DEFAULT_CAREERS;
+}
 
 function RadarChart7({ scores, size = 240 }) {
   const cx = size / 2;
@@ -70,17 +94,22 @@ function RadarChart7({ scores, size = 240 }) {
 }
 
 export default function DNAScreen({ navigation }) {
-  const [scores, setScores] = useState(DOMAINS.map(d => d.score));
-  const [archetype, setArchetype] = useState(ARCHETYPES[0]);
+  const [scores,      setScores]      = useState(DOMAINS.map(d => d.score));
+  const [archetype,   setArchetype]   = useState(ARCHETYPES[0]);
+  const [careerPaths, setCareerPaths] = useState(DEFAULT_CAREERS);
 
   useEffect(() => {
     storage.getScores().then(stored => {
-      if (stored?.domainPercents?.length >= 7) {
-        setScores(stored.domainPercents.slice(0, 7));
-      }
-      const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+      const raw = stored?.domainPercents?.length >= 7
+        ? stored.domainPercents.slice(0, 7)
+        : DOMAINS.map(d => d.score);
+      setScores(raw);
+      const avg = raw.reduce((a, b) => a + b, 0) / raw.length;
       const at = ARCHETYPES.find(a => avg >= a.minScore) || ARCHETYPES[ARCHETYPES.length - 1];
       setArchetype(at);
+      if (stored?.domainPercents?.length >= 7) {
+        setCareerPaths(getCareerPaths(raw));
+      }
     });
   }, []);
 
@@ -125,7 +154,7 @@ export default function DNAScreen({ navigation }) {
         <View style={styles.careerSection}>
           <Text style={styles.careerTitle}>Ideal Career Paths</Text>
           <View style={styles.chipRow}>
-            {CAREER_PATHS.map(c => (
+            {careerPaths.map(c => (
               <TouchableOpacity key={c} style={styles.chip} activeOpacity={0.7}>
                 <Text style={styles.chipText}>{c}  →</Text>
               </TouchableOpacity>

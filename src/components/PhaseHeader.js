@@ -1,14 +1,20 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, ui } from '../theme/colors';
 
-export default function PhaseHeader({ phase, title, subtitle, progress }) {
+export default function PhaseHeader({ phase, title, subtitle, progress, onBack }) {
   const phaseColors = [colors.phase1, colors.phase2, colors.phase3, colors.phase4];
   const accent = phaseColors[(phase - 1) % 4];
 
   return (
     <View style={styles.container}>
       <View style={styles.row}>
+        {onBack ? (
+          <TouchableOpacity onPress={onBack} style={styles.backBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <Ionicons name="chevron-back" size={22} color={ui.primaryBlue} />
+          </TouchableOpacity>
+        ) : null}
         <View style={[styles.phaseBadge, { backgroundColor: accent + '18', borderColor: accent + '60' }]}>
           <Text style={[styles.phaseText, { color: accent }]}>PHASE {phase}</Text>
         </View>
@@ -34,13 +40,14 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1, borderBottomColor: ui.borderGray,
     marginBottom: 4,
   },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  row:     { flexDirection: 'row', alignItems: 'center', marginBottom: 6, gap: 8 },
+  backBtn: { marginRight: 4 },
   phaseBadge: {
     paddingHorizontal: 10, paddingVertical: 4,
     borderRadius: 20, borderWidth: 1,
   },
   phaseText:    { fontSize: 11, fontWeight: '700', letterSpacing: 1 },
-  progressText: { fontSize: 12, color: ui.midText, fontWeight: '600' },
+  progressText: { fontSize: 12, color: ui.midText, fontWeight: '600', marginLeft: 'auto' },
   title:        { fontSize: 20, fontWeight: '800', color: ui.darkText, marginBottom: 2 },
   subtitle:     { fontSize: 13, color: ui.midText, marginBottom: 8 },
   progressBar: {

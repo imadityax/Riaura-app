@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
 import { colors } from '../../theme/colors';
 import { ui } from '../../theme/colors';
 import PhaseHeader from '../../components/PhaseHeader';
@@ -57,6 +57,13 @@ const SCENARIOS = [
   },
 ];
 
+function handleBack(navigation) {
+  Alert.alert('Exit Assessment?', 'Your cognitive task progress will not be saved if you exit now.', [
+    { text: 'Stay', style: 'cancel' },
+    { text: 'Exit', style: 'destructive', onPress: () => navigation.navigate('Main') },
+  ]);
+}
+
 export default function SituationalJudgementScreen({ route, navigation }) {
   const { phase2Answers, taskScores, taskIndex } = route.params;
   const [current, setCurrent] = useState(0);
@@ -88,7 +95,7 @@ export default function SituationalJudgementScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
-      <PhaseHeader phase={3} title="Situational Judgement" subtitle={`Decision · ${current + 1}/${SCENARIOS.length}`} progress={(taskIndex + 1) / 8} />
+      <PhaseHeader phase={3} title="Situational Judgement" subtitle={`Decision · ${current + 1}/${SCENARIOS.length}`} progress={(taskIndex + 1) / 8} onBack={() => handleBack(navigation)} />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.scenarioCard}>
           <Text style={styles.scenarioLabel}>SCENARIO</Text>

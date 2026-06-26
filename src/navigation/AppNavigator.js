@@ -34,6 +34,10 @@ import DevelopmentPathwayScreen from '../screens/results/DevelopmentPathwayScree
 import Phase4BookingScreen from '../screens/phase4/Phase4BookingScreen';
 import Phase4InterviewScreen from '../screens/phase4/Phase4InterviewScreen';
 
+// Profile sub-screens
+import SettingsScreen from '../screens/profile/SettingsScreen';
+import PrivacyScreen  from '../screens/profile/PrivacyScreen';
+
 // Final
 import FinalReportScreen from '../screens/final/FinalReportScreen';
 
@@ -82,6 +86,10 @@ export default function AppNavigator() {
         {/* Phase 4 */}
         <Stack.Screen name="Phase4Booking"   component={Phase4BookingScreen} />
         <Stack.Screen name="Phase4Interview" component={Phase4InterviewScreen} />
+
+        {/* Profile sub-screens */}
+        <Stack.Screen name="Settings" component={SettingsScreen} />
+        <Stack.Screen name="Privacy"  component={PrivacyScreen} />
 
         {/* Final */}
         <Stack.Screen name="FinalReport"     component={FinalReportScreen} />

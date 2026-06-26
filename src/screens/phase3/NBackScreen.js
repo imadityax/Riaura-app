@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { colors } from '../../theme/colors';
 import { ui } from '../../theme/colors';
 import PhaseHeader from '../../components/PhaseHeader';
@@ -16,6 +16,13 @@ function generateSequence() {
     if (Math.random() < 0.35) seq[i] = seq[i - N];
   }
   return seq;
+}
+
+function handleBack(navigation) {
+  Alert.alert('Exit Assessment?', 'Your cognitive task progress will not be saved if you exit now.', [
+    { text: 'Stay', style: 'cancel' },
+    { text: 'Exit', style: 'destructive', onPress: () => navigation.navigate('Main') },
+  ]);
 }
 
 export default function NBackScreen({ route, navigation }) {
@@ -98,7 +105,7 @@ export default function NBackScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
-      <PhaseHeader phase={3} title="N-Back Task" subtitle={`Memory · N=2 · Item ${Math.max(0, position + 1)}/${SEQUENCE_LENGTH}`} progress={(taskIndex + 1) / 8} />
+      <PhaseHeader phase={3} title="N-Back Task" subtitle={`Memory · N=2 · Item ${Math.max(0, position + 1)}/${SEQUENCE_LENGTH}`} progress={(taskIndex + 1) / 8} onBack={() => handleBack(navigation)} />
 
       <View style={styles.arena}>
         <Text style={styles.instruction}>

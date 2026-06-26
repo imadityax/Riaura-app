@@ -1,22 +1,32 @@
 import React, { useState, useRef } from 'react';
 import {
-  View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated,
+  View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated, Alert,
 } from 'react-native';
 import { colors } from '../../theme/colors';
 import { ui } from '../../theme/colors';
 import { DOMAINS, phase2Questions, LIKERT_LABELS } from '../../data/phase2Questions';
 import PhaseHeader from '../../components/PhaseHeader';
 import { storage } from '../../utils/storage';
-import {
-  calcPhase2Score, calcPhase3Score, calcCombinedScore,
-  calcCIS, calcGPS, calcDomainPercents, calcLabReadiness, calcHII,
-} from '../../utils/scoreEngine';
+import { savePhase2DataToCloud } from '../../firebase/firestore';
+import { useAuth } from '../../context/AuthContext';
 
 export default function DomainQuestionScreen({ route, navigation }) {
   const { domainIndex, answers: prevAnswers } = route.params;
   const questions = phase2Questions[domainIndex];
   const [ratings, setRatings] = useState(Array(5).fill(0));
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const { currentUser } = useAuth();
+
+  function handleBack() {
+    Alert.alert(
+      'Exit Assessment?',
+      'Your progress so far is saved locally. You can resume later.',
+      [
+        { text: 'Stay', style: 'cancel' },
+        { text: 'Exit', style: 'destructive', onPress: () => navigation.navigate('Main') },
+      ]
+    );
+  }
 
   React.useEffect(() => {
     Animated.timing(fadeAnim, { toValue: 1, duration: 400, useNativeDriver: true }).start();
@@ -40,6 +50,9 @@ export default function DomainQuestionScreen({ route, navigation }) {
         navigation.replace('Phase2Questions', { domainIndex: domainIndex + 1, answers: newAnswers });
       });
     } else {
+      if (currentUser) {
+        savePhase2DataToCloud(currentUser.uid, newAnswers, domainIndex + 1).catch(() => {});
+      }
       navigation.replace('Phase3Intro', { phase2Answers: newAnswers });
     }
   }
@@ -52,6 +65,7 @@ export default function DomainQuestionScreen({ route, navigation }) {
           title={DOMAINS[domainIndex]}
           subtitle={`Domain ${domainIndex + 1} of ${totalDomains}`}
           progress={progress}
+          onBack={handleBack}
         />
 
         <Animated.View style={{ opacity: fadeAnim, padding: 20 }}>

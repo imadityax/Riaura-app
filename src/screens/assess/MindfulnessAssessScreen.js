@@ -6,6 +6,8 @@ import {
 import { ui } from '../../theme/colors';
 import { storage } from '../../utils/storage';
 import { getAgeGroup, MINDFULNESS_QUESTIONS, calcMindfulnessScore } from '../../data/mindfulnessQuestions';
+import { saveMindfulnessToCloud } from '../../firebase/firestore';
+import { useAuth } from '../../context/AuthContext';
 
 export default function MindfulnessAssessScreen({ navigation }) {
   const [groupKey, setGroupKey]   = useState(null);
@@ -17,6 +19,7 @@ export default function MindfulnessAssessScreen({ navigation }) {
   const [answers, setAnswers]     = useState([]);
   const [selected, setSelected]   = useState(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
+  const { currentUser } = useAuth();
 
   useEffect(() => {
     storage.getRegistration().then(reg => {
@@ -38,7 +41,7 @@ export default function MindfulnessAssessScreen({ navigation }) {
     });
   }
 
-  function handleNext() {
+  async function handleNext() {
     if (!selected) return;
     const newAnswers = [...answers, selected];
 
@@ -50,9 +53,11 @@ export default function MindfulnessAssessScreen({ navigation }) {
       });
     } else {
       const score = calcMindfulnessScore(groupKey, newAnswers);
-      storage.saveMindfulnessScore(score).then(() => {
-        navigation.replace('Main');
-      });
+      await storage.saveMindfulnessScore(score);
+      if (currentUser) {
+        saveMindfulnessToCloud(currentUser.uid, score).catch(() => {});
+      }
+      navigation.replace('Main');
     }
   }
 

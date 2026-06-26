@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, SafeAreaView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
 import { ui } from '../../theme/colors';
 
@@ -18,7 +19,11 @@ export default function Phase3IntroScreen({ route, navigation }) {
   const { phase2Answers } = route.params || {};
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+        <Ionicons name="chevron-back" size={22} color={ui.primaryBlue} />
+        <Text style={styles.backText}>Back</Text>
+      </TouchableOpacity>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <View style={styles.phaseBadge}>
@@ -73,7 +78,7 @@ export default function Phase3IntroScreen({ route, navigation }) {
           </View>
         </TouchableOpacity>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -117,4 +122,6 @@ const styles = StyleSheet.create({
   btn: { borderRadius: 14, overflow: 'hidden', marginTop: 16 },
   btnInner: { paddingVertical: 16, alignItems: 'center', backgroundColor: ui.primaryBlue, borderRadius: 14 },
   btnText: { fontSize: 16, fontWeight: '800', color: '#fff' },
+  backBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 },
+  backText: { fontSize: 15, fontWeight: '600', color: ui.primaryBlue, marginLeft: 2 },
 });

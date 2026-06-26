@@ -1,18 +1,49 @@
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  KeyboardAvoidingView, Platform, SafeAreaView, StatusBar, ScrollView,
+  KeyboardAvoidingView, Platform, SafeAreaView, StatusBar, ScrollView, Alert, ActivityIndicator,
 } from 'react-native';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
+import { auth } from '../../firebase/config';
 import { ui } from '../../theme/colors';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  function handleSignIn() {
-    navigation.replace('Main');
+  async function handleSignIn() {
+    if (!email.trim() || !password) {
+      Alert.alert('Missing fields', 'Please enter your email and password.');
+      return;
+    }
+    setLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email.trim(), password);
+      navigation.replace('Main');
+    } catch (err) {
+      const msg = err.code === 'auth/invalid-credential'
+        ? 'Incorrect email or password.'
+        : err.message;
+      Alert.alert('Sign In Failed', msg);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleForgotPassword() {
+    if (!email.trim()) {
+      Alert.alert('Enter your email', 'Type your email above, then tap Forgot Password.');
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email.trim());
+      Alert.alert('Email Sent', 'Check your inbox for a password reset link.');
+    } catch (err) {
+      Alert.alert('Error', err.message);
+    }
   }
 
   return (
@@ -33,7 +64,6 @@ export default function LoginScreen({ navigation }) {
             <Text style={styles.title}>Welcome back</Text>
             <Text style={styles.subtitle}>Your intelligence journey continues</Text>
 
-            {/* Email */}
             <Text style={styles.label}>Email</Text>
             <View style={styles.inputRow}>
               <Ionicons name="mail-outline" size={18} color={ui.lightText} style={styles.inputIcon} />
@@ -49,7 +79,6 @@ export default function LoginScreen({ navigation }) {
               />
             </View>
 
-            {/* Password */}
             <Text style={styles.label}>Password</Text>
             <View style={styles.inputRow}>
               <Ionicons name="lock-closed-outline" size={18} color={ui.lightText} style={styles.inputIcon} />
@@ -70,22 +99,23 @@ export default function LoginScreen({ navigation }) {
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity style={styles.forgotRow}>
+            <TouchableOpacity style={styles.forgotRow} onPress={handleForgotPassword}>
               <Text style={styles.forgotText}>Forgot Password?</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.signInBtn} onPress={handleSignIn} activeOpacity={0.85}>
-              <Text style={styles.signInText}>Sign In</Text>
+            <TouchableOpacity style={styles.signInBtn} onPress={handleSignIn} activeOpacity={0.85} disabled={loading}>
+              {loading
+                ? <ActivityIndicator color={ui.white} />
+                : <Text style={styles.signInText}>Sign In</Text>
+              }
             </TouchableOpacity>
 
-            {/* Divider */}
             <View style={styles.dividerRow}>
               <View style={styles.dividerLine} />
               <Text style={styles.dividerText}>or</Text>
               <View style={styles.dividerLine} />
             </View>
 
-            {/* Social buttons */}
             <View style={styles.socialRow}>
               <TouchableOpacity style={styles.socialBtn} activeOpacity={0.8}>
                 <FontAwesome name="google" size={16} color="#EA4335" style={{ marginRight: 6 }} />

@@ -38,6 +38,9 @@ export default function Phase4BookingScreen({ route, navigation }) {
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={ui.offWhite} />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} activeOpacity={0.7}>
+          <Text style={styles.backBtnText}>← Back</Text>
+        </TouchableOpacity>
         <View style={styles.header}>
           <View style={styles.phaseBadge}>
             <Text style={styles.phaseText}>PHASE 4</Text>
@@ -117,6 +120,8 @@ export default function Phase4BookingScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   safe:         { flex: 1, backgroundColor: ui.offWhite },
   content:      { padding: 20, paddingBottom: 40 },
+  backBtn:      { paddingVertical: 8, paddingHorizontal: 4, marginBottom: 8 },
+  backBtnText:  { color: ui.primaryBlue, fontWeight: '700', fontSize: 14 },
   header:       { alignItems: 'center', marginBottom: 20, marginTop: 8 },
   phaseBadge:   { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 20, backgroundColor: ui.challengeBg, borderWidth: 1, borderColor: ui.primaryBlue + '60', marginBottom: 10 },
   phaseText:    { color: ui.primaryBlue, fontSize: 11, fontWeight: '700', letterSpacing: 1 },

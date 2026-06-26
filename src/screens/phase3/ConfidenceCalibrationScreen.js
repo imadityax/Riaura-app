@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, SafeAreaView, StatusBar } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, SafeAreaView, StatusBar, Alert } from 'react-native';
 import { colors, ui } from '../../theme/colors';
 import PhaseHeader from '../../components/PhaseHeader';
 import {
@@ -7,6 +7,8 @@ import {
   calcCIS, calcGPS, calcDomainPercents, calcLabReadiness, calcHII,
 } from '../../utils/scoreEngine';
 import { storage } from '../../utils/storage';
+import { saveScoresToCloud } from '../../firebase/firestore';
+import { useAuth } from '../../context/AuthContext';
 
 const QUESTIONS = [
   { q: 'The human brain uses about 20% of the body\'s total energy despite being only 2% of body weight.', options: ['True', 'False'], correct: 0 },
@@ -23,6 +25,18 @@ export default function ConfidenceCalibrationScreen({ route, navigation }) {
   const [confidence, setConfidence]       = useState(null);
   const [score, setScore]                 = useState(0);
   const [calibrationScore, setCalibrationScore] = useState(0);
+  const { currentUser } = useAuth();
+
+  function handleBack() {
+    Alert.alert(
+      'Exit Assessment?',
+      'Your cognitive task progress will not be saved if you exit now.',
+      [
+        { text: 'Stay', style: 'cancel' },
+        { text: 'Exit', style: 'destructive', onPress: () => navigation.navigate('Main') },
+      ]
+    );
+  }
 
   const q = QUESTIONS[current];
 
@@ -58,6 +72,9 @@ export default function ConfidenceCalibrationScreen({ route, navigation }) {
     const scores = { phase2: p2, phase3: p3, combined, cis, gps, domainPercents: domainPcts, labReadiness, hii };
     await storage.saveScores(scores);
     await storage.savePhase3Scores(newScores, 8);
+    if (currentUser) {
+      saveScoresToCloud(currentUser.uid, scores).catch(() => {});
+    }
     if (combined.isHighPerformance) navigation.replace('HighPerformance', { scores });
     else navigation.replace('DevelopmentPathway', { scores });
   }
@@ -67,7 +84,7 @@ export default function ConfidenceCalibrationScreen({ route, navigation }) {
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={ui.offWhite} />
-      <PhaseHeader phase={3} title="Confidence Calibration" subtitle={`Metacognitive · ${current + 1}/${QUESTIONS.length}`} progress={(taskIndex + 1) / 8} />
+      <PhaseHeader phase={3} title="Confidence Calibration" subtitle={`Metacognitive · ${current + 1}/${QUESTIONS.length}`} progress={(taskIndex + 1) / 8} onBack={handleBack} />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.qCard}>
           <Text style={styles.qLabel}>STATEMENT</Text>

@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
-  StyleSheet, KeyboardAvoidingView, Platform, Alert,
+  StyleSheet, KeyboardAvoidingView, Platform, Alert, ActivityIndicator,
 } from 'react-native';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../../firebase/config';
+import { saveUserProfile } from '../../firebase/firestore';
 import { colors } from '../../theme/colors';
 import { ui } from '../../theme/colors';
 import { storage } from '../../utils/storage';
@@ -11,7 +14,7 @@ import PhaseHeader from '../../components/PhaseHeader';
 const GENDERS = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
 const EDUCATION = ['High School', 'Diploma', 'Bachelor\'s', 'Master\'s', 'Doctorate', 'Other'];
 
-function Field({ label, field, keyboardType = 'default', placeholder, value, error, onChange }) {
+function Field({ label, field, keyboardType = 'default', placeholder, value, error, onChange, secureTextEntry }) {
   return (
     <View style={styles.fieldWrap}>
       <Text style={styles.label}>{label}</Text>
@@ -23,6 +26,7 @@ function Field({ label, field, keyboardType = 'default', placeholder, value, err
         placeholderTextColor={ui.lightText}
         keyboardType={keyboardType}
         autoCapitalize={keyboardType === 'email-address' ? 'none' : 'words'}
+        secureTextEntry={secureTextEntry}
       />
       {error ? <Text style={styles.error}>{error}</Text> : null}
     </View>
@@ -55,8 +59,10 @@ export default function RegistrationScreen({ navigation }) {
   const [form, setForm] = useState({
     fullName: '', age: '', gender: '', mobile: '', email: '',
     education: '', occupation: '', city: '', state: '', country: '',
+    password: '', confirmPassword: '',
   });
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   function set(field, value) {
     setForm(f => ({ ...f, [field]: value }));
@@ -76,14 +82,37 @@ export default function RegistrationScreen({ navigation }) {
     if (!form.city.trim()) e.city = 'Required';
     if (!form.state.trim()) e.state = 'Required';
     if (!form.country.trim()) e.country = 'Required';
+    if (form.password.length < 6) e.password = 'Password must be at least 6 characters';
+    if (form.confirmPassword !== form.password) e.confirmPassword = 'Passwords do not match';
     return e;
   }
 
   async function handleNext() {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
-    await storage.saveRegistration(form);
-    navigation.replace('Consent');
+
+    setLoading(true);
+    try {
+      const { user } = await createUserWithEmailAndPassword(auth, form.email.trim(), form.password);
+
+      const profile = {
+        fullName: form.fullName, age: parseInt(form.age), gender: form.gender,
+        mobile: form.mobile, email: form.email, education: form.education,
+        occupation: form.occupation, city: form.city, state: form.state, country: form.country,
+      };
+
+      await saveUserProfile(user.uid, profile);
+      await storage.saveRegistration(profile);
+
+      navigation.replace('Consent');
+    } catch (err) {
+      const msg = err.code === 'auth/email-already-in-use'
+        ? 'An account with this email already exists. Please sign in.'
+        : err.message;
+      Alert.alert('Registration Failed', msg);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -104,9 +133,17 @@ export default function RegistrationScreen({ navigation }) {
             <Field label="State" field="state" placeholder="Your state" value={form.state} error={errors.state} onChange={set} />
             <Field label="Country" field="country" placeholder="Your country" value={form.country} error={errors.country} onChange={set} />
 
-            <TouchableOpacity style={styles.btn} onPress={handleNext} activeOpacity={0.8}>
+            <View style={styles.divider} />
+
+            <Field label="Password" field="password" placeholder="Min. 6 characters" value={form.password} error={errors.password} onChange={set} secureTextEntry />
+            <Field label="Confirm Password" field="confirmPassword" placeholder="Repeat your password" value={form.confirmPassword} error={errors.confirmPassword} onChange={set} secureTextEntry />
+
+            <TouchableOpacity style={styles.btn} onPress={handleNext} activeOpacity={0.8} disabled={loading}>
               <View style={styles.btnInner}>
-                <Text style={styles.btnText}>Continue to Consent →</Text>
+                {loading
+                  ? <ActivityIndicator color="#fff" />
+                  : <Text style={styles.btnText}>Continue to Consent →</Text>
+                }
               </View>
             </TouchableOpacity>
           </View>
@@ -136,6 +173,7 @@ const styles = StyleSheet.create({
   optionSelected: { borderColor: ui.primaryBlue, backgroundColor: ui.primaryBlue + '18' },
   optionText: { fontSize: 12, color: ui.midText, fontWeight: '500' },
   optionTextSelected: { color: ui.primaryBlue, fontWeight: '700' },
+  divider: { height: 1, backgroundColor: ui.borderGray, marginVertical: 20 },
   btn: { marginTop: 24, borderRadius: 14, overflow: 'hidden' },
   btnInner: { paddingVertical: 16, alignItems: 'center', borderRadius: 14, backgroundColor: ui.primaryBlue },
   btnText: { fontSize: 16, fontWeight: '800', color: '#fff' },

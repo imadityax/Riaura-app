@@ -3,37 +3,44 @@ import { View, Text, StyleSheet, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { storage } from '../utils/storage';
 import { ui } from '../theme/colors';
+import { useAuth } from '../context/AuthContext';
+import { getUserData } from '../firebase/firestore';
 
 export default function SplashScreen({ navigation }) {
   const fadeAnim = new Animated.Value(0);
   const scaleAnim = new Animated.Value(0.8);
+  const { currentUser, loading } = useAuth();
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
       Animated.spring(scaleAnim, { toValue: 1, friction: 5, useNativeDriver: true }),
     ]).start();
+  }, []);
+
+  useEffect(() => {
+    if (loading) return;
 
     (async () => {
       await new Promise(r => setTimeout(r, 2000));
-      const phase = await storage.getCurrentPhase();
-      const reg = await storage.getRegistration();
 
-      if (!reg) {
+      if (!currentUser) {
         navigation.replace('Login');
-      } else if (phase === 1) {
-        navigation.replace('Main');
-      } else if (phase === 2) {
-        navigation.replace('Main');
-      } else if (phase === 3) {
-        navigation.replace('Main');
-      } else if (phase === 4) {
-        navigation.replace('FinalReport');
+        return;
+      }
+
+      // User is logged in — check their progress
+      const data = await getUserData(currentUser.uid);
+      const phase = data?.phase ?? 0;
+
+      if (phase >= 4) {
+        const scores = await storage.getScores();
+        navigation.replace('FinalReport', { scores });
       } else {
-        navigation.replace('Login');
+        navigation.replace('Main');
       }
     })();
-  }, []);
+  }, [loading, currentUser]);
 
   return (
     <LinearGradient colors={[ui.blueGradStart, ui.blueGradEnd]} style={styles.container}>

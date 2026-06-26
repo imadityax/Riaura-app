@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { colors } from '../../theme/colors';
 import { ui } from '../../theme/colors';
 import PhaseHeader from '../../components/PhaseHeader';
@@ -7,11 +7,19 @@ import PhaseHeader from '../../components/PhaseHeader';
 const OBJECTS = ['A paperclip', 'An empty cardboard box', 'A plastic bottle'];
 const TIME_PER_OBJECT = 120;
 
+function handleBack(navigation) {
+  Alert.alert('Exit Assessment?', 'Your cognitive task progress will not be saved if you exit now.', [
+    { text: 'Stay', style: 'cancel' },
+    { text: 'Exit', style: 'destructive', onPress: () => navigation.navigate('Main') },
+  ]);
+}
+
 export default function AlternativeUsesScreen({ route, navigation }) {
   const { phase2Answers, taskScores, taskIndex } = route.params;
   const [objectIdx, setObjectIdx] = useState(0);
   const [input, setInput] = useState('');
   const [uses, setUses] = useState([]);
+  const usesRef = useRef([]);
   const [timeLeft, setTimeLeft] = useState(TIME_PER_OBJECT);
   const timerRef = useRef(null);
   const [started, setStarted] = useState(false);
@@ -22,7 +30,7 @@ export default function AlternativeUsesScreen({ route, navigation }) {
       setTimeLeft(t => {
         if (t <= 1) {
           clearInterval(timerRef.current);
-          handleObjectDone(uses);
+          handleObjectDone(usesRef.current);
           return 0;
         }
         return t - 1;
@@ -34,7 +42,9 @@ export default function AlternativeUsesScreen({ route, navigation }) {
     const trimmed = input.trim();
     if (!trimmed) return;
     if (!started) startTimer();
-    setUses(u => [...u, trimmed]);
+    const next = [...usesRef.current, trimmed];
+    usesRef.current = next;
+    setUses(next);
     setInput('');
   }
 
@@ -48,6 +58,7 @@ export default function AlternativeUsesScreen({ route, navigation }) {
       navigation.replace('Task_ConfidenceCalibration', { phase2Answers, taskScores: newScores, taskIndex: taskIndex + 1 });
     } else {
       setObjectIdx(next);
+      usesRef.current = [];
       setUses([]);
       setTimeLeft(TIME_PER_OBJECT);
       setStarted(false);
@@ -56,7 +67,7 @@ export default function AlternativeUsesScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
-      <PhaseHeader phase={3} title="Alternative Uses" subtitle={`Social & Originality · Object ${objectIdx + 1}/${OBJECTS.length}`} progress={(taskIndex + 1) / 8} />
+      <PhaseHeader phase={3} title="Alternative Uses" subtitle={`Social & Originality · Object ${objectIdx + 1}/${OBJECTS.length}`} progress={(taskIndex + 1) / 8} onBack={() => handleBack(navigation)} />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.objectCard}>

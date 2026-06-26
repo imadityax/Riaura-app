@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { colors } from '../../theme/colors';
 import { ui } from '../../theme/colors';
 import PhaseHeader from '../../components/PhaseHeader';
@@ -32,6 +32,13 @@ const MATRICES = [
   },
 ];
 
+function handleBack(navigation) {
+  Alert.alert('Exit Assessment?', 'Your cognitive task progress will not be saved if you exit now.', [
+    { text: 'Stay', style: 'cancel' },
+    { text: 'Exit', style: 'destructive', onPress: () => navigation.navigate('Main') },
+  ]);
+}
+
 export default function MatrixReasoningScreen({ route, navigation }) {
   const { phase2Answers, taskScores, taskIndex } = route.params;
   const [current, setCurrent] = useState(0);
@@ -61,7 +68,7 @@ export default function MatrixReasoningScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
-      <PhaseHeader phase={3} title="Matrix Reasoning" subtitle={`Reasoning · ${current + 1}/${MATRICES.length}`} progress={(taskIndex + 1) / 8} />
+      <PhaseHeader phase={3} title="Matrix Reasoning" subtitle={`Reasoning · ${current + 1}/${MATRICES.length}`} progress={(taskIndex + 1) / 8} onBack={() => handleBack(navigation)} />
 
       <View style={styles.arena}>
         <Text style={styles.instruction}>Find the pattern. Which option replaces the <Text style={{ color: ui.primaryBlue, fontWeight: '800' }}>?</Text></Text>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, Alert } from 'react-native';
 import { colors } from '../../theme/colors';
 import { ui } from '../../theme/colors';
 import PhaseHeader from '../../components/PhaseHeader';
@@ -22,6 +22,13 @@ function generateTrial() {
 
 const TOTAL_TRIALS = 10;
 const TIME_PER_TRIAL = 3000;
+
+function handleBack(navigation) {
+  Alert.alert('Exit Assessment?', 'Your cognitive task progress will not be saved if you exit now.', [
+    { text: 'Stay', style: 'cancel' },
+    { text: 'Exit', style: 'destructive', onPress: () => navigation.navigate('Main') },
+  ]);
+}
 
 export default function StroopTestScreen({ route, navigation }) {
   const { phase2Answers, taskScores, taskIndex } = route.params;
@@ -94,7 +101,7 @@ export default function StroopTestScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
-      <PhaseHeader phase={3} title="Stroop Test" subtitle={`Attention · Trial ${current + 1}/${TOTAL_TRIALS}`} progress={(taskIndex + 1) / 8} />
+      <PhaseHeader phase={3} title="Stroop Test" subtitle={`Attention · Trial ${current + 1}/${TOTAL_TRIALS}`} progress={(taskIndex + 1) / 8} onBack={() => handleBack(navigation)} />
       <View style={styles.timerBar}>
         <Animated.View style={[styles.timerFill, { width: barWidth }]} />
       </View>

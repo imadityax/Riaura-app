@@ -1,9 +1,10 @@
 import { LABS } from '../data/labsData';
 
 export function calcPhase2Score(answers) {
-  // answers: array of 40 numbers (8 domains × 5 questions), each 1–5
+  // answers: 40 Likert 1–5 questions → max raw sum 200 → normalize to max 40 marks
   const total = answers.reduce((s, v) => s + v, 0);
-  return { marks: total, percent: (total / 40) * 100 };
+  const marks = Math.round(total / 5);
+  return { marks, percent: (marks / 40) * 100 };
 }
 
 export function calcPhase3Score(taskScores) {
