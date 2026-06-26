@@ -3,14 +3,13 @@ import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Replace these values with your Firebase project config
 const firebaseConfig = {
-  apiKey: 'AIzaSyCYI9auAp3wnWyJMX2EQqgx0DEMyZ6PDx0',
-  authDomain: 'riaura-rhims.firebaseapp.com',
-  projectId: 'riaura-rhims',
-  storageBucket: 'riaura-rhims.firebasestorage.app',
-  messagingSenderId: '258011213465',
-  appId: '1:258011213465:web:133b24d659dada07059208',
+  apiKey:            process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain:        process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId:         process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket:     process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId:             process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
 };
 
 const app = initializeApp(firebaseConfig);
