@@ -3,7 +3,7 @@ import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   KeyboardAvoidingView, Platform, SafeAreaView, StatusBar, ScrollView, Alert, ActivityIndicator,
 } from 'react-native';
-import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../../firebase/config';
 import { ui } from '../../theme/colors';
@@ -110,22 +110,6 @@ export default function LoginScreen({ navigation }) {
               }
             </TouchableOpacity>
 
-            <View style={styles.dividerRow}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>or</Text>
-              <View style={styles.dividerLine} />
-            </View>
-
-            <View style={styles.socialRow}>
-              <TouchableOpacity style={styles.socialBtn} activeOpacity={0.8}>
-                <FontAwesome name="google" size={16} color="#EA4335" style={{ marginRight: 6 }} />
-                <Text style={styles.socialText}>Google</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.socialBtn, styles.appleBtnGap]} activeOpacity={0.8}>
-                <FontAwesome name="apple" size={18} color="#1A1A2E" style={{ marginRight: 6 }} />
-                <Text style={styles.socialText}>Apple</Text>
-              </TouchableOpacity>
-            </View>
           </View>
 
           <View style={styles.footerRow}>
@@ -199,22 +183,6 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   signInText:   { fontSize: 16, fontWeight: '700', color: ui.white },
-  dividerRow:   { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
-  dividerLine:  { flex: 1, height: 1, backgroundColor: ui.borderGray },
-  dividerText:  { fontSize: 12, color: ui.lightText, marginHorizontal: 12 },
-  socialRow:    { flexDirection: 'row', gap: 12 },
-  socialBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: ui.inputBg,
-    borderRadius: 14,
-    paddingVertical: 13,
-    paddingHorizontal: 12,
-  },
-  appleBtnGap:  {},
-  socialText:   { fontSize: 14, fontWeight: '600', color: ui.darkText },
   footerRow: {
     flexDirection: 'row',
     alignItems: 'center',
