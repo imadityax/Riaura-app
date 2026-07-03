@@ -6,6 +6,7 @@ import SplashScreen from '../screens/SplashScreen';
 import LoginScreen from '../screens/auth/LoginScreen';
 import MainTabNavigator from './MainTabNavigator';
 import MindfulnessAssessScreen from '../screens/assess/MindfulnessAssessScreen';
+import MindfulnessReportScreen from '../screens/assess/MindfulnessReportScreen';
 
 // Phase 1
 import RegistrationScreen from '../screens/phase1/RegistrationScreen';
@@ -58,7 +59,8 @@ export default function AppNavigator() {
         <Stack.Screen name="Main"          component={MainTabNavigator} />
 
         {/* Assessment */}
-        <Stack.Screen name="MindfulnessAssess" component={MindfulnessAssessScreen} />
+        <Stack.Screen name="MindfulnessAssess"  component={MindfulnessAssessScreen} />
+        <Stack.Screen name="MindfulnessReport"  component={MindfulnessReportScreen} />
 
         {/* Registration flow */}
         <Stack.Screen name="Registration"  component={RegistrationScreen} />

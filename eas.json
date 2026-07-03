@@ -6,6 +6,14 @@
     "preview": {
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_FIREBASE_API_KEY": "AIzaSyCYI9auAp3wnWyJMX2EQqgx0DEMyZ6PDx0",
+        "EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN": "riaura-rhims.firebaseapp.com",
+        "EXPO_PUBLIC_FIREBASE_PROJECT_ID": "riaura-rhims",
+        "EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET": "riaura-rhims.firebasestorage.app",
+        "EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "258011213465",
+        "EXPO_PUBLIC_FIREBASE_APP_ID": "1:258011213465:web:133b24d659dada07059208"
       }
     },
     "production": {

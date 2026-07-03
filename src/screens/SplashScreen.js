@@ -51,9 +51,6 @@ export default function SplashScreen({ navigation }) {
         <Text style={styles.brand}>RiAura</Text>
         <Text style={styles.title}>RHIMS™</Text>
         <Text style={styles.sub}>Human Intelligence Mapping System</Text>
-        <View style={styles.tagBox}>
-          <Text style={styles.tag}>Age Group: 18–25 Years</Text>
-        </View>
       </Animated.View>
       <Text style={styles.footer}>Class 1 Operational Architecture</Text>
     </LinearGradient>
@@ -72,11 +69,5 @@ const styles = StyleSheet.create({
   brand: { fontSize: 14, color: 'rgba(255,255,255,0.9)', fontWeight: '700', letterSpacing: 3, marginBottom: 4 },
   title: { fontSize: 36, fontWeight: '900', color: '#fff', letterSpacing: 2 },
   sub: { fontSize: 13, color: 'rgba(255,255,255,0.7)', marginTop: 6, textAlign: 'center', paddingHorizontal: 40 },
-  tagBox: {
-    marginTop: 20, paddingHorizontal: 16, paddingVertical: 6,
-    borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.4)',
-    backgroundColor: 'rgba(255,255,255,0.15)',
-  },
-  tag: { fontSize: 12, color: 'rgba(255,255,255,0.9)', fontWeight: '600' },
   footer: { position: 'absolute', bottom: 40, fontSize: 11, color: 'rgba(255,255,255,0.5)' },
 });

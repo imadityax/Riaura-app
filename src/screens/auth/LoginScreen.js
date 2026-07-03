@@ -5,7 +5,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { auth } from '../../firebase/config';
+import { getUserData } from '../../firebase/firestore';
 import { ui } from '../../theme/colors';
 
 export default function LoginScreen({ navigation }) {
@@ -21,7 +23,14 @@ export default function LoginScreen({ navigation }) {
     }
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email.trim(), password);
+      const { user } = await signInWithEmailAndPassword(auth, email.trim(), password);
+      // Cache profile locally so ProfileScreen can display name without extra network call
+      try {
+        const data = await getUserData(user.uid);
+        if (data?.profile) {
+          await AsyncStorage.setItem('rhims_registration', JSON.stringify(data.profile));
+        }
+      } catch (_) {}
       navigation.replace('Main');
     } catch (err) {
       const msg = err.code === 'auth/invalid-credential'

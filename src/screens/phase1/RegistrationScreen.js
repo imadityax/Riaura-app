@@ -73,7 +73,7 @@ export default function RegistrationScreen({ navigation }) {
     const e = {};
     if (!form.fullName.trim()) e.fullName = 'Required';
     const age = parseInt(form.age);
-    if (!form.age || isNaN(age) || age < 18 || age > 25) e.age = 'Age must be 18–25';
+    if (!form.age || isNaN(age) || age < 1 || age > 120) e.age = 'Enter a valid age';
     if (!form.gender) e.gender = 'Required';
     if (!/^[0-9]{10}$/.test(form.mobile)) e.mobile = 'Enter valid 10-digit mobile';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Enter valid email';
@@ -123,7 +123,7 @@ export default function RegistrationScreen({ navigation }) {
 
           <View style={styles.form}>
             <Field label="Full Name" field="fullName" placeholder="Enter your full name" value={form.fullName} error={errors.fullName} onChange={set} />
-            <Field label="Age (18–25)" field="age" keyboardType="numeric" placeholder="Your age" value={form.age} error={errors.age} onChange={set} />
+            <Field label="Age" field="age" keyboardType="numeric" placeholder="Your age" value={form.age} error={errors.age} onChange={set} />
             <SelectField label="Gender" field="gender" options={GENDERS} value={form.gender} error={errors.gender} onChange={set} />
             <Field label="Mobile Number" field="mobile" keyboardType="phone-pad" placeholder="10-digit mobile" value={form.mobile} error={errors.mobile} onChange={set} />
             <Field label="Email Address" field="email" keyboardType="email-address" placeholder="your@email.com" value={form.email} error={errors.email} onChange={set} />
