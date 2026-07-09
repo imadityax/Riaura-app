@@ -4,6 +4,7 @@ import {
   SafeAreaView, StatusBar, Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { storage } from '../../utils/storage';
 import { ui } from '../../theme/colors';
 
@@ -17,10 +18,10 @@ const COURSES = [
 ];
 
 const DOMAIN_MAP = [
-  { key: 'analytical', label: 'Analytical Thinking', color: '#3D5BFF', idx: 0 },
-  { key: 'emotional',  label: 'Emotional IQ',        color: '#EC4899', idx: 1 },
-  { key: 'creative',   label: 'Creative Thinking',   color: '#7C3AED', idx: 2 },
-  { key: 'strategic',  label: 'Strategic Insight',   color: '#059669', idx: 7 },
+  { key: 'analytical', label: 'Analytical Thinking', color: '#3D5BFF', icon: '🧠', idx: 0 },
+  { key: 'emotional',  label: 'Emotional IQ',        color: '#EC4899', icon: '❤️', idx: 1 },
+  { key: 'creative',   label: 'Creative Thinking',   color: '#7C3AED', icon: '💡', idx: 2 },
+  { key: 'strategic',  label: 'Strategic Insight',   color: '#059669', icon: '🎯', idx: 7 },
 ];
 
 const DOMAIN_BADGES = ['Top performer', 'Developing', 'Growing fast', 'Strong'];
@@ -40,16 +41,27 @@ function levelInfo(score) {
   return                  { level: 1, title: 'Curious Learner',    xp: 400,  nextXp: 800  };
 }
 
+function percentileFor(score) {
+  if (score >= 90) return 3;
+  if (score >= 80) return 8;
+  if (score >= 70) return 20;
+  if (score >= 60) return 35;
+  return 60;
+}
+
 export default function HomeScreen({ navigation }) {
   const [userName, setUserName]         = useState('User');
   const [score, setScore]               = useState(0);
   const [domainScores, setDomainScores] = useState([0, 0, 0, 0, 0, 0, 0, 0]);
   const [hasScores, setHasScores]       = useState(false);
+  const [streak, setStreak]             = useState(0);
 
   useEffect(() => {
     (async () => {
       const reg    = await storage.getRegistration();
       const stored = await storage.getScores();
+      const streakCount = await storage.touchStreak();
+      setStreak(streakCount);
       if (reg?.fullName) setUserName(reg.fullName.split(' ')[0]);
       if (stored?.combined?.percent != null) {
         setScore(Math.round(stored.combined.percent));
@@ -88,6 +100,25 @@ export default function HomeScreen({ navigation }) {
             <Text style={styles.welcomeText}>Welcome{'\n'}back, {userName}</Text>
           </View>
           <View style={styles.headerRight}>
+            <View style={styles.streakPill}>
+              <Text style={styles.streakEmoji}>🔥</Text>
+              <Text style={styles.streakNum}>{streak}</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.iconBtn}
+              activeOpacity={0.75}
+              onPress={() => navigation.navigate('Chat')}
+            >
+              <Ionicons name="chatbubble-ellipses-outline" size={18} color={ui.midText} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.iconBtn}
+              activeOpacity={0.75}
+              onPress={() => navigation.navigate('Notifications')}
+            >
+              <Ionicons name="notifications-outline" size={18} color={ui.midText} />
+              <View style={styles.notifDot} />
+            </TouchableOpacity>
             <TouchableOpacity
               style={styles.avatarCircle}
               onPress={() => navigation.navigate('Profile')}
@@ -117,15 +148,13 @@ export default function HomeScreen({ navigation }) {
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statCol}>
-                <Text style={[styles.statVal, { color: score >= 60 ? '#90EE90' : '#FFD94A' }]}>
-                  {score >= 60 ? 'High Perf' : 'Development'}
-                </Text>
-                <Text style={styles.statSub}>Pathway</Text>
+                <Text style={[styles.statVal, { color: '#90EE90' }]}>+5 pts</Text>
+                <Text style={styles.statSub}>This week</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statCol}>
-                <Text style={styles.statVal}>{lv.xp.toLocaleString()}</Text>
-                <Text style={styles.statSub}>XP Earned</Text>
+                <Text style={styles.statVal}>Top {percentileFor(score)}%</Text>
+                <Text style={styles.statSub}>Globally</Text>
               </View>
             </View>
           )}
@@ -135,7 +164,7 @@ export default function HomeScreen({ navigation }) {
             activeOpacity={0.85}
             onPress={() => navigation.navigate('Phase2Intro')}
           >
-            <Text style={styles.journeyBtnText}>{hasScores ? 'Retake Assessment  →' : 'Start Assessment  →'}</Text>
+            <Text style={styles.journeyBtnText}>{hasScores ? 'Continue Journey  →' : 'Start Assessment  →'}</Text>
           </TouchableOpacity>
 
           <Text style={styles.brainWm}>🧠</Text>
@@ -157,7 +186,7 @@ export default function HomeScreen({ navigation }) {
         {/* ── Your Intelligence ── */}
         {hasScores && (
           <>
-            <SectionHeader title="Your Intelligence" />
+            <SectionHeader title="Your Intelligence" onViewAll={() => navigation.navigate('DNA')} />
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -166,7 +195,7 @@ export default function HomeScreen({ navigation }) {
               {domains.map(d => (
                 <View key={d.key} style={styles.domainCard}>
                   <View style={[styles.domainIconBg, { backgroundColor: d.color + '18' }]}>
-                    <Text style={styles.domainIconEmoji}>🧩</Text>
+                    <Text style={styles.domainIconEmoji}>{d.icon}</Text>
                   </View>
                   <Text style={styles.domainLabel}>{d.label}</Text>
                   <View style={styles.domainScoreRow}>
@@ -258,10 +287,15 @@ export default function HomeScreen({ navigation }) {
   );
 }
 
-function SectionHeader({ title }) {
+function SectionHeader({ title, onViewAll }) {
   return (
-    <View style={styles.sectionHeader}>
+    <View style={[styles.sectionHeader, styles.sectionHeaderRow]}>
       <Text style={styles.sectionTitle}>{title}</Text>
+      {onViewAll && (
+        <TouchableOpacity onPress={onViewAll} activeOpacity={0.7}>
+          <Text style={styles.viewAllText}>View All</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -281,6 +315,23 @@ const styles = StyleSheet.create({
   greetText:   { fontSize: 13, color: ui.midText, marginBottom: 2 },
   welcomeText: { fontSize: 22, fontWeight: '800', color: ui.darkText, lineHeight: 28 },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 },
+  streakPill: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: ui.streakBg, borderWidth: 1, borderColor: ui.streakBorder,
+    borderRadius: 17, paddingHorizontal: 10, height: 34,
+  },
+  streakEmoji: { fontSize: 13 },
+  streakNum:   { fontSize: 13, fontWeight: '800', color: ui.darkText },
+  iconBtn: {
+    width: 34, height: 34, borderRadius: 17,
+    backgroundColor: ui.inputBg,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  notifDot: {
+    position: 'absolute', top: 7, right: 7,
+    width: 7, height: 7, borderRadius: 4,
+    backgroundColor: '#EF4444', borderWidth: 1, borderColor: ui.white,
+  },
   avatarCircle: {
     width: 34, height: 34, borderRadius: 17,
     backgroundColor: ui.primaryBlue,
@@ -327,7 +378,9 @@ const styles = StyleSheet.create({
   xpBarFill:   { height: '100%', backgroundColor: ui.primaryBlue, borderRadius: 4 },
 
   sectionHeader: { marginHorizontal: 20, marginTop: 24, marginBottom: 14 },
+  sectionHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   sectionTitle:  { fontSize: 18, fontWeight: '800', color: ui.darkText },
+  viewAllText:   { fontSize: 13, fontWeight: '700', color: ui.primaryBlue },
   hScrollContent:{ paddingLeft: 20, paddingRight: 8, gap: 12 },
 
   domainCard: {

@@ -12,6 +12,8 @@ const KEYS = {
   SCORES: 'rhims_scores',
   MINDFULNESS_SCORE: 'rhims_mindfulness_score',
   MINDFULNESS_DONE:  'rhims_mindfulness_done',
+  STREAK_COUNT:      'rhims_streak_count',
+  STREAK_LAST_DATE:  'rhims_streak_last_date',
 };
 
 export const storage = {
@@ -83,6 +85,25 @@ export const storage = {
   async getMindfulnessScore() {
     const v = await AsyncStorage.getItem(KEYS.MINDFULNESS_SCORE);
     return v !== null ? parseInt(v) : null;
+  },
+
+  async touchStreak() {
+    const today = new Date().toISOString().slice(0, 10);
+    const lastDate = await AsyncStorage.getItem(KEYS.STREAK_LAST_DATE);
+    let count = parseInt(await AsyncStorage.getItem(KEYS.STREAK_COUNT), 10) || 0;
+
+    if (lastDate === today) return count || 1;
+
+    if (lastDate) {
+      const diffDays = Math.round((new Date(today) - new Date(lastDate)) / 86400000);
+      count = diffDays === 1 ? count + 1 : 1;
+    } else {
+      count = 1;
+    }
+
+    await AsyncStorage.setItem(KEYS.STREAK_LAST_DATE, today);
+    await AsyncStorage.setItem(KEYS.STREAK_COUNT, String(count));
+    return count;
   },
 
   async clearAll() {

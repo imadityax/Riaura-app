@@ -3,11 +3,15 @@ import {
   View, Text, TouchableOpacity, ScrollView, StyleSheet,
   SafeAreaView, StatusBar, Animated,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { ui } from '../../theme/colors';
 import { storage } from '../../utils/storage';
-import { MINDFULNESS_QUESTIONS } from '../../data/mindfulnessQuestions';
+import { MINDFULNESS_QUESTIONS, AGE_GROUPS } from '../../data/mindfulnessQuestions';
 import { saveMindfulnessToCloud } from '../../firebase/firestore';
 import { useAuth } from '../../context/AuthContext';
+
+const UNIQUE_FRAMEWORKS = new Set(Object.values(MINDFULNESS_QUESTIONS).map(g => g.framework)).size;
+const MAX_ITEMS = Math.max(...Object.values(MINDFULNESS_QUESTIONS).map(g => g.questions.length));
 
 // Universal question set — FFMQ (most comprehensive, validated for all adults)
 const UNIVERSAL_KEY = 'g18_30';
@@ -57,6 +61,8 @@ export default function MindfulnessAssessScreen({ navigation }) {
   const [seconds, setSeconds]         = useState(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const { currentUser } = useAuth();
+  const introScrollRef = useRef(null);
+  const domainsY = useRef(0);
 
   useEffect(() => {
     if (phase !== 'questions') return;
@@ -124,68 +130,100 @@ export default function MindfulnessAssessScreen({ navigation }) {
     return (
       <SafeAreaView style={s.safe}>
         <StatusBar barStyle="dark-content" backgroundColor={ui.offWhite} />
-        <View style={s.topBar}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
-            <Text style={s.backText}>‹ Back</Text>
-          </TouchableOpacity>
-          <Text style={s.topTitle}>Assessments</Text>
-          <View style={{ width: 60 }} />
-        </View>
 
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.introContent}>
+        <ScrollView
+          ref={introScrollRef}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={s.introContent}
+        >
+          <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
+            <Ionicons name="chevron-back" size={20} color={ui.primaryBlue} />
+            <Text style={s.backText}>Back</Text>
+          </TouchableOpacity>
+
+          <Text style={s.pageTitle}>Assessments</Text>
           <Text style={s.introSub}>Science-backed mindfulness evaluation</Text>
 
+          <View style={s.domainChip}>
+            <Text style={s.domainChipText}>DOMAIN 1 OF 1</Text>
+          </View>
+
           {/* Hero */}
-          <View style={s.heroCard}>
-            <Text style={s.heroIcon}>🧠</Text>
-            <Text style={s.heroCardTitle}>MINDFULNESS{'\n'}ASSESSMENT</Text>
-            <View style={s.heroBadges}>
-              <View style={s.badge}><Text style={s.badgeText}>Validated Scale</Text></View>
-              <View style={s.badge}><Text style={s.badgeText}>Science-Backed</Text></View>
+          <View style={s.heroWrap}>
+            <View style={s.heroTop}>
+              <View style={s.heroIconBg}>
+                <Text style={s.heroIcon}>🧠</Text>
+              </View>
+              <Text style={s.heroCardTitle}>MINDFULNESS ASSESSMENT</Text>
             </View>
-            <Text style={s.heroDesc}>
-              This assessment uses the Five Facet Mindfulness Questionnaire (FFMQ) — a clinically validated
-              instrument measuring present-moment awareness, attention regulation, and non-judgmental
-              observation across 8 mindfulness domains.
-            </Text>
-            <View style={s.heroStats}>
-              <View style={s.heroStat}>
-                <Text style={s.heroStatNum}>8</Text>
-                <Text style={s.heroStatLbl}>Domains</Text>
+
+            <View style={s.heroBottom}>
+              <View style={s.heroBadges}>
+                <View style={[s.badge, s.badgeGreen]}>
+                  <Text style={[s.badgeText, s.badgeTextGreen]}>Validated Scale</Text>
+                </View>
+                <View style={[s.badge, s.badgeBlue]}>
+                  <Text style={[s.badgeText, s.badgeTextBlue]}>Age-Adaptive</Text>
+                </View>
               </View>
-              <View style={s.heroStatDiv} />
-              <View style={s.heroStat}>
-                <Text style={s.heroStatNum}>15</Text>
-                <Text style={s.heroStatLbl}>Questions</Text>
+
+              <Text style={s.heroHeading}>Mindfulness Measurement Scale</Text>
+              <Text style={s.heroDesc}>
+                This assessment uses clinically validated instruments — C-OMM, S-CAMM, MAAS-A, and FFMQ —
+                tailored to your age group. Questions measure present-moment awareness, attention regulation,
+                and non-judgmental observation.
+              </Text>
+
+              <View style={s.statsBox}>
+                <View style={s.statItem}>
+                  <Ionicons name="people-outline" size={18} color={ui.midText} />
+                  <Text style={s.statNum}>{AGE_GROUPS.length}</Text>
+                  <Text style={s.statLbl}>Age Groups</Text>
+                </View>
+                <View style={s.statItem}>
+                  <Ionicons name="git-network-outline" size={18} color={ui.midText} />
+                  <Text style={s.statNum}>{UNIQUE_FRAMEWORKS}</Text>
+                  <Text style={s.statLbl}>Frameworks</Text>
+                </View>
+                <View style={s.statItem}>
+                  <Ionicons name="document-text-outline" size={18} color={ui.midText} />
+                  <Text style={s.statNum}>{MAX_ITEMS}</Text>
+                  <Text style={s.statLbl}>Max Items</Text>
+                </View>
               </View>
-              <View style={s.heroStatDiv} />
-              <View style={s.heroStat}>
-                <Text style={s.heroStatNum}>FFMQ</Text>
-                <Text style={s.heroStatLbl}>Framework</Text>
-              </View>
+
+              <TouchableOpacity style={s.beginBtn} onPress={startAssessment} activeOpacity={0.85}>
+                <Text style={s.beginBtnText}>Begin Assessment →</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={s.howItWorksBtn}
+                activeOpacity={0.7}
+                onPress={() => introScrollRef.current?.scrollTo({ y: domainsY.current, animated: true })}
+              >
+                <Text style={s.howItWorksText}>How it works</Text>
+              </TouchableOpacity>
             </View>
           </View>
 
-          <Text style={s.sectionLabel}>8 MINDFULNESS DOMAINS</Text>
+          <View onLayout={(e) => { domainsY.current = e.nativeEvent.layout.y; }}>
+            <Text style={s.sectionLabel}>8 MINDFULNESS DOMAINS</Text>
 
-          {MINDFULNESS_DOMAINS.map((d) => (
-            <View key={d.num} style={s.domainCard}>
-              <View style={[s.domainNumPill, { backgroundColor: d.color + '18' }]}>
-                <Text style={[s.domainNumText, { color: d.color }]}>DOMAIN {d.num} OF 8</Text>
-              </View>
-              <View style={s.domainRow}>
-                <Text style={s.domainIcon}>{d.icon}</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={s.domainLabel}>{d.label}</Text>
-                  <Text style={s.domainDesc}>{d.desc}</Text>
+            {MINDFULNESS_DOMAINS.map((d) => (
+              <View key={d.num} style={s.domainCard}>
+                <View style={[s.domainNumPill, { backgroundColor: d.color + '18' }]}>
+                  <Text style={[s.domainNumText, { color: d.color }]}>DOMAIN {d.num} OF 8</Text>
+                </View>
+                <View style={s.domainRow}>
+                  <Text style={s.domainIcon}>{d.icon}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.domainLabel}>{d.label}</Text>
+                    <Text style={s.domainDesc}>{d.desc}</Text>
+                  </View>
                 </View>
               </View>
-            </View>
-          ))}
-
-          <TouchableOpacity style={s.beginBtn} onPress={startAssessment} activeOpacity={0.85}>
-            <Text style={s.beginBtnText}>Begin Assessment →</Text>
-          </TouchableOpacity>
+            ))}
+          </View>
 
           <View style={{ height: 24 }} />
         </ScrollView>
@@ -290,35 +328,56 @@ const s = StyleSheet.create({
   loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   loadingText: { fontSize: 15, color: ui.midText },
 
-  topBar: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 20, paddingVertical: 14,
-  },
-  backBtn:  { paddingVertical: 4, paddingRight: 8 },
-  backText: { fontSize: 16, fontWeight: '700', color: ui.primaryBlue },
-  topTitle: { fontSize: 15, fontWeight: '800', color: ui.darkText },
+  backBtn:  { flexDirection: 'row', alignItems: 'center', paddingVertical: 4, marginBottom: 6, alignSelf: 'flex-start' },
+  backText: { fontSize: 15, fontWeight: '700', color: ui.primaryBlue, marginLeft: 2 },
 
   // ── intro ──
   introContent: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 20 },
-  introSub:     { fontSize: 13, color: ui.midText, marginBottom: 16 },
+  pageTitle:    { fontSize: 24, fontWeight: '900', color: ui.darkText },
+  introSub:     { fontSize: 13, color: ui.midText, marginTop: 4, marginBottom: 16 },
 
-  heroCard: {
-    backgroundColor: ui.primaryBlue, borderRadius: 20, padding: 24,
-    alignItems: 'center', marginBottom: 24,
-    shadowColor: ui.primaryBlue, shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35, shadowRadius: 14, elevation: 8,
+  domainChip: {
+    alignSelf: 'flex-start', backgroundColor: ui.inputBg, borderRadius: 10,
+    paddingHorizontal: 10, paddingVertical: 5, marginBottom: 14,
   },
-  heroIcon:      { fontSize: 44, marginBottom: 10 },
-  heroCardTitle: { fontSize: 20, fontWeight: '900', color: '#fff', textAlign: 'center', letterSpacing: 1, marginBottom: 12 },
-  heroBadges:    { flexDirection: 'row', gap: 8, marginBottom: 14 },
-  badge:         { backgroundColor: 'rgba(255,255,255,0.22)', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5 },
-  badgeText:     { fontSize: 12, fontWeight: '700', color: '#fff' },
-  heroDesc:      { fontSize: 13, color: 'rgba(255,255,255,0.85)', lineHeight: 20, textAlign: 'center', marginBottom: 18 },
-  heroStats:     { flexDirection: 'row', alignItems: 'center' },
-  heroStat:      { alignItems: 'center', flex: 1 },
-  heroStatNum:   { fontSize: 22, fontWeight: '900', color: '#FFD94A' },
-  heroStatLbl:   { fontSize: 10, color: 'rgba(255,255,255,0.75)', fontWeight: '600', marginTop: 2 },
-  heroStatDiv:   { width: 1, height: 32, backgroundColor: 'rgba(255,255,255,0.2)' },
+  domainChipText: { fontSize: 11, fontWeight: '800', color: ui.midText, letterSpacing: 0.6 },
+
+  heroWrap: {
+    borderRadius: 20, overflow: 'hidden', marginBottom: 24, backgroundColor: ui.white,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 4,
+  },
+  heroTop: {
+    backgroundColor: ui.primaryBlue, alignItems: 'center', paddingVertical: 28, paddingHorizontal: 20,
+  },
+  heroIconBg: {
+    width: 64, height: 64, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center', justifyContent: 'center', marginBottom: 12,
+  },
+  heroIcon:      { fontSize: 32 },
+  heroCardTitle: { fontSize: 14, fontWeight: '800', color: '#fff', textAlign: 'center', letterSpacing: 1.5 },
+
+  heroBottom: { padding: 20 },
+  heroBadges: { flexDirection: 'row', gap: 8, marginBottom: 14 },
+  badge:      { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5 },
+  badgeGreen: { backgroundColor: '#D1FAE5' },
+  badgeBlue:  { backgroundColor: ui.challengeBg },
+  badgeText:      { fontSize: 12, fontWeight: '700' },
+  badgeTextGreen: { color: '#065F46' },
+  badgeTextBlue:  { color: ui.primaryBlue },
+
+  heroHeading: { fontSize: 19, fontWeight: '800', color: ui.darkText, marginBottom: 10 },
+  heroDesc:    { fontSize: 13, color: ui.midText, lineHeight: 20, marginBottom: 18 },
+
+  statsBox: {
+    flexDirection: 'row', backgroundColor: ui.inputBg, borderRadius: 14,
+    paddingVertical: 16, marginBottom: 18,
+  },
+  statItem:  { flex: 1, alignItems: 'center', gap: 4 },
+  statNum:   { fontSize: 18, fontWeight: '900', color: ui.darkText },
+  statLbl:   { fontSize: 11, color: ui.midText, fontWeight: '500' },
+
+  howItWorksBtn: { alignItems: 'center', marginTop: 14 },
+  howItWorksText:{ fontSize: 13, fontWeight: '700', color: ui.primaryBlue },
 
   sectionLabel: { fontSize: 11, fontWeight: '800', color: ui.midText, letterSpacing: 1.2, marginBottom: 10 },
 

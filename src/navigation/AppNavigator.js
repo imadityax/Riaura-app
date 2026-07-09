@@ -39,6 +39,10 @@ import Phase4InterviewScreen from '../screens/phase4/Phase4InterviewScreen';
 import SettingsScreen from '../screens/profile/SettingsScreen';
 import PrivacyScreen  from '../screens/profile/PrivacyScreen';
 
+// Home sub-screens
+import NotificationsScreen from '../screens/home/NotificationsScreen';
+import ChatScreen from '../screens/home/ChatScreen';
+
 // Final
 import FinalReportScreen from '../screens/final/FinalReportScreen';
 
@@ -92,6 +96,10 @@ export default function AppNavigator() {
         {/* Profile sub-screens */}
         <Stack.Screen name="Settings" component={SettingsScreen} />
         <Stack.Screen name="Privacy"  component={PrivacyScreen} />
+
+        {/* Home sub-screens */}
+        <Stack.Screen name="Notifications" component={NotificationsScreen} />
+        <Stack.Screen name="Chat"          component={ChatScreen} />
 
         {/* Final */}
         <Stack.Screen name="FinalReport"     component={FinalReportScreen} />
