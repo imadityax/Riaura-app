@@ -1,161 +1,168 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar,
+  View, Text, ScrollView, StyleSheet, StatusBar, Pressable, Animated,
 } from 'react-native';
-import { ui } from '../../theme/colors';
+import { useFocusEffect } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
+import { PressableScale, FadeInUp } from '../../components/anim';
+import { dark } from '../../theme/colors';
+import Icon from '../../components/Icon';
+import { RingStat } from '../../components/VisualKit';
+import { Screen, GlassCard } from '../../components/GlassKit';
 import { storage } from '../../utils/storage';
+import { MINDFULNESS_DOMAINS } from '../assess/MindfulnessAssessScreen';
 
-const ASSESSMENTS = [
-  {
-    id: 'mindfulness',
-    num: 1,
-    title: 'Mindfulness Assessment',
-    desc: 'Age-calibrated mindfulness & attention awareness questionnaire (C-OMM / S-CAMM / MAAS-A / FFMQ)',
-    duration: '5–10 min',
-    questions: 'Up to 15 questions',
-    color: '#7C3AED',
-    icon: '🧘',
+const MODES = {
+  who: {
+    key: 'who', label: 'WHO-Based',
+    sub: 'Validated questionnaires across 8 domains.',
+    accent: dark.neon, grad: [dark.neon, dark.neon2],
     route: 'MindfulnessAssess',
   },
-  {
-    id: 'cognitive',
-    num: 2,
-    title: 'Cognitive Tasks',
-    desc: 'Eight interactive cognitive challenges measuring working memory, reasoning, processing speed, and more.',
-    duration: '20–30 min',
-    questions: '8 tasks',
-    color: ui.primaryBlue,
-    icon: '⚡',
-    route: 'Phase3Intro',
+  riaura: {
+    key: 'riaura', label: 'RiAura-Based',
+    sub: 'Hands-on activities across 8 domains.',
+    accent: dark.violet, grad: [dark.violet, dark.violet2],
+    route: 'ActivityAssess',
   },
-  {
-    id: 'psychometric',
-    num: 3,
-    title: 'WHO Psychometric',
-    desc: 'Eight-domain psychometric scale measuring key aspects of human intelligence and behavior.',
-    duration: '10–15 min',
-    questions: '40 questions',
-    color: '#059669',
-    icon: '🔬',
-    route: 'Phase2Intro',
-  },
-];
+};
+
+function ModeToggle({ mode, onChange }) {
+  const anim = useRef(new Animated.Value(mode === 'who' ? 0 : 1)).current;
+  const [half, setHalf] = useState(0);
+  useEffect(() => {
+    Animated.spring(anim, { toValue: mode === 'who' ? 0 : 1, useNativeDriver: true, speed: 16, bounciness: 6 }).start();
+  }, [mode]);
+  return (
+    <View style={styles.toggle} onLayout={e => setHalf((e.nativeEvent.layout.width - 8) / 2)}>
+      <Animated.View
+        style={[styles.thumb, {
+          width: half, backgroundColor: MODES[mode].accent,
+          transform: [{ translateX: anim.interpolate({ inputRange: [0, 1], outputRange: [0, half] }) }],
+        }]}
+      />
+      {['who', 'riaura'].map(k => (
+        <Pressable key={k} style={styles.toggleHalf} onPress={() => onChange(k)}>
+          <Text style={[styles.toggleText, mode === k && styles.toggleTextActive]}>{MODES[k].label}</Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
 
 export default function AssessScreen({ navigation }) {
-  const [doneMap, setDoneMap] = useState({});
+  const [mode, setMode]     = useState('who');
+  const [whoMap, setWhoMap] = useState({});
+  const [riaMap, setRiaMap] = useState({});
 
-  useEffect(() => {
-    (async () => {
-      const ms  = await storage.getMindfulnessScore();
-      const p3  = await storage.getPhase3Scores();
-      const p2  = await storage.getPhase2Answers();
-      setDoneMap({
-        mindfulness:  !!ms,
-        cognitive:    p3.scores.length > 0,
-        psychometric: p2.answers.length >= 40,
-      });
-    })();
-  }, []);
+  useFocusEffect(useCallback(() => {
+    storage.getMindfulnessDomainScores().then(setWhoMap);
+    storage.getRiauraDomainScores().then(setRiaMap);
+  }, []));
+
+  const cfg       = MODES[mode];
+  const doneMap   = mode === 'who' ? whoMap : riaMap;
+  const doneCount = Object.keys(doneMap).length;
+  const total     = MINDFULNESS_DOMAINS.length;
+  const progress  = doneCount / total;
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={ui.offWhite} />
-      <ScrollView
-        style={styles.scroll}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingVertical: 24, paddingHorizontal: 20, gap: 16 }}
-      >
-        <Text style={styles.pageTitle}>Assessments</Text>
-        <Text style={styles.pageSub}>Complete all assessments to unlock your full intelligence profile.</Text>
+    <Screen>
+      <StatusBar barStyle="dark-content" />
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Assessments</Text>
+          <Text style={styles.headerSub}>{cfg.sub}</Text>
+        </View>
 
-        {ASSESSMENTS.map(a => {
-          const done = doneMap[a.id];
-          return (
-            <View key={a.id} style={styles.card}>
-              <View style={styles.cardTop}>
-                <View style={[styles.iconBg, { backgroundColor: a.color + '18' }]}>
-                  <Text style={styles.iconEmoji}>{a.icon}</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <View style={styles.titleRow}>
-                    <View style={[styles.numBadge, { backgroundColor: a.color + '18' }]}>
-                      <Text style={[styles.numText, { color: a.color }]}>#{a.num}</Text>
+        <View style={styles.toggleWrap}>
+          <ModeToggle mode={mode} onChange={setMode} />
+        </View>
+
+        {/* Progress */}
+        <GlassCard style={styles.progressCard} tint={cfg.accent + '1A'} border={cfg.accent + '55'}>
+          <View style={styles.progressMain}>
+            <RingStat percent={progress * 100} size={94} stroke={9} color={cfg.grad[0]} color2={cfg.grad[1]} trackColor="#ECE8F5">
+              <Text style={styles.progressRingNum}>{doneCount}/{total}</Text>
+              <Text style={styles.progressRingSub}>domains</Text>
+            </RingStat>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.progressLabel}>{cfg.label.toUpperCase()} · YOUR PROGRESS</Text>
+              <Text style={styles.progressTitle}>
+                {doneCount === total ? 'All domains complete'
+                  : doneCount > 0 ? 'Keep going — you’re on your way'
+                  : 'Start with your first domain'}
+              </Text>
+            </View>
+          </View>
+        </GlassCard>
+
+        {/* Domain cards */}
+        <View style={styles.cardList}>
+          {MINDFULNESS_DOMAINS.map((d, di) => {
+            const done = doneMap[d.num];
+            return (
+              <FadeInUp key={`${mode}-${d.num}`} delay={di * 55}>
+                <GlassCard style={styles.card} onPress={() => navigation.navigate(cfg.route, { domainNum: d.num })}>
+                  <View style={styles.cardHead}>
+                    <View style={[styles.numPill, { backgroundColor: d.color + '26' }]}>
+                      <Text style={[styles.numPillText, { color: d.color }]}>DOMAIN {d.num} OF 8</Text>
                     </View>
                     {done && (
                       <View style={styles.doneBadge}>
-                        <Text style={styles.doneBadgeText}>✓ Done</Text>
+                        <Ionicons name="checkmark-circle" size={14} color={dark.green} />
+                        <Text style={styles.doneBadgeText}>{done.score}</Text>
                       </View>
                     )}
                   </View>
-                  <Text style={styles.cardTitle}>{a.title}</Text>
-                </View>
-              </View>
-
-              <Text style={styles.cardDesc}>{a.desc}</Text>
-
-              <View style={styles.metaRow}>
-                <View style={styles.metaChip}>
-                  <Text style={styles.metaText}>⏱ {a.duration}</Text>
-                </View>
-                <View style={styles.metaChip}>
-                  <Text style={styles.metaText}>📋 {a.questions}</Text>
-                </View>
-              </View>
-
-              <TouchableOpacity
-                style={[styles.startBtn, done && styles.retakeBtn, { borderColor: a.color }]}
-                onPress={() => navigation.navigate(a.route, {})}
-                activeOpacity={0.85}
-              >
-                <View style={[styles.startBtnInner, done ? { backgroundColor: 'transparent' } : { backgroundColor: a.color }]}>
-                  <Text style={[styles.startBtnText, done && { color: a.color }]}>
-                    {done ? 'Retake Assessment →' : 'Start Assessment →'}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          );
-        })}
-
-        <View style={{ height: 10 }} />
+                  <View style={styles.cardRow}>
+                    <View style={[styles.cardIconBg, { backgroundColor: d.color + '22' }]}>
+                      <Icon name={d.icon} size={22} color={d.color} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.cardTitle}>{d.label}</Text>
+                      <Text style={styles.cardDesc}>{d.desc}</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color={dark.textMute} />
+                  </View>
+                </GlassCard>
+              </FadeInUp>
+            );
+          })}
+        </View>
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  safe:     { flex: 1, backgroundColor: ui.offWhite },
-  scroll:   { flex: 1 },
-  pageTitle:{ fontSize: 22, fontWeight: '900', color: ui.darkText },
-  pageSub:  { fontSize: 13, color: ui.midText, lineHeight: 18, marginTop: 4 },
+  header:      { paddingHorizontal: 20, paddingTop: 14, paddingBottom: 4 },
+  headerTitle: { fontSize: 26, fontWeight: '900', color: '#1E1B33' },
+  headerSub:   { fontSize: 13.5, color: dark.textSub, marginTop: 4, lineHeight: 19 },
 
-  card: {
-    backgroundColor: ui.white,
-    borderRadius: 18,
-    padding: 18,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  cardTop:  { flexDirection: 'row', gap: 14, alignItems: 'flex-start', marginBottom: 12 },
-  iconBg:   { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  iconEmoji:{ fontSize: 22 },
-  titleRow: { flexDirection: 'row', gap: 8, alignItems: 'center', marginBottom: 6 },
-  numBadge: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
-  numText:  { fontSize: 11, fontWeight: '800' },
-  doneBadge: { backgroundColor: '#D1FAE5', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
-  doneBadgeText: { fontSize: 11, fontWeight: '700', color: '#065F46' },
-  cardTitle:{ fontSize: 16, fontWeight: '800', color: ui.darkText, lineHeight: 20 },
-  cardDesc: { fontSize: 13, color: ui.midText, lineHeight: 18, marginBottom: 14 },
+  toggleWrap: { paddingHorizontal: 20, marginTop: 14 },
+  toggle:     { flexDirection: 'row', backgroundColor: dark.glass, borderWidth: 1, borderColor: dark.glassBorder, borderRadius: 14, padding: 4, position: 'relative' },
+  thumb:      { position: 'absolute', top: 4, bottom: 4, left: 4, borderRadius: 11 },
+  toggleHalf: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 11 },
+  toggleText: { fontSize: 13.5, fontWeight: '800', color: dark.textSub },
+  toggleTextActive: { color: '#FFFFFF' },
 
-  metaRow:  { flexDirection: 'row', gap: 8, marginBottom: 16 },
-  metaChip: { backgroundColor: ui.inputBg, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5 },
-  metaText: { fontSize: 12, color: ui.midText, fontWeight: '500' },
+  progressCard:    { marginHorizontal: 20, marginTop: 16, padding: 18 },
+  progressMain:    { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  progressRingNum: { color: '#1E1B33', fontSize: 18, fontWeight: '900' },
+  progressRingSub: { color: dark.textSub, fontSize: 10, fontWeight: '600', marginTop: 1 },
+  progressLabel:   { color: dark.textSub, fontSize: 10.5, fontWeight: '700', letterSpacing: 0.8 },
+  progressTitle:   { color: '#1E1B33', fontSize: 17, fontWeight: '700', marginTop: 8, lineHeight: 23 },
 
-  startBtn:      { borderRadius: 24, overflow: 'hidden', borderWidth: 1.5 },
-  retakeBtn:     { },
-  startBtnInner: { paddingVertical: 13, alignItems: 'center', borderRadius: 22 },
-  startBtnText:  { fontSize: 14, fontWeight: '700', color: '#fff' },
+  cardList:   { paddingHorizontal: 20, paddingTop: 18, gap: 12 },
+  card:       { padding: 16 },
+  cardHead:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
+  numPill:    { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
+  numPillText:{ fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
+  doneBadge:  { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: dark.green + '22', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3 },
+  doneBadgeText: { fontSize: 12, fontWeight: '800', color: dark.green },
+  cardRow:    { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  cardIconBg: { width: 44, height: 44, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  cardTitle:  { fontSize: 15.5, fontWeight: '800', color: '#1E1B33' },
+  cardDesc:   { fontSize: 12.5, color: dark.textSub, marginTop: 2, lineHeight: 17 },
 });

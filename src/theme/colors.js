@@ -3,9 +3,10 @@ export const ui = {
   beige:         '#C9B8A4',
   offWhite:      '#F8F5F0',
   white:         '#FFFFFF',
-  primaryBlue:   '#2B4EFF',
-  blueGradStart: '#3D5BFF',
-  blueGradEnd:   '#1A237E',
+  // Primary accent is now purple (names kept for compatibility)
+  primaryBlue:   '#7C3AED',
+  blueGradStart: '#4B3A9B',
+  blueGradEnd:   '#33265F',
   darkText:      '#1A1A2E',
   midText:       '#6B7280',
   lightText:     '#9CA3AF',
@@ -64,6 +65,60 @@ export const colors = {
   gradientGold:   ['#F5C518', '#C9A000'],
   gradientGreen:  ['#00C9A7', '#009688'],
   gradientPurple: ['#6C63FF', '#4A3FE0'],
+};
+
+// ── Neural premium palette (VisionOS / Neuralink design language) ────────────
+// Deep-purple hero surfaces over a soft #F7F8FF page, glass cards, and
+// electric cyan/pink accents for "live" neural elements.
+export const neural = {
+  primary:     '#6C4DFF',
+  deepPurple:  '#3B1F88',
+  electric:    '#4CC9F0',
+  cyan:        '#2EF3FF',
+  pink:        '#D946EF',
+  success:     '#22C55E',
+  energy:      '#F59E0B',
+
+  bg:          '#F7F8FF',
+  card:        'rgba(255,255,255,0.72)',
+  cardBorder:  'rgba(255,255,255,0.45)',
+
+  // Dark hero panel (Home header, scan overlays)
+  heroGrad:    ['#241255', '#3B1F88', '#170B3B'],
+  heroText:    '#F1EDFF',
+  heroSub:     '#B4A5EE',
+  heroGlass:   'rgba(255,255,255,0.08)',
+  heroBorder:  'rgba(255,255,255,0.14)',
+};
+
+// ── Light design language (app-wide clean theme) ─────────────────────────────
+// NOTE: the export keeps its historical name `dark` so the 40+ screens that
+// import it don't need touching — the VALUES are now the light palette.
+export const dark = {
+  // Page backgrounds
+  bg:        ['#F4F2FE', '#FBFAFF', '#F1EEFD'],   // default page gradient
+  bgViolet:  ['#F0EBFD', '#FAF7FF', '#EFEAFC'],   // accent / hero pages
+  bgSolid:   '#F7F8FF',
+
+  // Card surfaces — translucent glass over the ambient gradient
+  glass:        'rgba(255,255,255,0.78)',
+  glassStrong:  'rgba(243,240,250,0.85)',
+  glassBorder:  '#ECE8F5',
+  glassBorderStrong: '#DDD6EE',
+
+  // Accents (purple-led, matching the Home design)
+  neon:    '#7C3AED',
+  neon2:   '#6D28D9',
+  violet:  '#8B5CF6',
+  violet2: '#7C3AED',
+  gold:    '#F59E0B',
+  green:   '#10B981',
+  pink:    '#EC4899',
+
+  // Text
+  text:     '#1E1B33',
+  textSub:  '#6E6A80',
+  textMute: '#A8A5B5',
 };
 
 export const shadows = {

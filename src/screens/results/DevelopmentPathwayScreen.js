@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, TextInput, KeyboardAvoidingView, Platform, SafeAreaView, StatusBar } from 'react-native';
+import {
+  View, Text, TouchableOpacity, ScrollView, StyleSheet, TextInput, KeyboardAvoidingView, Platform, StatusBar,
+} from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors, ui } from '../../theme/colors';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { colors, ui, dark } from '../../theme/colors';
 import CircularProgress from '../../components/CircularProgress';
 import LabCard from '../../components/LabCard';
 import RadarChart from '../../components/RadarChart';
@@ -13,6 +17,7 @@ const CHAT_SEED = [
 ];
 
 export default function DevelopmentPathwayScreen({ route, navigation }) {
+  const insets = useSafeAreaInsets();
   const { scores } = route.params;
   const { combined, cis, gps, domainPercents, hii } = scores;
   const [tab, setTab]         = useState('report');
@@ -44,18 +49,18 @@ export default function DevelopmentPathwayScreen({ route, navigation }) {
   }
 
   const TABS = [
-    { id: 'report', label: '📊 Report' },
-    { id: 'labs',   label: '🔒 Labs'   },
-    { id: 'chat',   label: '🤖 AI Chat' },
+    { id: 'report', label: 'Report' },
+    { id: 'labs',   label: 'Labs'   },
+    { id: 'chat',   label: 'AI Chat' },
   ];
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView edges={['bottom']} style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor={ui.blueGradStart} />
 
       {/* Hero */}
-      <LinearGradient colors={[ui.blueGradStart, ui.blueGradEnd]} style={styles.hero}>
-        <Text style={styles.heroEmoji}>📈</Text>
+      <LinearGradient colors={[ui.blueGradStart, ui.blueGradEnd]} style={[styles.hero, { paddingTop: insets.top + 16 }]}>
+        <MaterialCommunityIcons name="trending-up" size={32} color="#fff" style={styles.heroEmoji} />
         <Text style={styles.heroTitle}>Development Pathway</Text>
         <Text style={styles.heroSub}>Combined Score: {Math.round(combined.percent)}%</Text>
         <CircularProgress percent={combined.percent} size={100} color="#90EE90" strokeWidth={8} />
@@ -74,7 +79,7 @@ export default function DevelopmentPathwayScreen({ route, navigation }) {
       {tab === 'report' && (
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.scoreRow}>
-            {[{ val: `${cis}%`, lbl: 'CIS', color: ui.primaryBlue }, { val: `${gps}%`, lbl: 'GPS', color: colors.phase2 }, { val: `${hii}`, lbl: 'HII', color: colors.phase3 }].map(s => (
+            {[{ val: `${cis}%`, lbl: 'CIS', color: dark.neon }, { val: `${gps}%`, lbl: 'GPS', color: colors.phase2 }, { val: `${hii}`, lbl: 'HII', color: colors.phase3 }].map(s => (
               <View key={s.lbl} style={styles.miniScore}>
                 <Text style={[styles.miniVal, { color: s.color }]}>{s.val}</Text>
                 <Text style={styles.miniLabel}>{s.lbl}</Text>
@@ -99,14 +104,14 @@ export default function DevelopmentPathwayScreen({ route, navigation }) {
           ))}
 
           <View style={styles.growthCard}>
-            <Text style={styles.growthTitle}>💡 Growth Suggestions</Text>
+            <Text style={styles.growthTitle}>Growth Suggestions</Text>
             {['Practice attention exercises for 10 minutes daily', 'Use spaced repetition for memory improvement', 'Challenge yourself with logic puzzles weekly', 'Keep a reflection journal to boost metacognition', 'Engage in group discussions to strengthen social intelligence'].map((tip, i) => (
               <Text key={i} style={styles.growthTip}>• {tip}</Text>
             ))}
           </View>
 
           <View style={styles.lockBadge}>
-            <Text style={styles.lockText}>🔒 Lab & Interview Access unlocks at 60% Combined Score</Text>
+            <Text style={styles.lockText}><MaterialCommunityIcons name="lock-outline" size={12} color={colors.textSub || dark.textSub} />  Lab & Interview Access unlocks at 60% Combined Score</Text>
           </View>
         </ScrollView>
       )}
@@ -123,7 +128,7 @@ export default function DevelopmentPathwayScreen({ route, navigation }) {
           <ScrollView contentContainerStyle={styles.chatContent} showsVerticalScrollIndicator={false}>
             {messages.map((msg, i) => (
               <View key={i} style={[styles.bubble, msg.from === 'ai' ? styles.aiBubble : styles.userBubble]}>
-                {msg.from === 'ai' && <Text style={styles.aiAvatar}>🤖</Text>}
+                {msg.from === 'ai' && <MaterialCommunityIcons name="robot-outline" size={18} color={dark.neon} style={styles.aiAvatar} />}
                 <Text style={[styles.bubbleText, msg.from === 'user' && styles.userBubbleText]}>{msg.text}</Text>
               </View>
             ))}
@@ -134,10 +139,10 @@ export default function DevelopmentPathwayScreen({ route, navigation }) {
               value={input}
               onChangeText={setInput}
               placeholder="Ask about your results…"
-              placeholderTextColor={ui.lightText}
+              placeholderTextColor={dark.textMute}
               onSubmitEditing={sendMessage}
               returnKeyType="send"
-              color={ui.darkText}
+              color={'#1E1B33'}
             />
             <TouchableOpacity style={styles.sendBtn} onPress={sendMessage} activeOpacity={0.8}>
               <Text style={styles.sendBtnText}>Send</Text>
@@ -150,44 +155,44 @@ export default function DevelopmentPathwayScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  safe:       { flex: 1, backgroundColor: ui.offWhite },
+  safe:       { flex: 1, backgroundColor: dark.bgSolid },
   hero:       { padding: 20, alignItems: 'center', paddingTop: 24, paddingBottom: 24 },
-  heroEmoji:  { fontSize: 32, marginBottom: 6 },
+  heroEmoji:  { marginBottom: 6 },
   heroTitle:  { fontSize: 20, fontWeight: '900', color: '#fff', marginBottom: 4 },
   heroSub:    { fontSize: 12, color: 'rgba(255,255,255,0.85)', fontWeight: '700', marginBottom: 10 },
   needMore:   { fontSize: 11, color: 'rgba(255,255,255,0.65)', marginTop: 6 },
-  tabs:       { flexDirection: 'row', backgroundColor: ui.white, marginHorizontal: 16, marginTop: 12, borderRadius: 14, padding: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 6, elevation: 3 },
+  tabs:       { flexDirection: 'row', backgroundColor: dark.glass, marginHorizontal: 16, marginTop: 12, borderRadius: 14, padding: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 6, elevation: 3 },
   tab:        { flex: 1, paddingVertical: 9, alignItems: 'center', borderRadius: 11 },
-  tabActive:  { backgroundColor: ui.challengeBg },
-  tabText:    { fontSize: 12, color: ui.lightText, fontWeight: '600' },
-  tabTextActive: { color: ui.primaryBlue, fontWeight: '800' },
+  tabActive:  { backgroundColor: dark.glass },
+  tabText:    { fontSize: 12, color: dark.textMute, fontWeight: '600' },
+  tabTextActive: { color: dark.neon, fontWeight: '800' },
   content:    { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 40 },
   scoreRow:   { flexDirection: 'row', gap: 10, marginBottom: 16 },
-  miniScore:  { flex: 1, backgroundColor: ui.white, borderRadius: 12, padding: 12, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 },
+  miniScore:  { flex: 1, backgroundColor: dark.glass, borderRadius: 12, padding: 12, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 },
   miniVal:    { fontSize: 22, fontWeight: '900' },
-  miniLabel:  { fontSize: 11, color: ui.midText, fontWeight: '600', marginTop: 2 },
-  sectionTitle: { fontSize: 13, color: ui.midText, fontWeight: '700', marginBottom: 10, marginTop: 16 },
-  card:       { backgroundColor: ui.white, borderRadius: 16, padding: 12, marginBottom: 8, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3 },
+  miniLabel:  { fontSize: 11, color: dark.textSub, fontWeight: '600', marginTop: 2 },
+  sectionTitle: { fontSize: 13, color: dark.textSub, fontWeight: '700', marginBottom: 10, marginTop: 16 },
+  card:       { backgroundColor: dark.glass, borderRadius: 16, padding: 12, marginBottom: 8, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3 },
   domainRow:  { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
-  domainName: { width: 70, fontSize: 11, color: ui.midText, fontWeight: '600' },
-  domainBar:  { flex: 1, height: 6, backgroundColor: ui.borderGray, borderRadius: 3, overflow: 'hidden' },
+  domainName: { width: 70, fontSize: 11, color: dark.textSub, fontWeight: '600' },
+  domainBar:  { flex: 1, height: 6, backgroundColor: dark.glassBorder, borderRadius: 3, overflow: 'hidden' },
   domainFill: { height: '100%', borderRadius: 3 },
-  domainVal:  { width: 36, fontSize: 11, color: ui.darkText, fontWeight: '700', textAlign: 'right' },
-  growthCard: { backgroundColor: ui.white, borderRadius: 14, padding: 16, marginTop: 16, marginBottom: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3 },
-  growthTitle:{ fontSize: 14, fontWeight: '800', color: ui.darkText, marginBottom: 10 },
-  growthTip:  { fontSize: 12, color: ui.midText, lineHeight: 20, marginBottom: 4 },
+  domainVal:  { width: 36, fontSize: 11, color: '#1E1B33', fontWeight: '700', textAlign: 'right' },
+  growthCard: { backgroundColor: dark.glass, borderRadius: 14, padding: 16, marginTop: 16, marginBottom: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3 },
+  growthTitle:{ fontSize: 14, fontWeight: '800', color: '#1E1B33', marginBottom: 10 },
+  growthTip:  { fontSize: 12, color: dark.textSub, lineHeight: 20, marginBottom: 4 },
   lockBadge:  { backgroundColor: colors.danger + '10', borderRadius: 12, borderWidth: 1, borderColor: colors.danger + '30', padding: 12, alignItems: 'center' },
   lockText:   { color: colors.danger, fontSize: 13, fontWeight: '700' },
-  lockedInfo: { fontSize: 13, color: ui.midText, textAlign: 'center', padding: 16, lineHeight: 20 },
+  lockedInfo: { fontSize: 13, color: dark.textSub, textAlign: 'center', padding: 16, lineHeight: 20 },
   chatContent:{ padding: 16, paddingBottom: 20 },
   bubble:     { marginBottom: 10, maxWidth: '85%', borderRadius: 14, padding: 12 },
-  aiBubble:   { backgroundColor: ui.white, alignSelf: 'flex-start', borderBottomLeftRadius: 4, flexDirection: 'row', gap: 8, alignItems: 'flex-start', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 1 },
-  userBubble: { backgroundColor: ui.challengeBg, alignSelf: 'flex-end', borderBottomRightRadius: 4 },
-  aiAvatar:   { fontSize: 18 },
-  bubbleText: { color: ui.darkText, fontSize: 13, lineHeight: 20, flex: 1 },
-  userBubbleText: { color: ui.primaryBlue },
-  chatInput:  { flexDirection: 'row', gap: 10, padding: 12, borderTopWidth: 1, borderTopColor: ui.borderGray, backgroundColor: ui.white },
-  chatTextInput: { flex: 1, backgroundColor: ui.inputBg, borderRadius: 12, borderWidth: 1, borderColor: ui.borderGray, paddingHorizontal: 14, paddingVertical: 10, fontSize: 14 },
-  sendBtn:    { backgroundColor: ui.primaryBlue, borderRadius: 12, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center' },
+  aiBubble:   { backgroundColor: dark.glass, alignSelf: 'flex-start', borderBottomLeftRadius: 4, flexDirection: 'row', gap: 8, alignItems: 'flex-start', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 1 },
+  userBubble: { backgroundColor: dark.glass, alignSelf: 'flex-end', borderBottomRightRadius: 4 },
+  aiAvatar:   {},
+  bubbleText: { color: '#1E1B33', fontSize: 13, lineHeight: 20, flex: 1 },
+  userBubbleText: { color: dark.neon },
+  chatInput:  { flexDirection: 'row', gap: 10, padding: 12, borderTopWidth: 1, borderTopColor: dark.glassBorder, backgroundColor: dark.glass },
+  chatTextInput: { flex: 1, backgroundColor: dark.glass, borderRadius: 12, borderWidth: 1, borderColor: dark.glassBorder, paddingHorizontal: 14, paddingVertical: 10, fontSize: 14 },
+  sendBtn:    { backgroundColor: dark.neon, borderRadius: 12, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center' },
   sendBtnText:{ color: '#fff', fontWeight: '800', fontSize: 13 },
 });

@@ -18,7 +18,7 @@ export default function ScoreCard({ title, acronym, value, description, color = 
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.navyCard,
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 16,
     flexDirection: 'row',
@@ -28,6 +28,6 @@ const styles = StyleSheet.create({
   },
   info: { flex: 1 },
   acronym: { fontSize: 20, fontWeight: '800', letterSpacing: 1 },
-  title: { fontSize: 13, color: colors.white, fontWeight: '700', marginTop: 2 },
-  desc: { fontSize: 11, color: colors.textSub, marginTop: 4, lineHeight: 16 },
+  title: { fontSize: 13, color: '#1E1B33', fontWeight: '700', marginTop: 2 },
+  desc: { fontSize: 11, color: '#6E6A80', marginTop: 4, lineHeight: 16 },
 });

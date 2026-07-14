@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
 import { colors } from '../../theme/colors';
-import { ui } from '../../theme/colors';
+import { ui, dark } from '../../theme/colors';
 import PhaseHeader from '../../components/PhaseHeader';
+import NeuralLinesBg from '../../components/NeuralLinesBg';
 
 const MATRICES = [
   {
@@ -68,10 +69,12 @@ export default function MatrixReasoningScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
+      <NeuralLinesBg />
       <PhaseHeader phase={3} title="Matrix Reasoning" subtitle={`Reasoning · ${current + 1}/${MATRICES.length}`} progress={(taskIndex + 1) / 8} onBack={() => handleBack(navigation)} />
 
+      <ScrollView contentContainerStyle={styles.scrollBody} showsVerticalScrollIndicator={false}>
       <View style={styles.arena}>
-        <Text style={styles.instruction}>Find the pattern. Which option replaces the <Text style={{ color: ui.primaryBlue, fontWeight: '800' }}>?</Text></Text>
+        <Text style={styles.instruction}>Find the pattern. Which option replaces the <Text style={{ color: dark.neon, fontWeight: '800' }}>?</Text></Text>
 
         <View style={styles.grid}>
           {matrix.grid.map((cell, i) => (
@@ -84,7 +87,7 @@ export default function MatrixReasoningScreen({ route, navigation }) {
         <Text style={styles.optionLabel}>Choose the missing piece:</Text>
         <View style={styles.options}>
           {matrix.options.map((opt, i) => {
-            let borderColor = ui.borderGray;
+            let borderColor = dark.glassBorder;
             if (showFeedback && i === selected) {
               borderColor = i === matrix.answer ? colors.success : colors.danger;
             }
@@ -105,32 +108,35 @@ export default function MatrixReasoningScreen({ route, navigation }) {
       </View>
 
       <Text style={styles.scoreInfo}>Score: {score}/{current}</Text>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: ui.offWhite },
+  container: { flex: 1, backgroundColor: dark.bgSolid },
+  scrollBody: { flexGrow: 1, paddingBottom: 28 },
+  resultScroll: { flexGrow: 1, justifyContent: 'center' },
   arena: { flex: 1, alignItems: 'center', padding: 20, justifyContent: 'center' },
-  instruction: { fontSize: 13, color: ui.midText, textAlign: 'center', marginBottom: 20 },
+  instruction: { fontSize: 13, color: dark.textSub, textAlign: 'center', marginBottom: 20 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', width: 240, gap: 6, marginBottom: 24 },
   cell: {
-    width: 72, height: 72, backgroundColor: ui.white,
+    width: 72, height: 72, backgroundColor: dark.glass,
     borderRadius: 10, alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: ui.borderGray,
+    borderWidth: 1, borderColor: dark.glassBorder,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 3, elevation: 1,
   },
-  cellMissing: { borderColor: ui.primaryBlue, borderWidth: 2, backgroundColor: ui.challengeBg },
+  cellMissing: { borderColor: dark.neon, borderWidth: 2, backgroundColor: dark.glass },
   cellText: { fontSize: 28 },
-  optionLabel: { color: ui.midText, fontSize: 12, fontWeight: '600', marginBottom: 12 },
+  optionLabel: { color: dark.textSub, fontSize: 12, fontWeight: '600', marginBottom: 12 },
   options: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 12 },
   optBtn: {
-    width: 90, height: 90, backgroundColor: ui.white,
+    width: 90, height: 90, backgroundColor: dark.glass,
     borderRadius: 14, alignItems: 'center', justifyContent: 'center',
     borderWidth: 2,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1,
   },
   optText: { fontSize: 32 },
   correctTag: { position: 'absolute', top: 4, right: 6, color: colors.success, fontSize: 14, fontWeight: '900' },
-  scoreInfo: { textAlign: 'center', color: ui.lightText, fontSize: 12, paddingBottom: 16 },
+  scoreInfo: { textAlign: 'center', color: dark.textMute, fontSize: 12, paddingBottom: 16 },
 });

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors, shadows } from '../theme/colors';
 
 export default function LabCard({ lab, rank, locked = false }) {
@@ -8,7 +9,7 @@ export default function LabCard({ lab, rank, locked = false }) {
   return (
     <View style={[styles.card, shadows.card, locked && styles.locked]}>
       <View style={[styles.iconBox, { backgroundColor: lab.color + '20' }]}>
-        <Text style={styles.emoji}>{lab.emoji}</Text>
+        <MaterialCommunityIcons name={lab.icon} size={24} color={lab.color} />
       </View>
       <View style={styles.info}>
         <View style={styles.titleRow}>
@@ -20,7 +21,8 @@ export default function LabCard({ lab, rank, locked = false }) {
           )}
           {locked && (
             <View style={styles.lockBadge}>
-              <Text style={styles.lockText}>🔒 Locked</Text>
+              <MaterialCommunityIcons name="lock" size={10} color={colors.danger} />
+              <Text style={styles.lockText}>Locked</Text>
             </View>
           )}
         </View>
@@ -40,7 +42,7 @@ export default function LabCard({ lab, rank, locked = false }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.navyCard,
+    backgroundColor: '#FFFFFF',
     borderRadius: 14,
     padding: 14,
     flexDirection: 'row',
@@ -50,20 +52,19 @@ const styles = StyleSheet.create({
   },
   locked: { opacity: 0.5 },
   iconBox: { width: 48, height: 48, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  emoji: { fontSize: 22 },
   info: { flex: 1 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
-  name: { fontSize: 14, fontWeight: '700', color: colors.white },
-  grayText: { color: colors.textMuted },
+  name: { fontSize: 14, fontWeight: '700', color: '#1E1B33' },
+  grayText: { color: '#A8A5B5' },
   rankBadge: {
     paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8, borderWidth: 1,
   },
   rankText: { fontSize: 10, fontWeight: '800' },
-  lockBadge: { backgroundColor: colors.danger + '20', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8 },
+  lockBadge: { backgroundColor: colors.danger + '20', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8, flexDirection: 'row', alignItems: 'center', gap: 3 },
   lockText: { fontSize: 10, color: colors.danger, fontWeight: '600' },
-  focus: { fontSize: 11, color: colors.textSub, marginTop: 2 },
+  focus: { fontSize: 11, color: '#6E6A80', marginTop: 2 },
   readinessRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 },
-  barTrack: { flex: 1, height: 4, backgroundColor: colors.navyLight, borderRadius: 2, overflow: 'hidden' },
+  barTrack: { flex: 1, height: 4, backgroundColor: '#ECE8F5', borderRadius: 2, overflow: 'hidden' },
   barFill: { height: '100%', borderRadius: 2 },
   readinessVal: { fontSize: 12, fontWeight: '700', width: 36, textAlign: 'right' },
 });

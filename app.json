@@ -2,6 +2,7 @@
   "expo": {
     "name": "RHIMS – RiAura",
     "slug": "rhims",
+    "owner": "mrfunguy16",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -23,18 +24,29 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#2B4EFF"
       },
-      "package": "com.riaura.rhims"
+      "package": "com.riaura.rhims",
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-asset",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "RiAura uses your photos so you can set a profile picture.",
+          "cameraPermission": "RiAura uses your camera so you can take a profile picture."
+        }
+      ],
+      "expo-audio"
     ],
     "extra": {
       "eas": {
-        "projectId": "6218f756-7cef-4c0a-b559-ed0ee7e5ee12"
+        "projectId": "c1031105-537b-404d-b20c-58911625ce7a"
       }
     }
   }

@@ -1,8 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { colors } from '../../theme/colors';
-import { ui } from '../../theme/colors';
+import { ui, dark } from '../../theme/colors';
 import PhaseHeader from '../../components/PhaseHeader';
+import NeuralLinesBg from '../../components/NeuralLinesBg';
 
 const OBJECTS = ['A paperclip', 'An empty cardboard box', 'A plastic bottle'];
 const TIME_PER_OBJECT = 120;
@@ -67,6 +68,7 @@ export default function AlternativeUsesScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
+      <NeuralLinesBg />
       <PhaseHeader phase={3} title="Alternative Uses" subtitle={`Social & Originality · Object ${objectIdx + 1}/${OBJECTS.length}`} progress={(taskIndex + 1) / 8} onBack={() => handleBack(navigation)} />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -76,7 +78,7 @@ export default function AlternativeUsesScreen({ route, navigation }) {
           </View>
 
           <Text style={styles.instruction}>
-            List as many <Text style={{ color: ui.primaryBlue, fontWeight: '700' }}>creative uses</Text> as you can think of for this object.
+            List as many <Text style={{ color: dark.neon, fontWeight: '700' }}>creative uses</Text> as you can think of for this object.
             There are no wrong answers!
           </Text>
 
@@ -95,10 +97,10 @@ export default function AlternativeUsesScreen({ route, navigation }) {
               value={input}
               onChangeText={setInput}
               placeholder="Type a use and press Add…"
-              placeholderTextColor={ui.lightText}
+              placeholderTextColor={dark.textMute}
               onSubmitEditing={addUse}
               returnKeyType="done"
-              color={ui.darkText}
+              color={"#1E1B33"}
             />
             <TouchableOpacity style={styles.addBtn} onPress={addUse} activeOpacity={0.8}>
               <Text style={styles.addBtnText}>Add</Text>
@@ -136,24 +138,24 @@ export default function AlternativeUsesScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: ui.offWhite },
+  container: { flex: 1, backgroundColor: dark.bgSolid },
   content: { padding: 20, paddingBottom: 40 },
   objectCard: {
-    backgroundColor: ui.white, borderRadius: 16, padding: 20,
+    backgroundColor: dark.glass, borderRadius: 16, padding: 20,
     alignItems: 'center', marginBottom: 16, borderWidth: 2, borderColor: colors.labOriginal,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2,
   },
   objectLabel: { color: colors.labOriginal, fontSize: 10, fontWeight: '700', letterSpacing: 1, marginBottom: 6 },
-  objectName: { fontSize: 24, fontWeight: '800', color: ui.darkText, textAlign: 'center' },
-  instruction: { fontSize: 13, color: ui.midText, lineHeight: 20, marginBottom: 16, textAlign: 'center' },
+  objectName: { fontSize: 24, fontWeight: '800', color: '#1E1B33', textAlign: 'center' },
+  instruction: { fontSize: 13, color: dark.textSub, lineHeight: 20, marginBottom: 16, textAlign: 'center' },
   timerBox: { marginBottom: 12 },
-  timerText: { color: ui.primaryBlue, fontWeight: '700', fontSize: 13, marginBottom: 6 },
-  timerBar: { height: 4, backgroundColor: ui.borderGray, borderRadius: 2, overflow: 'hidden' },
-  timerFill: { height: '100%', backgroundColor: ui.primaryBlue, borderRadius: 2 },
+  timerText: { color: dark.neon, fontWeight: '700', fontSize: 13, marginBottom: 6 },
+  timerBar: { height: 4, backgroundColor: dark.glassBorder, borderRadius: 2, overflow: 'hidden' },
+  timerFill: { height: '100%', backgroundColor: dark.neon, borderRadius: 2 },
   inputRow: { flexDirection: 'row', gap: 10, marginBottom: 16 },
   textInput: {
-    flex: 1, backgroundColor: ui.white, borderRadius: 12,
-    borderWidth: 1, borderColor: ui.borderGray,
+    flex: 1, backgroundColor: dark.glass, borderRadius: 12,
+    borderWidth: 1, borderColor: dark.glassBorder,
     paddingHorizontal: 14, paddingVertical: 12, fontSize: 14,
   },
   addBtn: {
@@ -164,15 +166,15 @@ const styles = StyleSheet.create({
   usesList: { minHeight: 80 },
   useItem: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 10,
-    backgroundColor: ui.white, borderRadius: 10, padding: 10, marginBottom: 6,
-    borderWidth: 1, borderColor: ui.borderGray,
+    backgroundColor: dark.glass, borderRadius: 10, padding: 10, marginBottom: 6,
+    borderWidth: 1, borderColor: dark.glassBorder,
   },
   useNum: { color: colors.labOriginal, fontWeight: '800', fontSize: 13, minWidth: 20 },
-  useText: { flex: 1, color: ui.darkText, fontSize: 13 },
-  usesEmpty: { color: ui.lightText, fontSize: 12, textAlign: 'center', paddingVertical: 20 },
+  useText: { flex: 1, color: '#1E1B33', fontSize: 13 },
+  usesEmpty: { color: dark.textMute, fontSize: 12, textAlign: 'center', paddingVertical: 20 },
   footer: { marginTop: 20 },
-  countText: { color: ui.midText, fontSize: 12, textAlign: 'center', marginBottom: 12 },
+  countText: { color: dark.textSub, fontSize: 12, textAlign: 'center', marginBottom: 12 },
   doneBtn: { borderRadius: 14, overflow: 'hidden' },
-  doneInner: { paddingVertical: 16, alignItems: 'center', backgroundColor: ui.primaryBlue, borderRadius: 14 },
+  doneInner: { paddingVertical: 16, alignItems: 'center', backgroundColor: dark.neon, borderRadius: 14 },
   doneText: { fontSize: 16, fontWeight: '800', color: '#fff' },
 });

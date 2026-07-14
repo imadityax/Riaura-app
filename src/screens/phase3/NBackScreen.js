@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
 import { colors } from '../../theme/colors';
-import { ui } from '../../theme/colors';
+import { ui, dark } from '../../theme/colors';
 import PhaseHeader from '../../components/PhaseHeader';
+import GameBackButton from '../../components/GameBackButton';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import NeuralLinesBg from '../../components/NeuralLinesBg';
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 const N = 2;
@@ -85,8 +88,11 @@ export default function NBackScreen({ route, navigation }) {
   if (phase === 'done') {
     return (
       <View style={styles.container}>
+      <NeuralLinesBg />
+        <GameBackButton onPress={() => handleBack(navigation)} />
+        <ScrollView contentContainerStyle={styles.resultScroll} showsVerticalScrollIndicator={false}>
         <View style={styles.resultBox}>
-          <Text style={styles.resultEmoji}>🔢</Text>
+          <MaterialCommunityIcons name="numeric" size={60} color={dark.neon} style={styles.resultEmoji} />
           <Text style={styles.resultTitle}>N-Back Complete</Text>
           <Text style={styles.resultScore}>{correct}/{total}</Text>
           <Text style={styles.resultSub}>Task Score: {taskScore}/5</Text>
@@ -96,6 +102,7 @@ export default function NBackScreen({ route, navigation }) {
             </View>
           </TouchableOpacity>
         </View>
+        </ScrollView>
       </View>
     );
   }
@@ -105,11 +112,13 @@ export default function NBackScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
+      <NeuralLinesBg />
       <PhaseHeader phase={3} title="N-Back Task" subtitle={`Memory · N=2 · Item ${Math.max(0, position + 1)}/${SEQUENCE_LENGTH}`} progress={(taskIndex + 1) / 8} onBack={() => handleBack(navigation)} />
 
+      <ScrollView contentContainerStyle={styles.scrollBody} showsVerticalScrollIndicator={false}>
       <View style={styles.arena}>
         <Text style={styles.instruction}>
-          Does the current letter match the one from <Text style={{ color: ui.primaryBlue, fontWeight: '700' }}>2 steps back</Text>?
+          Does the current letter match the one from <Text style={{ color: dark.neon, fontWeight: '700' }}>2 steps back</Text>?
         </Text>
         <View style={styles.letterBox}>
           <Text style={styles.letter}>{showLetter ? sequence[Math.max(0, position)] : '?'}</Text>
@@ -140,22 +149,25 @@ export default function NBackScreen({ route, navigation }) {
         <Text style={styles.waitText}>Memorizing pattern… ({N - position} more to go)</Text>
       )}
       <Text style={styles.scoreInfo}>Score: {correct}/{responses.length}</Text>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: ui.offWhite },
+  container: { flex: 1, backgroundColor: dark.bgSolid },
+  scrollBody: { flexGrow: 1, paddingBottom: 28 },
+  resultScroll: { flexGrow: 1, justifyContent: 'center' },
   arena: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 20 },
-  instruction: { fontSize: 13, color: ui.midText, textAlign: 'center', marginBottom: 30, lineHeight: 20 },
+  instruction: { fontSize: 13, color: dark.textSub, textAlign: 'center', marginBottom: 30, lineHeight: 20 },
   letterBox: {
-    width: 140, height: 140, backgroundColor: ui.white,
+    width: 140, height: 140, backgroundColor: dark.glass,
     borderRadius: 24, alignItems: 'center', justifyContent: 'center',
-    borderWidth: 2, borderColor: ui.borderGray,
+    borderWidth: 2, borderColor: dark.glassBorder,
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 4,
   },
-  letter: { fontSize: 72, fontWeight: '900', color: ui.primaryBlue },
-  prevText: { fontSize: 13, color: ui.lightText, marginTop: 16 },
+  letter: { fontSize: 72, fontWeight: '900', color: dark.neon },
+  prevText: { fontSize: 13, color: dark.textMute, marginTop: 16 },
   btns: { flexDirection: 'row', gap: 12, paddingHorizontal: 20, paddingBottom: 20 },
   responseBtn: {
     flex: 1, paddingVertical: 18, borderRadius: 14,
@@ -164,15 +176,15 @@ const styles = StyleSheet.create({
   noBtn: { backgroundColor: colors.danger + '18', borderWidth: 1.5, borderColor: colors.danger },
   yesBtn: { backgroundColor: colors.success + '18', borderWidth: 1.5, borderColor: colors.success },
   responseDone: { opacity: 0.4 },
-  responseBtnText: { color: ui.darkText, fontWeight: '800', fontSize: 15 },
-  waitText: { textAlign: 'center', color: ui.lightText, fontSize: 12, marginBottom: 10 },
-  scoreInfo: { textAlign: 'center', color: ui.lightText, fontSize: 12, paddingBottom: 16 },
+  responseBtnText: { color: '#1E1B33', fontWeight: '800', fontSize: 15 },
+  waitText: { textAlign: 'center', color: dark.textMute, fontSize: 12, marginBottom: 10 },
+  scoreInfo: { textAlign: 'center', color: dark.textMute, fontSize: 12, paddingBottom: 16 },
   resultBox: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 30 },
-  resultEmoji: { fontSize: 60, marginBottom: 16 },
-  resultTitle: { fontSize: 24, fontWeight: '800', color: ui.darkText, marginBottom: 8 },
-  resultScore: { fontSize: 36, fontWeight: '900', color: ui.primaryBlue },
-  resultSub: { fontSize: 14, color: ui.midText, marginTop: 4, marginBottom: 32 },
+  resultEmoji: { marginBottom: 16 },
+  resultTitle: { fontSize: 24, fontWeight: '800', color: '#1E1B33', marginBottom: 8 },
+  resultScore: { fontSize: 36, fontWeight: '900', color: dark.neon },
+  resultSub: { fontSize: 14, color: dark.textSub, marginTop: 4, marginBottom: 32 },
   btn: { borderRadius: 14, overflow: 'hidden', width: '100%' },
-  btnInner: { paddingVertical: 16, alignItems: 'center', backgroundColor: ui.primaryBlue, borderRadius: 14 },
+  btnInner: { paddingVertical: 16, alignItems: 'center', backgroundColor: dark.neon, borderRadius: 14 },
   btnText: { fontSize: 16, fontWeight: '800', color: '#fff' },
 });

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
-import { colors } from '../../theme/colors';
-import { ui } from '../../theme/colors';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { colors, ui, dark } from '../../theme/colors';
 import { storage } from '../../utils/storage';
+import { rf, scale, ms } from '../../utils/responsive';
 import PhaseHeader from '../../components/PhaseHeader';
 
 const CONSENT_ITEMS = [
@@ -33,7 +34,25 @@ const CONSENT_ITEMS = [
   },
 ];
 
-export default function ConsentScreen({ navigation }) {
+export default function ConsentScreen({ navigation, route }) {
+  const isMinor = route?.params?.isMinor ?? false;
+  const parentName = route?.params?.parentName;
+
+  // For minors, add a dedicated parent/guardian consent item on top of the
+  // standard informed-consent list.
+  const items = isMinor
+    ? [
+        {
+          id: 'guardian',
+          title: 'Parent / Guardian Consent',
+          desc: parentName
+            ? `As parent/guardian (${parentName}), I confirm my consent for this minor to participate in the RHIMS™ assessment.`
+            : 'As the parent/guardian, I confirm my consent for this minor to participate in the RHIMS™ assessment.',
+        },
+        ...CONSENT_ITEMS,
+      ]
+    : CONSENT_ITEMS;
+
   const [checked, setChecked] = useState({});
 
   function handleBack() {
@@ -44,57 +63,60 @@ export default function ConsentScreen({ navigation }) {
     setChecked(c => ({ ...c, [id]: !c[id] }));
   }
 
-  const allChecked = CONSENT_ITEMS.every(item => checked[item.id]);
+  const agreedCount = items.filter(item => checked[item.id]).length;
+  const allChecked = agreedCount === items.length;
 
   async function handleAgree() {
     if (!allChecked) {
       Alert.alert('All Required', 'Please agree to all consent items to proceed.');
       return;
     }
-    await storage.saveConsent(checked);
+    await storage.saveConsent({ ...checked, isMinor });
     navigation.replace('Phase2Intro');
   }
 
   return (
     <View style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <PhaseHeader phase={1} title="Informed Consent" subtitle="Please read and agree to all items" progress={0.5} onBack={handleBack} />
 
         <View style={styles.secureBox}>
-          <Text style={styles.secureEmoji}>🔒</Text>
+          <MaterialCommunityIcons name="lock-outline" size={scale(20)} color={dark.neon} />
           <Text style={styles.secureText}>Your data is safe, secure and confidential.</Text>
         </View>
 
         <View style={styles.items}>
-          {CONSENT_ITEMS.map(item => (
-            <TouchableOpacity
-              key={item.id}
-              style={[styles.item, checked[item.id] && styles.itemChecked]}
-              onPress={() => toggle(item.id)}
-              activeOpacity={0.8}
-            >
-              <View style={[styles.checkbox, checked[item.id] && styles.checkboxChecked]}>
-                {checked[item.id] && <Text style={styles.checkMark}>✓</Text>}
-              </View>
-              <View style={styles.itemContent}>
-                <Text style={[styles.itemTitle, checked[item.id] && styles.itemTitleChecked]}>
-                  {item.title}
-                </Text>
-                <Text style={styles.itemDesc}>{item.desc}</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
+          {items.map(item => {
+            const on = !!checked[item.id];
+            const guardian = item.id === 'guardian';
+            return (
+              <TouchableOpacity
+                key={item.id}
+                style={[styles.item, on && styles.itemChecked, guardian && styles.itemGuardian]}
+                onPress={() => toggle(item.id)}
+                activeOpacity={0.8}
+              >
+                <View style={[styles.checkbox, on && styles.checkboxChecked]}>
+                  {on && <Text style={styles.checkMark}>✓</Text>}
+                </View>
+                <View style={styles.itemContent}>
+                  <Text style={[styles.itemTitle, on && styles.itemTitleChecked]}>
+                    {item.title}
+                  </Text>
+                  <Text style={styles.itemDesc}>{item.desc}</Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         <View style={styles.bottomArea}>
           <View style={styles.progressIndicator}>
             <Text style={styles.progressLabel}>
-              {Object.values(checked).filter(Boolean).length} / {CONSENT_ITEMS.length} agreed
+              {agreedCount} / {items.length} agreed
             </Text>
             <View style={styles.progressTrack}>
-              <View style={[styles.progressFill, {
-                width: `${(Object.values(checked).filter(Boolean).length / CONSENT_ITEMS.length) * 100}%`
-              }]} />
+              <View style={[styles.progressFill, { width: `${(agreedCount / items.length) * 100}%` }]} />
             </View>
           </View>
 
@@ -116,42 +138,43 @@ export default function ConsentScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: ui.offWhite },
+  container: { flex: 1, backgroundColor: dark.bgSolid },
+  scrollContent: { paddingBottom: scale(20) },
   secureBox: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
+    flexDirection: 'row', alignItems: 'center', gap: scale(10),
     backgroundColor: colors.success + '15', borderColor: colors.success + '40',
-    borderWidth: 1, borderRadius: 12, marginHorizontal: 20, padding: 14, marginBottom: 16,
+    borderWidth: 1, borderRadius: 12, marginHorizontal: scale(20), padding: scale(14), marginBottom: ms(16),
   },
-  secureEmoji: { fontSize: 20 },
-  secureText: { fontSize: 13, color: colors.success, fontWeight: '600', flex: 1 },
-  items: { paddingHorizontal: 20, gap: 10, paddingBottom: 10 },
+  secureText: { fontSize: rf(13), color: colors.success, fontWeight: '600', flex: 1 },
+  items: { paddingHorizontal: scale(20), gap: scale(10), paddingBottom: ms(10) },
   item: {
-    backgroundColor: ui.white, borderRadius: 14,
-    padding: 14, flexDirection: 'row', gap: 12, alignItems: 'flex-start',
-    borderWidth: 1, borderColor: ui.borderGray,
+    backgroundColor: dark.glass, borderRadius: 14,
+    padding: scale(14), flexDirection: 'row', gap: scale(12), alignItems: 'flex-start',
+    borderWidth: 1, borderColor: dark.glassBorder,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1,
   },
   itemChecked: { borderColor: colors.success + '60', backgroundColor: colors.success + '08' },
+  itemGuardian: { borderColor: dark.neon + '55', backgroundColor: dark.neon + '08' },
   checkbox: {
-    width: 24, height: 24, borderRadius: 7, borderWidth: 2,
-    borderColor: ui.borderGray, alignItems: 'center', justifyContent: 'center',
+    width: scale(24), height: scale(24), borderRadius: 7, borderWidth: 2,
+    borderColor: dark.glassBorder, alignItems: 'center', justifyContent: 'center',
     marginTop: 1,
   },
   checkboxChecked: { backgroundColor: colors.success, borderColor: colors.success },
-  checkMark: { color: '#fff', fontSize: 14, fontWeight: '800' },
+  checkMark: { color: '#fff', fontSize: rf(14), fontWeight: '800' },
   itemContent: { flex: 1 },
-  itemTitle: { fontSize: 14, fontWeight: '700', color: ui.darkText, marginBottom: 4 },
+  itemTitle: { fontSize: rf(14), fontWeight: '700', color: '#1E1B33', marginBottom: ms(4) },
   itemTitleChecked: { color: colors.success },
-  itemDesc: { fontSize: 12, color: ui.midText, lineHeight: 18 },
-  bottomArea: { padding: 20 },
-  progressIndicator: { marginBottom: 16 },
-  progressLabel: { fontSize: 12, color: ui.midText, marginBottom: 6, fontWeight: '600' },
-  progressTrack: { height: 4, backgroundColor: ui.borderGray, borderRadius: 2, overflow: 'hidden' },
+  itemDesc: { fontSize: rf(12), color: dark.textSub, lineHeight: rf(18) },
+  bottomArea: { padding: scale(20) },
+  progressIndicator: { marginBottom: ms(16) },
+  progressLabel: { fontSize: rf(12), color: dark.textSub, marginBottom: ms(6), fontWeight: '600' },
+  progressTrack: { height: 4, backgroundColor: dark.glassBorder, borderRadius: 2, overflow: 'hidden' },
   progressFill: { height: '100%', backgroundColor: colors.success, borderRadius: 2 },
   btn: { borderRadius: 14, overflow: 'hidden' },
   btnDisabled: { opacity: 0.6 },
-  btnInner: { paddingVertical: 16, alignItems: 'center', borderRadius: 14, backgroundColor: ui.primaryBlue },
-  btnInnerDisabled: { backgroundColor: ui.borderGray },
-  btnText: { fontSize: 16, fontWeight: '800', color: '#fff' },
-  btnTextDisabled: { color: ui.lightText },
+  btnInner: { paddingVertical: ms(16), alignItems: 'center', borderRadius: 14, backgroundColor: dark.neon },
+  btnInnerDisabled: { backgroundColor: dark.glassBorder },
+  btnText: { fontSize: rf(16), fontWeight: '800', color: '#fff' },
+  btnTextDisabled: { color: dark.textMute },
 });

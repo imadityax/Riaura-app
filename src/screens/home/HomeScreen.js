@@ -1,439 +1,490 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  SafeAreaView, StatusBar, Dimensions,
+  View, Text, ScrollView, StyleSheet, StatusBar, Dimensions, Pressable,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { PressableScale, FadeInUp, Pulse, CountUp, ProgressBar } from '../../components/anim';
+import { NeuronDrift } from '../../components/GlassKit';
+import Avatar from '../../components/Avatar';
+import BrainIcon from '../../components/BrainIcon';
+import Brain3D from '../../components/Brain3D';
 import { storage } from '../../utils/storage';
-import { ui } from '../../theme/colors';
+import { neural } from '../../theme/colors';
+import { levelFromXp, rankFromScore, neuralEnergy, neuralMap, XP_REWARDS } from '../../utils/xp';
+import { BRAIN_FACTS } from '../../data/brainFacts';
+import { MINDFULNESS_DOMAINS } from '../assess/MindfulnessAssessScreen';
 
 const { width } = Dimensions.get('window');
-const CARD_W = width * 0.42;
+
+const PURPLE = neural.primary;
+const INK    = '#1E1B33';
+const GRAY   = '#8A8797';
+
+const QUICK_ACTIONS = [
+  { key: 'assess', title: 'Assessments', sub: 'Evaluate your cognitive abilities', bg: '#EFEBFB', color: '#8B5CF6', icon: 'chart-pie',      nav: 'Assess' },
+  { key: 'score',  title: 'Your Score',  sub: 'Track your intelligence score',     bg: '#E9F1FD', color: '#3B82F6', icon: 'chart-line',     nav: 'Growth' },
+  { key: 'map',    title: 'Mind Map',    sub: 'Explore your cognitive strengths',  bg: '#E8F7F0', color: '#10B981', brain: true,            nav: 'DNA' },
+  { key: 'goals',  title: 'Goals',       sub: 'Set goals and track progress',      bg: '#FDF0E6', color: '#F97316', icon: 'bullseye-arrow', nav: 'Goals' },
+];
 
 const COURSES = [
-  { id: 1, title: 'Mastering Critical\nThinking', weeks: 6, badge: 'Popular',   color: '#3D5BFF', icon: '🧠' },
-  { id: 2, title: 'Emotional\nIntelligence',       weeks: 4, badge: 'Top Rated', color: '#7C3AED', icon: '💜' },
-  { id: 3, title: 'Strategic\nLeadership',         weeks: 8, badge: 'New',       color: '#059669', icon: '🎯' },
+  { id: 1, title: 'Understand\nYour Brain',   badge: 'Popular', bg: '#EFEBFB', kind: 'brain' },
+  { id: 2, title: 'Memory\nMastery',                            bg: '#FBF3E3', kind: 'icon', icon: 'cloud',  tint: '#E8C983' },
+  { id: 3, title: 'Focus &\nProductivity',                      bg: '#E8F7F0', kind: 'icon', icon: 'target', tint: '#10B981' },
 ];
-
-const DOMAIN_MAP = [
-  { key: 'analytical', label: 'Analytical Thinking', color: '#3D5BFF', icon: '🧠', idx: 0 },
-  { key: 'emotional',  label: 'Emotional IQ',        color: '#EC4899', icon: '❤️', idx: 1 },
-  { key: 'creative',   label: 'Creative Thinking',   color: '#7C3AED', icon: '💡', idx: 2 },
-  { key: 'strategic',  label: 'Strategic Insight',   color: '#059669', icon: '🎯', idx: 7 },
-];
-
-const DOMAIN_BADGES = ['Top performer', 'Developing', 'Growing fast', 'Strong'];
 
 function greeting() {
   const h = new Date().getHours();
-  if (h < 12) return '☀️ Good morning';
-  if (h < 17) return '🌤 Good afternoon';
-  return '🌙 Good evening';
+  if (h < 12) return 'Good Morning';
+  if (h < 17) return 'Good Afternoon';
+  return 'Good Evening';
 }
 
-function levelInfo(score) {
-  if (score >= 90) return { level: 9, title: 'Master Intellect',   xp: 3600, nextXp: 4000 };
-  if (score >= 80) return { level: 7, title: 'Cognitive Explorer', xp: 2840, nextXp: 3500 };
-  if (score >= 70) return { level: 5, title: 'Rising Thinker',     xp: 1920, nextXp: 2500 };
-  if (score >= 60) return { level: 3, title: 'Emerging Mind',      xp: 1100, nextXp: 1600 };
-  return                  { level: 1, title: 'Curious Learner',    xp: 400,  nextXp: 800  };
-}
-
-function percentileFor(score) {
-  if (score >= 90) return 3;
-  if (score >= 80) return 8;
-  if (score >= 70) return 20;
-  if (score >= 60) return 35;
-  return 60;
+// Split a fact into a bold headline + supporting line.
+function splitFact(fact) {
+  const dash = fact.indexOf(' — ');
+  if (dash > 0) return [fact.slice(0, dash) + '.', fact.slice(dash + 3)];
+  const dot = fact.indexOf('. ');
+  if (dot > 0 && dot < fact.length - 2) return [fact.slice(0, dot + 1), fact.slice(dot + 2)];
+  return [fact, null];
 }
 
 export default function HomeScreen({ navigation }) {
-  const [userName, setUserName]         = useState('User');
-  const [score, setScore]               = useState(0);
-  const [domainScores, setDomainScores] = useState([0, 0, 0, 0, 0, 0, 0, 0]);
-  const [hasScores, setHasScores]       = useState(false);
-  const [streak, setStreak]             = useState(0);
+  const insets = useSafeAreaInsets();
+  const [userName, setUserName]   = useState('User');
+  const [score, setScore]         = useState(0);
+  const [hasScores, setHasScores] = useState(false);
+  const [streak, setStreak]       = useState(0);
+  const [photo, setPhoto]         = useState(null);
+  const [whoMap, setWhoMap]       = useState({});
+  const [riaMap, setRiaMap]       = useState({});
+  const [xpInfo, setXpInfo]       = useState(levelFromXp(0));
+  const [fact]                    = useState(() => BRAIN_FACTS[Math.floor(Math.random() * BRAIN_FACTS.length)]);
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     (async () => {
       const reg    = await storage.getRegistration();
       const stored = await storage.getScores();
-      const streakCount = await storage.touchStreak();
-      setStreak(streakCount);
+      setStreak(await storage.touchStreak());
+      setPhoto(await storage.getProfilePhoto());
+      setWhoMap(await storage.getMindfulnessDomainScores());
+      setRiaMap(await storage.getRiauraDomainScores());
+      setXpInfo(levelFromXp(await storage.getXp()));
       if (reg?.fullName) setUserName(reg.fullName.split(' ')[0]);
       if (stored?.combined?.percent != null) {
         setScore(Math.round(stored.combined.percent));
         setHasScores(true);
       }
-      if (stored?.domainPercents?.length === 8) {
-        setDomainScores(stored.domainPercents);
-      }
     })();
-  }, []);
+  }, []));
 
-  const lv       = levelInfo(score);
-  const xpToNext = lv.nextXp - lv.xp;
-  const xpPct    = lv.xp / lv.nextXp;
-  const initial  = userName[0]?.toUpperCase() || 'U';
+  const initial = userName[0]?.toUpperCase() || 'U';
+  const [factTitle, factBody] = splitFact(fact.fact);
 
-  const domains = DOMAIN_MAP.map((d, i) => ({
-    ...d,
-    score: domainScores[d.idx] ?? 0,
-    badge: DOMAIN_BADGES[i],
-  }));
+  const map = neuralMap(whoMap, riaMap);
+  const domainScores  = Object.values(whoMap).map(e => e.score);
+  const brainActivity = hasScores
+    ? score
+    : domainScores.length
+      ? Math.round(domainScores.reduce((a, b) => a + b, 0) / domainScores.length)
+      : 72;
+  const energy = neuralEnergy({ streak, domainsDone: map.done });
+  const rank   = rankFromScore(hasScores ? score : brainActivity);
+
+  // Today's mission: next unmapped pathway (WHO first, then RiAura track).
+  const nextWho = MINDFULNESS_DOMAINS.find(d => !whoMap[d.num]);
+  const nextRia = MINDFULNESS_DOMAINS.find(d => !riaMap[d.num]);
+  const mission = nextWho
+    ? { domain: nextWho, route: 'MindfulnessAssess' }
+    : nextRia
+      ? { domain: nextRia, route: 'ActivityAssess' }
+      : null;
+
+  const heroStats = [
+    { emoji: '🧠', val: brainActivity, suffix: '%',                 label: 'Brain Activity' },
+    { emoji: '⚡', val: energy,        suffix: '%',                 label: 'Neural Energy' },
+    { emoji: '🔥', val: streak,        suffix: streak === 1 ? ' Day' : ' Days', label: 'Streak' },
+    { emoji: '🌍', val: rank,          text: true,                  label: 'Intelligence Rank' },
+  ];
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={ui.offWhite} />
+    <View style={styles.screen}>
+      <StatusBar barStyle="light-content" backgroundColor="#241255" />
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 130 }}>
 
-      <ScrollView
-        style={styles.scroll}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 30 }}
-      >
-        {/* ── Header ── */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.greetText}>{greeting()}</Text>
-            <Text style={styles.welcomeText}>Welcome{'\n'}back, {userName}</Text>
-          </View>
-          <View style={styles.headerRight}>
-            <View style={styles.streakPill}>
-              <Text style={styles.streakEmoji}>🔥</Text>
-              <Text style={styles.streakNum}>{streak}</Text>
+        {/* ══ Neural hero panel ══ */}
+        <View style={[styles.hero, { paddingTop: insets.top + 14 }]}>
+          <LinearGradient
+            colors={neural.heroGrad}
+            start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }}
+            style={StyleSheet.absoluteFill}
+          />
+          <NeuronDrift dark count={14} height={520} />
+
+          {/* header row */}
+          <FadeInUp distance={10}>
+            <View style={styles.headerRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.greetText}>{greeting()}</Text>
+                <Text style={styles.welcomeSub}>Welcome Back</Text>
+                <Text style={styles.welcomeName}>{userName}</Text>
+              </View>
+              <View style={styles.headerRight}>
+                <PressableScale style={styles.heroIconBtn} onPress={() => navigation.navigate('Notifications')}>
+                  <Ionicons name="notifications-outline" size={19} color="#E9E2FF" />
+                  <Pulse to={1.35} duration={1000} style={styles.notifDot} />
+                </PressableScale>
+                <PressableScale onPress={() => navigation.navigate('Profile')}>
+                  <Avatar photo={photo} initial={initial} size={44} style={styles.avatarCircle} />
+                </PressableScale>
+              </View>
             </View>
-            <TouchableOpacity
-              style={styles.iconBtn}
-              activeOpacity={0.75}
-              onPress={() => navigation.navigate('Chat')}
-            >
-              <Ionicons name="chatbubble-ellipses-outline" size={18} color={ui.midText} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.iconBtn}
-              activeOpacity={0.75}
-              onPress={() => navigation.navigate('Notifications')}
-            >
-              <Ionicons name="notifications-outline" size={18} color={ui.midText} />
-              <View style={styles.notifDot} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.avatarCircle}
-              onPress={() => navigation.navigate('Profile')}
-              activeOpacity={0.75}
-            >
-              <Text style={styles.avatarText}>{initial}</Text>
-            </TouchableOpacity>
+          </FadeInUp>
+
+          {/* rotating brain */}
+          <FadeInUp delay={60}>
+            <View style={styles.brainStage}>
+              <Brain3D size={216} />
+            </View>
+          </FadeInUp>
+
+          {/* stat grid */}
+          <View style={styles.statGrid}>
+            {heroStats.map((s, i) => (
+              <FadeInUp key={s.label} delay={100 + i * 70} style={styles.statTileWrap}>
+                <View style={styles.statTile}>
+                  <Text style={styles.statEmoji}>{s.emoji}</Text>
+                  {s.text
+                    ? <Text style={styles.statVal}>{s.val}</Text>
+                    : <CountUp value={s.val} suffix={s.suffix} duration={1200} style={styles.statVal} />}
+                  <Text style={styles.statLabel}>{s.label}</Text>
+                </View>
+              </FadeInUp>
+            ))}
           </View>
+
+          {/* neural map scan */}
+          <FadeInUp delay={380}>
+            <View style={styles.scanCard}>
+              <View style={styles.scanTop}>
+                <View style={styles.scanTitleRow}>
+                  <Pulse to={1.2} duration={1100}>
+                    <View style={styles.scanDot} />
+                  </Pulse>
+                  <Text style={styles.scanTitle}>NEURAL MAP</Text>
+                </View>
+                <CountUp value={map.percent} suffix="% mapped" duration={1400} style={styles.scanPct} />
+              </View>
+              <ProgressBar
+                progress={map.percent / 100}
+                height={9}
+                trackColor="rgba(255,255,255,0.12)"
+                fillColor={neural.electric}
+                duration={1400}
+                minPct={0.02}
+              />
+              <Text style={styles.scanSub}>{map.done} of {map.total} neural pathways unlocked</Text>
+            </View>
+          </FadeInUp>
         </View>
 
-        {/* ── Intelligence Score Card ── */}
-        <LinearGradient
-          colors={[ui.blueGradStart, ui.blueGradEnd]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.scoreCard}
-        >
-          <Text style={styles.journeyLabel}>YOUR INTELLIGENCE JOURNEY</Text>
-          <Text style={styles.scoreBig}>{hasScores ? score : '—'}</Text>
-          <Text style={styles.scoreSubLabel}>{hasScores ? 'Intelligence Score' : 'Complete assessments to see your score'}</Text>
-
-          {hasScores && (
-            <View style={styles.statsRow}>
-              <View style={styles.statCol}>
-                <Text style={styles.statVal}>Lv.{lv.level}</Text>
-                <Text style={styles.statSub}>{lv.title}</Text>
-              </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statCol}>
-                <Text style={[styles.statVal, { color: '#90EE90' }]}>+5 pts</Text>
-                <Text style={styles.statSub}>This week</Text>
-              </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statCol}>
-                <Text style={styles.statVal}>Top {percentileFor(score)}%</Text>
-                <Text style={styles.statSub}>Globally</Text>
+        {/* ══ Today's Mission ══ */}
+        <FadeInUp delay={120}>
+          <View style={styles.missionCard}>
+            <View style={styles.missionHead}>
+              <Text style={styles.missionKicker}>TODAY'S MISSION</Text>
+              <View style={styles.xpPill}>
+                <MaterialCommunityIcons name="lightning-bolt" size={13} color="#fff" />
+                <Text style={styles.xpPillText}>+{XP_REWARDS.DOMAIN_COMPLETE} XP</Text>
               </View>
             </View>
-          )}
-
-          <TouchableOpacity
-            style={styles.journeyBtn}
-            activeOpacity={0.85}
-            onPress={() => navigation.navigate('Phase2Intro')}
-          >
-            <Text style={styles.journeyBtnText}>{hasScores ? 'Continue Journey  →' : 'Start Assessment  →'}</Text>
-          </TouchableOpacity>
-
-          <Text style={styles.brainWm}>🧠</Text>
-        </LinearGradient>
-
-        {/* ── XP Bar ── */}
-        {hasScores && (
-          <View style={styles.xpContainer}>
-            <View style={styles.xpLabelRow}>
-              <Text style={styles.xpLeft}>⚡ {lv.xp.toLocaleString()} XP</Text>
-              <Text style={styles.xpRight}>{xpToNext} XP to Level {lv.level + 1}</Text>
-            </View>
-            <View style={styles.xpBarBg}>
-              <View style={[styles.xpBarFill, { width: `${Math.min(xpPct * 100, 100)}%` }]} />
+            {mission ? (
+              <>
+                <Text style={styles.missionTitle}>Complete {mission.domain.label}</Text>
+                <Text style={styles.missionSub}>
+                  Reward · Unlock the {mission.domain.label.split(' ')[0]} pathway on your neural map
+                </Text>
+                <PressableScale
+                  style={styles.missionBtn}
+                  onPress={() => navigation.navigate(mission.route, { domainNum: mission.domain.num })}
+                >
+                  <LinearGradient
+                    colors={[neural.primary, '#5433C9']}
+                    start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                    style={styles.missionBtnGrad}
+                  >
+                    <Text style={styles.missionBtnText}>Continue Training</Text>
+                    <Ionicons name="arrow-forward" size={16} color="#fff" />
+                  </LinearGradient>
+                </PressableScale>
+              </>
+            ) : (
+              <>
+                <Text style={styles.missionTitle}>All pathways mapped 🎉</Text>
+                <Text style={styles.missionSub}>Your full neural map is unlocked. Review your passport or keep training.</Text>
+                <PressableScale style={styles.missionBtn} onPress={() => navigation.navigate('Passport')}>
+                  <LinearGradient
+                    colors={[neural.primary, '#5433C9']}
+                    start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                    style={styles.missionBtnGrad}
+                  >
+                    <Text style={styles.missionBtnText}>View Passport</Text>
+                    <Ionicons name="arrow-forward" size={16} color="#fff" />
+                  </LinearGradient>
+                </PressableScale>
+              </>
+            )}
+            {/* level strip */}
+            <View style={styles.levelStrip}>
+              <View style={styles.levelBadge}>
+                <Text style={styles.levelBadgeText}>Lv.{xpInfo.level}</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <View style={styles.levelRow}>
+                  <Text style={styles.levelTitle}>{xpInfo.title}</Text>
+                  <Text style={styles.levelXp}>{xpInfo.intoLevel}/{xpInfo.needed} XP</Text>
+                </View>
+                <ProgressBar
+                  progress={xpInfo.progress}
+                  height={6}
+                  trackColor="#ECE8F5"
+                  fillColor={neural.pink}
+                  minPct={0.02}
+                />
+              </View>
             </View>
           </View>
-        )}
+        </FadeInUp>
 
-        {/* ── Your Intelligence ── */}
-        {hasScores && (
-          <>
-            <SectionHeader title="Your Intelligence" onViewAll={() => navigation.navigate('DNA')} />
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.hScrollContent}
-            >
-              {domains.map(d => (
-                <View key={d.key} style={styles.domainCard}>
-                  <View style={[styles.domainIconBg, { backgroundColor: d.color + '18' }]}>
-                    <Text style={styles.domainIconEmoji}>{d.icon}</Text>
-                  </View>
-                  <Text style={styles.domainLabel}>{d.label}</Text>
-                  <View style={styles.domainScoreRow}>
-                    <Text style={[styles.domainScore, { color: d.color }]}>{d.score}</Text>
-                    <Text style={styles.domainMax}>/100</Text>
-                  </View>
-                  <View style={styles.domainBarBg}>
-                    <View style={[styles.domainBarFill, { width: `${d.score}%`, backgroundColor: d.color }]} />
-                  </View>
-                  <Text style={[styles.domainBadge, { color: d.color }]}>{d.badge}</Text>
-                </View>
-              ))}
-            </ScrollView>
-          </>
-        )}
-
-        {/* ── Today's Insight ── */}
-        <View style={styles.insightCard}>
-          <View style={styles.insightHead}>
-            <View style={styles.insightIconBg}>
-              <Text style={styles.insightIconEmoji}>💡</Text>
+        {/* ══ Today's Brain Signal ══ */}
+        <FadeInUp delay={160}>
+          <View style={styles.signalCard}>
+            <LinearGradient
+              colors={['rgba(108,77,255,0.10)', 'rgba(76,201,240,0.08)']}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+              style={StyleSheet.absoluteFill}
+            />
+            <View style={styles.signalHead}>
+              <Pulse to={1.12} duration={1300}>
+                <LinearGradient
+                  colors={[neural.primary, neural.electric]}
+                  start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                  style={styles.signalIconBg}
+                >
+                  <BrainIcon size={20} color="#fff" strokeWidth={2} />
+                </LinearGradient>
+              </Pulse>
+              <Text style={styles.signalKicker}>TODAY'S BRAIN SIGNAL</Text>
             </View>
-            <Text style={styles.insightLabel}>TODAY'S INSIGHT</Text>
+            <Text style={styles.signalTitle}>{factTitle}</Text>
+            {factBody ? <Text style={styles.signalBody}>{factBody}</Text> : null}
+            <PressableScale style={styles.signalBtn} onPress={() => navigation.navigate('Assess')}>
+              <Text style={styles.signalBtnText}>Train Now</Text>
+              <Ionicons name="arrow-forward" size={15} color={PURPLE} />
+            </PressableScale>
           </View>
-          <Text style={styles.insightTitle}>
-            {hasScores && score >= 60
-              ? 'Your analytical strength is your superpower'
-              : 'Start your intelligence journey today'}
-          </Text>
-          <Text style={styles.insightDesc}>
-            {hasScores && score >= 60
-              ? 'People with high analytical scores excel at pattern recognition. Try the Logic Challenge today to sharpen this further.'
-              : 'Complete the WHO Psychometric and Cognitive assessments to unlock your full intelligence profile and personalized insights.'}
-          </Text>
-          <TouchableOpacity
-            style={styles.insightBtn}
-            activeOpacity={0.85}
-            onPress={() => navigation.navigate('Assess')}
-          >
-            <Text style={styles.insightBtnText}>✨  {hasScores ? "Try Today's Challenge" : 'Go to Assessments'}</Text>
-          </TouchableOpacity>
-        </View>
+        </FadeInUp>
 
-        {/* ── Continue Learning ── */}
-        <SectionHeader title="Continue Learning" />
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.hScrollContent}
-        >
-          {COURSES.map(c => (
-            <TouchableOpacity key={c.id} style={styles.courseCard} activeOpacity={0.85}>
-              <View style={[styles.courseTop, { backgroundColor: c.color }]}>
-                <Text style={styles.courseIconEmoji}>{c.icon}</Text>
-                <View style={[styles.courseBadge, { backgroundColor: 'rgba(255,255,255,0.25)' }]}>
-                  <Text style={styles.courseBadgeText}>{c.badge}</Text>
+        {/* ══ Quick actions ══ */}
+        <View style={styles.quickRow}>
+          {QUICK_ACTIONS.map((q, i) => (
+            <FadeInUp key={q.key} delay={i * 60} style={{ flex: 1 }}>
+              <Pressable
+                style={[styles.quickCard, { backgroundColor: q.bg }]}
+                onPress={() => navigation.navigate(q.nav)}
+              >
+                <View style={[styles.quickIconBg, { backgroundColor: q.color }]}>
+                  {q.brain
+                    ? <BrainIcon size={20} color="#fff" strokeWidth={1.8} />
+                    : <MaterialCommunityIcons name={q.icon} size={20} color="#fff" />}
                 </View>
-              </View>
-              <View style={styles.courseBottom}>
-                <Text style={styles.courseTitle}>{c.title}</Text>
-                <Text style={styles.courseWeeks}>{c.weeks} weeks</Text>
-              </View>
-            </TouchableOpacity>
+                <Text style={styles.quickTitle}>{q.title}</Text>
+                <Text style={styles.quickSub}>{q.sub}</Text>
+                <Ionicons name="arrow-forward" size={14} color={q.color} style={styles.quickArrow} />
+              </Pressable>
+            </FadeInUp>
           ))}
-        </ScrollView>
+        </View>
 
-        {/* ── Brain Challenge ── */}
-        <View style={styles.challengeCard}>
-          <View style={styles.challengeRow}>
-            <View style={styles.challengeIconBg}>
-              <Text style={styles.challengeIconEmoji}>⚡</Text>
+        {/* ══ Human Intelligence Passport ══ */}
+        <FadeInUp delay={120}>
+          <Pressable style={styles.passportCard} onPress={() => navigation.navigate('Passport')}>
+            <MaterialCommunityIcons
+              name="earth" size={96} color="#F0EDF8"
+              style={styles.passportWatermark}
+            />
+            <View style={styles.passportIconBg}>
+              <MaterialCommunityIcons name="card-account-details-outline" size={24} color="#fff" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.challengeLabel}>BRAIN CHALLENGE</Text>
-              <Text style={styles.challengeTitle}>Cognitive Tasks</Text>
-              <Text style={styles.challengeSub}>8 tasks · Measure your cognitive performance</Text>
+              <Text style={styles.passportTitle}>Human Intelligence Passport</Text>
+              <Text style={styles.passportSub}>Your complete cognitive profile, personality, and career roadmap.</Text>
             </View>
-          </View>
-          <TouchableOpacity
-            style={styles.challengeBtn}
-            activeOpacity={0.85}
-            onPress={() => navigation.navigate('Phase3Intro')}
-          >
-            <Text style={styles.challengeBtnText}>{hasScores ? 'Retake Tasks' : 'Start Tasks'}</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-}
+            <View style={styles.passportBtn}>
+              <Ionicons name="arrow-forward" size={18} color={PURPLE} />
+            </View>
+          </Pressable>
+        </FadeInUp>
 
-function SectionHeader({ title, onViewAll }) {
-  return (
-    <View style={[styles.sectionHeader, styles.sectionHeaderRow]}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      {onViewAll && (
-        <TouchableOpacity onPress={onViewAll} activeOpacity={0.7}>
-          <Text style={styles.viewAllText}>View All</Text>
-        </TouchableOpacity>
-      )}
+        {/* ══ Continue Learning ══ */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Continue Learning</Text>
+          <PressableScale onPress={() => navigation.navigate('Growth')}>
+            <Text style={styles.seeAllText}>See all</Text>
+          </PressableScale>
+        </View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.hScroll}>
+          {COURSES.map((c, ci) => (
+            <FadeInUp key={c.id} delay={ci * 80}>
+              <Pressable
+                style={[styles.courseCard, { backgroundColor: c.bg }]}
+                onPress={() => navigation.navigate('Growth')}
+              >
+                {c.kind === 'brain' ? (
+                  <View style={styles.courseArt}><Brain3D size={104} animated={false} /></View>
+                ) : (
+                  <MaterialCommunityIcons name={c.icon} size={54} color={c.tint} style={styles.courseIcon} />
+                )}
+                {c.badge && (
+                  <View style={styles.courseBadge}>
+                    <Text style={styles.courseBadgeText}>{c.badge}</Text>
+                  </View>
+                )}
+                <Text style={styles.courseTitle}>{c.title}</Text>
+              </Pressable>
+            </FadeInUp>
+          ))}
+        </ScrollView>
+      </ScrollView>
     </View>
   );
 }
 
+const cardShadow = {
+  shadowColor: '#7C6BAE',
+  shadowOffset: { width: 0, height: 6 },
+  shadowOpacity: 0.08,
+  shadowRadius: 14,
+  elevation: 3,
+};
+
 const styles = StyleSheet.create({
-  safe:   { flex: 1, backgroundColor: ui.offWhite },
-  scroll: { flex: 1 },
+  screen: { flex: 1, backgroundColor: neural.bg },
 
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 12,
-  },
-  greetText:   { fontSize: 13, color: ui.midText, marginBottom: 2 },
-  welcomeText: { fontSize: 22, fontWeight: '800', color: ui.darkText, lineHeight: 28 },
-  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 },
-  streakPill: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: ui.streakBg, borderWidth: 1, borderColor: ui.streakBorder,
-    borderRadius: 17, paddingHorizontal: 10, height: 34,
-  },
-  streakEmoji: { fontSize: 13 },
-  streakNum:   { fontSize: 13, fontWeight: '800', color: ui.darkText },
-  iconBtn: {
-    width: 34, height: 34, borderRadius: 17,
-    backgroundColor: ui.inputBg,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  notifDot: {
-    position: 'absolute', top: 7, right: 7,
-    width: 7, height: 7, borderRadius: 4,
-    backgroundColor: '#EF4444', borderWidth: 1, borderColor: ui.white,
-  },
-  avatarCircle: {
-    width: 34, height: 34, borderRadius: 17,
-    backgroundColor: ui.primaryBlue,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  avatarText: { fontSize: 14, fontWeight: '800', color: ui.white },
-
-  scoreCard: {
-    marginHorizontal: 20,
-    borderRadius: 20,
-    padding: 22,
+  // ── hero ──
+  hero: {
+    paddingHorizontal: 20, paddingBottom: 24,
+    borderBottomLeftRadius: 34, borderBottomRightRadius: 34,
     overflow: 'hidden',
-    shadowColor: ui.blueGradStart,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.35,
-    shadowRadius: 16,
-    elevation: 10,
+    marginBottom: 18,
   },
-  journeyLabel:  { fontSize: 10, letterSpacing: 2, color: 'rgba(255,255,255,0.7)', fontWeight: '700', marginBottom: 8 },
-  scoreBig:      { fontSize: 64, fontWeight: '900', color: ui.white, lineHeight: 68 },
-  scoreSubLabel: { fontSize: 13, color: 'rgba(255,255,255,0.7)', marginBottom: 16 },
-  statsRow:      { flexDirection: 'row', alignItems: 'center', marginBottom: 18 },
-  statCol:       { flex: 1, alignItems: 'center' },
-  statVal:       { fontSize: 14, fontWeight: '800', color: ui.white },
-  statSub:       { fontSize: 10, color: 'rgba(255,255,255,0.6)', marginTop: 2, textAlign: 'center' },
-  statDivider:   { width: 1, height: 32, backgroundColor: 'rgba(255,255,255,0.2)' },
-  journeyBtn: {
-    backgroundColor: 'rgba(255,255,255,0.18)',
-    borderRadius: 24,
-    paddingVertical: 11,
-    paddingHorizontal: 20,
-    alignSelf: 'flex-start',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
+  headerRow:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  greetText:  { fontSize: 13, color: neural.heroSub, fontWeight: '700', letterSpacing: 1.5, textTransform: 'uppercase' },
+  welcomeSub: { fontSize: 15, color: '#CDC4EE', marginTop: 6, fontWeight: '600' },
+  welcomeName:{ fontSize: 32, fontWeight: '900', color: neural.heroText, letterSpacing: 0.3, marginTop: 1 },
+  headerRight:{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 2 },
+  heroIconBtn:{
+    width: 42, height: 42, borderRadius: 21,
+    backgroundColor: neural.heroGlass, borderWidth: 1, borderColor: neural.heroBorder,
+    alignItems: 'center', justifyContent: 'center',
   },
-  journeyBtnText: { fontSize: 14, fontWeight: '700', color: ui.white },
-  brainWm: { position: 'absolute', right: 14, bottom: 12, fontSize: 72, opacity: 0.12 },
+  notifDot:   { position: 'absolute', top: 9, right: 10, width: 8, height: 8, borderRadius: 4, backgroundColor: neural.cyan },
+  avatarCircle:{ width: 44, height: 44, borderRadius: 22, backgroundColor: PURPLE, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.35)' },
 
-  xpContainer: { marginHorizontal: 20, marginTop: 16, marginBottom: 4 },
-  xpLabelRow:  { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  xpLeft:      { fontSize: 13, fontWeight: '700', color: ui.darkText },
-  xpRight:     { fontSize: 12, color: ui.midText },
-  xpBarBg:     { height: 7, backgroundColor: ui.borderGray, borderRadius: 4, overflow: 'hidden' },
-  xpBarFill:   { height: '100%', backgroundColor: ui.primaryBlue, borderRadius: 4 },
+  brainStage: { alignItems: 'center', marginTop: 4, marginBottom: 2 },
 
-  sectionHeader: { marginHorizontal: 20, marginTop: 24, marginBottom: 14 },
-  sectionHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  sectionTitle:  { fontSize: 18, fontWeight: '800', color: ui.darkText },
-  viewAllText:   { fontSize: 13, fontWeight: '700', color: ui.primaryBlue },
-  hScrollContent:{ paddingLeft: 20, paddingRight: 8, gap: 12 },
+  statGrid:    { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 8 },
+  statTileWrap:{ width: (width - 50) / 2 },
+  statTile: {
+    backgroundColor: neural.heroGlass,
+    borderWidth: 1, borderColor: neural.heroBorder,
+    borderRadius: 18, padding: 14,
+  },
+  statEmoji: { fontSize: 18, marginBottom: 6 },
+  statVal:   { fontSize: 22, fontWeight: '900', color: neural.heroText },
+  statLabel: { fontSize: 11.5, color: neural.heroSub, fontWeight: '600', marginTop: 3 },
 
-  domainCard: {
-    width: CARD_W, backgroundColor: ui.white, borderRadius: 16, padding: 14,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3, marginBottom: 4,
+  scanCard: {
+    marginTop: 12,
+    backgroundColor: 'rgba(0,0,0,0.22)',
+    borderWidth: 1, borderColor: neural.heroBorder,
+    borderRadius: 18, padding: 14,
   },
-  domainIconBg:    { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
-  domainIconEmoji: { fontSize: 18 },
-  domainLabel:     { fontSize: 12, fontWeight: '600', color: ui.darkText, marginBottom: 8, lineHeight: 16 },
-  domainScoreRow:  { flexDirection: 'row', alignItems: 'baseline', marginBottom: 8 },
-  domainScore:     { fontSize: 26, fontWeight: '900' },
-  domainMax:       { fontSize: 12, color: ui.lightText, marginLeft: 2 },
-  domainBarBg:     { height: 4, backgroundColor: ui.borderGray, borderRadius: 2, overflow: 'hidden', marginBottom: 8 },
-  domainBarFill:   { height: '100%', borderRadius: 2 },
-  domainBadge:     { fontSize: 11, fontWeight: '600' },
+  scanTop:      { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  scanTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  scanDot:      { width: 8, height: 8, borderRadius: 4, backgroundColor: neural.cyan },
+  scanTitle:    { fontSize: 11, fontWeight: '800', letterSpacing: 2, color: '#9FE8FF' },
+  scanPct:      { fontSize: 13, fontWeight: '800', color: neural.heroText },
+  scanSub:      { fontSize: 11, color: neural.heroSub, marginTop: 8 },
 
-  insightCard: {
-    marginHorizontal: 20, marginTop: 24,
-    backgroundColor: ui.amberBg, borderRadius: 18, padding: 20, borderWidth: 1, borderColor: '#FDE68A',
+  // ── mission ──
+  missionCard: {
+    marginHorizontal: 20, backgroundColor: '#fff', borderRadius: 24, padding: 20,
+    borderWidth: 1, borderColor: neural.cardBorder, ...cardShadow,
   },
-  insightHead:      { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  insightIconBg:    { width: 28, height: 28, borderRadius: 8, backgroundColor: ui.amber, alignItems: 'center', justifyContent: 'center', marginRight: 8 },
-  insightIconEmoji: { fontSize: 14 },
-  insightLabel:     { fontSize: 10, letterSpacing: 1.5, fontWeight: '800', color: '#92400E' },
-  insightTitle:     { fontSize: 16, fontWeight: '800', color: ui.darkText, marginBottom: 8, lineHeight: 22 },
-  insightDesc:      { fontSize: 13, color: '#78716C', lineHeight: 18, marginBottom: 16 },
-  insightBtn:       { backgroundColor: ui.amber, borderRadius: 24, paddingVertical: 12, paddingHorizontal: 20, alignSelf: 'flex-start' },
-  insightBtnText:   { fontSize: 13, fontWeight: '700', color: ui.white },
+  missionHead:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  missionKicker:{ fontSize: 11, fontWeight: '800', letterSpacing: 2, color: PURPLE },
+  xpPill: {
+    flexDirection: 'row', alignItems: 'center', gap: 3,
+    backgroundColor: neural.energy, borderRadius: 12, paddingHorizontal: 9, paddingVertical: 4,
+  },
+  xpPillText:  { fontSize: 11, fontWeight: '900', color: '#fff' },
+  missionTitle:{ fontSize: 21, fontWeight: '900', color: INK, lineHeight: 27 },
+  missionSub:  { fontSize: 13, color: GRAY, marginTop: 6, lineHeight: 19 },
+  missionBtn:  { marginTop: 16, borderRadius: 16, overflow: 'hidden', shadowColor: PURPLE, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 14, elevation: 6 },
+  missionBtnGrad: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14 },
+  missionBtnText: { color: '#fff', fontWeight: '900', fontSize: 15.5 },
 
-  courseCard: {
-    width: CARD_W, backgroundColor: ui.white, borderRadius: 18, overflow: 'hidden',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 3, marginBottom: 4,
-  },
-  courseTop:        { height: 120, alignItems: 'center', justifyContent: 'center', position: 'relative' },
-  courseIconEmoji:  { fontSize: 40 },
-  courseBadge:      { position: 'absolute', top: 10, left: 10, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3 },
-  courseBadgeText:  { fontSize: 10, fontWeight: '700', color: ui.white },
-  courseBottom:     { padding: 12 },
-  courseTitle:      { fontSize: 13, fontWeight: '700', color: ui.darkText, lineHeight: 18, marginBottom: 4 },
-  courseWeeks:      { fontSize: 12, color: ui.midText },
+  levelStrip: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 18, paddingTop: 16, borderTopWidth: 1, borderTopColor: '#F0EDF8' },
+  levelBadge: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#F3EFFC', alignItems: 'center', justifyContent: 'center' },
+  levelBadgeText: { fontSize: 12, fontWeight: '900', color: PURPLE },
+  levelRow:   { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+  levelTitle: { fontSize: 13, fontWeight: '800', color: INK },
+  levelXp:    { fontSize: 11.5, fontWeight: '700', color: GRAY },
 
-  challengeCard: {
-    marginHorizontal: 20, marginTop: 24, backgroundColor: ui.challengeBg, borderRadius: 18, padding: 18,
+  // ── brain signal ──
+  signalCard: {
+    marginHorizontal: 20, marginTop: 16, borderRadius: 24, padding: 20,
+    backgroundColor: '#fff', overflow: 'hidden',
+    borderWidth: 1, borderColor: 'rgba(108,77,255,0.12)', ...cardShadow,
   },
-  challengeRow:       { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 16 },
-  challengeIconBg:    { width: 44, height: 44, borderRadius: 14, backgroundColor: ui.primaryBlue, alignItems: 'center', justifyContent: 'center' },
-  challengeIconEmoji: { fontSize: 22 },
-  challengeLabel:     { fontSize: 9, letterSpacing: 1.5, fontWeight: '800', color: ui.primaryBlue, marginBottom: 2 },
-  challengeTitle:     { fontSize: 15, fontWeight: '800', color: ui.darkText },
-  challengeSub:       { fontSize: 12, color: ui.midText, marginTop: 2 },
-  challengeBtn: {
-    backgroundColor: ui.primaryBlue, borderRadius: 24, paddingVertical: 14, alignItems: 'center',
-    shadowColor: ui.primaryBlue, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5,
-  },
-  challengeBtnText: { fontSize: 15, fontWeight: '700', color: ui.white },
+  signalHead:   { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 14 },
+  signalIconBg: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  signalKicker: { fontSize: 11, letterSpacing: 2, fontWeight: '800', color: PURPLE },
+  signalTitle:  { fontSize: 20, fontWeight: '900', color: INK, lineHeight: 26, marginBottom: 6 },
+  signalBody:   { fontSize: 13.5, color: GRAY, lineHeight: 20, marginBottom: 14 },
+  signalBtn:    { flexDirection: 'row', alignItems: 'center', gap: 7, alignSelf: 'flex-start' },
+  signalBtnText:{ fontSize: 15, fontWeight: '800', color: PURPLE },
+
+  // ── quick actions ──
+  quickRow:  { flexDirection: 'row', gap: 10, paddingHorizontal: 20, marginTop: 18 },
+  quickCard: { flex: 1, borderRadius: 18, padding: 11, minHeight: 150 },
+  quickIconBg: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+  quickTitle:{ fontSize: 13, fontWeight: '800', color: INK, marginBottom: 4 },
+  quickSub:  { fontSize: 10.5, color: GRAY, lineHeight: 14 },
+  quickArrow:{ marginTop: 'auto', alignSelf: 'flex-end', paddingTop: 8 },
+
+  // ── passport ──
+  passportCard: { marginHorizontal: 20, marginTop: 18, backgroundColor: '#fff', borderRadius: 22, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 14, overflow: 'hidden', ...cardShadow },
+  passportWatermark: { position: 'absolute', right: 64, top: 6 },
+  passportIconBg:{ width: 52, height: 52, borderRadius: 16, backgroundColor: PURPLE, alignItems: 'center', justifyContent: 'center' },
+  passportTitle: { fontSize: 15.5, fontWeight: '800', color: INK },
+  passportSub:   { fontSize: 12, color: GRAY, marginTop: 3, lineHeight: 17 },
+  passportBtn:   { width: 44, height: 44, borderRadius: 14, backgroundColor: '#EFEBFB', alignItems: 'center', justifyContent: 'center' },
+
+  // ── learning ──
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 20, marginTop: 28, marginBottom: 14 },
+  sectionTitle:  { fontSize: 20, fontWeight: '900', color: INK },
+  seeAllText:    { fontSize: 14.5, fontWeight: '700', color: PURPLE },
+  hScroll:       { paddingLeft: 20, paddingRight: 8, gap: 12 },
+
+  courseCard: { width: width * 0.42, height: 152, borderRadius: 20, overflow: 'hidden', padding: 14 },
+  courseArt:  { position: 'absolute', right: -18, bottom: -16 },
+  courseIcon: { position: 'absolute', right: 12, bottom: 14, opacity: 0.9 },
+  courseBadge:{ alignSelf: 'flex-start', backgroundColor: PURPLE, borderRadius: 11, paddingHorizontal: 9, paddingVertical: 4, marginBottom: 8 },
+  courseBadgeText: { fontSize: 10, fontWeight: '800', color: '#fff' },
+  courseTitle: { fontSize: 15.5, fontWeight: '800', color: INK, lineHeight: 21 },
 });

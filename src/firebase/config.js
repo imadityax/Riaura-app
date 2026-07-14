@@ -1,6 +1,8 @@
+import { Platform } from 'react-native';
 import { initializeApp } from 'firebase/app';
-import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
+import { initializeAuth, getAuth, getReactNativePersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const firebaseConfig = {
@@ -14,8 +16,13 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-export const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(AsyncStorage),
-});
+// getReactNativePersistence only exists in Firebase's React Native build;
+// on web, getAuth() uses browser localStorage persistence by default.
+export const auth = Platform.OS === 'web'
+  ? getAuth(app)
+  : initializeAuth(app, {
+      persistence: getReactNativePersistence(AsyncStorage),
+    });
 
 export const db = getFirestore(app);
+export const fbStorage = getStorage(app);

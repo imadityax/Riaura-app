@@ -1,7 +1,11 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated, SafeAreaView, StatusBar } from 'react-native';
+import {
+  View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated, StatusBar,
+} from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors, ui } from '../../theme/colors';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { colors, ui, dark } from '../../theme/colors';
 import CircularProgress from '../../components/CircularProgress';
 import ScoreCard from '../../components/ScoreCard';
 import LabCard from '../../components/LabCard';
@@ -10,6 +14,7 @@ import { getTopLabs } from '../../utils/scoreEngine';
 import { DOMAIN_SHORT } from '../../data/phase2Questions';
 
 export default function HighPerformanceScreen({ route, navigation }) {
+  const insets = useSafeAreaInsets();
   const { scores } = route.params;
   const { combined, cis, gps, domainPercents, labReadiness, hii } = scores;
   const topLabs = getTopLabs(labReadiness, 3);
@@ -25,13 +30,13 @@ export default function HighPerformanceScreen({ route, navigation }) {
   }, []);
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView edges={['bottom']} style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor={ui.blueGradStart} />
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Hero */}
-        <LinearGradient colors={[ui.blueGradStart, ui.blueGradEnd]} style={styles.hero}>
+        <LinearGradient colors={[ui.blueGradStart, ui.blueGradEnd]} style={[styles.hero, { paddingTop: insets.top + 16 }]}>
           <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }], alignItems: 'center' }}>
-            <Text style={styles.heroEmoji}>🏆</Text>
+            <MaterialCommunityIcons name="trophy-outline" size={40} color="#FFD94A" style={styles.heroEmoji} />
             <Text style={styles.heroTitle}>High Performance{'\n'}Pathway</Text>
             <Text style={styles.heroSub}>Combined Score: {Math.round(combined.percent)}%</Text>
             <View style={styles.heroRing}>
@@ -42,7 +47,7 @@ export default function HighPerformanceScreen({ route, navigation }) {
 
         <View style={styles.content}>
           <Text style={styles.sectionTitle}>Intelligence Scores</Text>
-          <ScoreCard acronym="CIS" title="Current Intelligence Score" description="Your current overall cognitive capability level" value={cis} color={ui.primaryBlue} />
+          <ScoreCard acronym="CIS" title="Current Intelligence Score" description="Your current overall cognitive capability level" value={cis} color={dark.neon} />
           <ScoreCard acronym="GPS" title="Growth Potential Score" description="Expected improvement potential with training" value={gps} color={colors.phase2} />
           <ScoreCard acronym="HII" title="Human Intelligence Index" description="Composite score across both assessments" value={hii} color={colors.phase3} />
 
@@ -51,7 +56,7 @@ export default function HighPerformanceScreen({ route, navigation }) {
             <RadarChart scores={domainPercents} size={280} />
             <View style={styles.legendRow}>
               {DOMAIN_SHORT.map((d, i) => (
-                <Text key={i} style={styles.legendItem}>{i + 1}. {d}: <Text style={{ color: ui.primaryBlue }}>{domainPercents[i]}%</Text></Text>
+                <Text key={i} style={styles.legendItem}>{i + 1}. {d}: <Text style={{ color: dark.neon }}>{domainPercents[i]}%</Text></Text>
               ))}
             </View>
           </View>
@@ -88,50 +93,50 @@ export default function HighPerformanceScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  safe:         { flex: 1, backgroundColor: ui.offWhite },
+  safe:         { flex: 1, backgroundColor: dark.bgSolid },
   hero:         { padding: 30, alignItems: 'center', paddingTop: 50 },
-  heroEmoji:    { fontSize: 40, marginBottom: 12 },
+  heroEmoji:    { marginBottom: 12 },
   heroTitle:    { fontSize: 26, fontWeight: '900', color: '#fff', textAlign: 'center', lineHeight: 32, marginBottom: 6 },
   heroSub:      { fontSize: 13, color: 'rgba(255,255,255,0.85)', fontWeight: '700', marginBottom: 20 },
   heroRing:     { marginTop: 10, marginBottom: 10 },
   content:      { padding: 20, paddingBottom: 40 },
-  sectionTitle: { fontSize: 14, color: ui.midText, fontWeight: '700', marginTop: 24, marginBottom: 10, letterSpacing: 0.5 },
+  sectionTitle: { fontSize: 14, color: dark.textSub, fontWeight: '700', marginTop: 24, marginBottom: 10, letterSpacing: 0.5 },
   card: {
-    backgroundColor: ui.white, borderRadius: 16, padding: 16, marginBottom: 8,
+    backgroundColor: dark.glass, borderRadius: 16, padding: 16, marginBottom: 8,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3,
   },
   legendRow:  { marginTop: 12, flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  legendItem: { fontSize: 11, color: ui.midText, width: '48%' },
+  legendItem: { fontSize: 11, color: dark.textSub, width: '48%' },
   bestLabCard: {
-    backgroundColor: ui.white, borderRadius: 16, padding: 20, alignItems: 'center', marginVertical: 8,
-    borderWidth: 1.5, borderColor: ui.primaryBlue + '40',
+    backgroundColor: dark.glass, borderRadius: 16, padding: 20, alignItems: 'center', marginVertical: 8,
+    borderWidth: 1.5, borderColor: dark.neon + '40',
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3,
   },
   bestLabStar:  { fontSize: 28, marginBottom: 8 },
-  bestLabLabel: { fontSize: 11, color: ui.primaryBlue, fontWeight: '700', letterSpacing: 1, marginBottom: 6 },
-  bestLabName:  { fontSize: 20, fontWeight: '900', color: ui.darkText, marginBottom: 8 },
-  bestLabDesc:  { fontSize: 12, color: ui.midText, textAlign: 'center', lineHeight: 18, marginBottom: 8 },
-  bestLabScore: { fontSize: 14, color: ui.primaryBlue, fontWeight: '800' },
+  bestLabLabel: { fontSize: 11, color: dark.neon, fontWeight: '700', letterSpacing: 1, marginBottom: 6 },
+  bestLabName:  { fontSize: 20, fontWeight: '900', color: '#1E1B33', marginBottom: 8 },
+  bestLabDesc:  { fontSize: 12, color: dark.textSub, textAlign: 'center', lineHeight: 18, marginBottom: 8 },
+  bestLabScore: { fontSize: 14, color: dark.neon, fontWeight: '800' },
   phase4Card: {
-    backgroundColor: ui.white, borderRadius: 16, padding: 20,
-    borderWidth: 1.5, borderColor: ui.primaryBlue + '50', marginVertical: 8,
+    backgroundColor: dark.glass, borderRadius: 16, padding: 20,
+    borderWidth: 1.5, borderColor: dark.neon + '50', marginVertical: 8,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3,
   },
   phase4Badge: {
-    fontSize: 10, color: ui.primaryBlue, fontWeight: '700', letterSpacing: 1,
-    backgroundColor: ui.challengeBg, paddingHorizontal: 10, paddingVertical: 4,
+    fontSize: 10, color: dark.neon, fontWeight: '700', letterSpacing: 1,
+    backgroundColor: dark.glass, paddingHorizontal: 10, paddingVertical: 4,
     borderRadius: 10, alignSelf: 'flex-start', marginBottom: 10,
   },
-  phase4Title: { fontSize: 18, fontWeight: '800', color: ui.darkText, lineHeight: 24, marginBottom: 6 },
-  phase4Sub:   { fontSize: 12, color: ui.midText, lineHeight: 18, marginBottom: 16 },
+  phase4Title: { fontSize: 18, fontWeight: '800', color: '#1E1B33', lineHeight: 24, marginBottom: 6 },
+  phase4Sub:   { fontSize: 12, color: dark.textSub, lineHeight: 18, marginBottom: 16 },
   phase4Btn: {
-    backgroundColor: ui.primaryBlue, borderRadius: 28, paddingVertical: 14, alignItems: 'center',
-    shadowColor: ui.primaryBlue, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5,
+    backgroundColor: dark.neon, borderRadius: 28, paddingVertical: 14, alignItems: 'center',
+    shadowColor: dark.neon, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5,
   },
   phase4BtnText: { fontSize: 14, fontWeight: '700', color: '#fff' },
   reportBtn: {
-    backgroundColor: ui.white, borderRadius: 14, padding: 16,
-    alignItems: 'center', marginTop: 8, borderWidth: 1, borderColor: ui.borderGray,
+    backgroundColor: dark.glass, borderRadius: 14, padding: 16,
+    alignItems: 'center', marginTop: 8, borderWidth: 1, borderColor: dark.glassBorder,
   },
-  reportBtnText: { color: ui.primaryBlue, fontWeight: '700', fontSize: 14 },
+  reportBtnText: { color: dark.neon, fontWeight: '700', fontSize: 14 },
 });

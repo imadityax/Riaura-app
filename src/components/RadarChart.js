@@ -34,21 +34,21 @@ export default function RadarChart({ scores, size = 280 }) {
     <View style={{ alignItems: 'center' }}>
       <Svg width={size} height={size}>
         {gridPolygons.map((pts, l) => (
-          <Polygon key={l} points={pts} fill="none" stroke={colors.navyLight} strokeWidth={1} />
+          <Polygon key={l} points={pts} fill="none" stroke="#E4DFF1" strokeWidth={1} />
         ))}
         {Array.from({ length: n }, (_, i) => {
           const outer = getPoint(i, maxR);
-          return <Line key={i} x1={cx} y1={cy} x2={outer.x} y2={outer.y} stroke={colors.navyLight} strokeWidth={1} />;
+          return <Line key={i} x1={cx} y1={cy} x2={outer.x} y2={outer.y} stroke="#E4DFF1" strokeWidth={1} />;
         })}
-        <Polygon points={dataPolygon} fill={colors.gold + '30'} stroke={colors.gold} strokeWidth={2} />
+        <Polygon points={dataPolygon} fill="#8B5CF630" stroke="#8B5CF6" strokeWidth={2} />
         {dataPoints.map((p, i) => (
-          <Circle key={i} cx={p.x} cy={p.y} r={4} fill={colors.gold} />
+          <Circle key={i} cx={p.x} cy={p.y} r={4} fill="#8B5CF6" />
         ))}
         {Array.from({ length: n }, (_, i) => {
           const lp = getPoint(i, maxR + 22);
           return (
             <SvgText key={i} x={lp.x} y={lp.y} textAnchor="middle" alignmentBaseline="middle"
-              fill={colors.textSub} fontSize={9} fontWeight="600">
+              fill="#6E6A80" fontSize={9} fontWeight="600">
               {SHORT_LABELS[i]}
             </SvgText>
           );

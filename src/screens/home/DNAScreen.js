@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar,
+  View, Text, ScrollView, TouchableOpacity, StyleSheet, StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Polygon, Line, Text as SvgText } from 'react-native-svg';
-import { ui } from '../../theme/colors';
+import { ui, dark } from '../../theme/colors';
 import { storage } from '../../utils/storage';
 
 const DOMAINS = [
-  { key: 'analytical', label: 'Analytical', color: ui.primaryBlue, score: 88 },
+  { key: 'analytical', label: 'Analytical', color: dark.neon, score: 88 },
   { key: 'creative',   label: 'Creative',   color: '#7C3AED',       score: 72 },
   { key: 'leadership', label: 'Leadership', color: '#059669',       score: 80 },
-  { key: 'execution',  label: 'Execution',  color: ui.primaryBlue, score: 85 },
+  { key: 'execution',  label: 'Execution',  color: dark.neon, score: 85 },
   { key: 'agility',    label: 'Agility',    color: '#EC4899',       score: 77 },
   { key: 'comms',      label: 'Comms',      color: '#F59E0B',       score: 83 },
   { key: 'decision',   label: 'Decision',   color: '#DC2626',       score: 79 },
@@ -73,18 +75,18 @@ function RadarChart7({ scores, size = 240 }) {
   return (
     <Svg width={size} height={size}>
       {gridLevels.map((pts, l) => (
-        <Polygon key={l} points={pts} fill="none" stroke={ui.borderGray} strokeWidth={1} />
+        <Polygon key={l} points={pts} fill="none" stroke={dark.glassBorder} strokeWidth={1} />
       ))}
       {Array.from({ length: n }, (_, i) => {
         const outer = getPoint(i, maxR);
-        return <Line key={i} x1={cx} y1={cy} x2={outer.x} y2={outer.y} stroke={ui.borderGray} strokeWidth={1} />;
+        return <Line key={i} x1={cx} y1={cy} x2={outer.x} y2={outer.y} stroke={dark.glassBorder} strokeWidth={1} />;
       })}
-      <Polygon points={dataPolygon} fill={`${ui.primaryBlue}25`} stroke={ui.primaryBlue} strokeWidth={2} />
+      <Polygon points={dataPolygon} fill={`${dark.neon}25`} stroke={dark.neon} strokeWidth={2} />
       {Array.from({ length: n }, (_, i) => {
         const lp = getPoint(i, maxR + 24);
         return (
           <SvgText key={i} x={lp.x} y={lp.y} textAnchor="middle" alignmentBaseline="middle"
-            fill={ui.midText} fontSize={9} fontWeight="600">
+            fill={dark.textSub} fontSize={9} fontWeight="600">
             {labels[i]}
           </SvgText>
         );
@@ -114,8 +116,17 @@ export default function DNAScreen({ navigation }) {
   }, []);
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={ui.offWhite} />
+    <SafeAreaView edges={['top', 'bottom']} style={styles.safe}>
+      <StatusBar barStyle="dark-content" />
+      <View style={styles.topBar}>
+        {navigation.canGoBack() && (
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={22} color={'#1E1B33'} />
+          </TouchableOpacity>
+        )}
+        <Text style={styles.topTitle}>Intelligence Analytics</Text>
+        <View style={{ width: 36 }} />
+      </View>
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 30 }}>
 
         {/* Archetype card */}
@@ -142,9 +153,9 @@ export default function DNAScreen({ navigation }) {
           {DOMAINS.map((d, i) => (
             <View key={d.key} style={styles.barRow}>
               <Text style={styles.barLabel}>{d.label}</Text>
-              <Text style={[styles.barPct, { color: ui.primaryBlue }]}>{scores[i] || d.score}%</Text>
+              <Text style={[styles.barPct, { color: dark.neon }]}>{scores[i] || d.score}%</Text>
               <View style={styles.barTrack}>
-                <View style={[styles.barFill, { width: `${scores[i] || d.score}%`, backgroundColor: ui.primaryBlue }]} />
+                <View style={[styles.barFill, { width: `${scores[i] || d.score}%`, backgroundColor: dark.neon }]} />
               </View>
             </View>
           ))}
@@ -167,8 +178,19 @@ export default function DNAScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  safe:   { flex: 1, backgroundColor: ui.offWhite },
+  safe:   { flex: 1, backgroundColor: dark.bgSolid },
   scroll: { flex: 1 },
+  topBar: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingVertical: 12,
+  },
+  backBtn: {
+    width: 36, height: 36, borderRadius: 12,
+    backgroundColor: dark.glass, alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06, shadowRadius: 4, elevation: 2,
+  },
+  topTitle: { fontSize: 17, fontWeight: '800', color: '#1E1B33' },
 
   archetypeCard: {
     margin: 20,
@@ -186,7 +208,7 @@ const styles = StyleSheet.create({
 
   radarCard: {
     marginHorizontal: 20,
-    backgroundColor: ui.white,
+    backgroundColor: dark.glass,
     borderRadius: 18,
     padding: 20,
     shadowColor: '#000',
@@ -196,11 +218,11 @@ const styles = StyleSheet.create({
     elevation: 3,
     marginBottom: 16,
   },
-  radarTitle: { fontSize: 17, fontWeight: '800', color: ui.darkText, marginBottom: 4 },
+  radarTitle: { fontSize: 17, fontWeight: '800', color: '#1E1B33', marginBottom: 4 },
 
   barsCard: {
     marginHorizontal: 20,
-    backgroundColor: ui.white,
+    backgroundColor: dark.glass,
     borderRadius: 18,
     paddingHorizontal: 20,
     paddingVertical: 16,
@@ -213,20 +235,20 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   barRow:   { gap: 6 },
-  barLabel: { fontSize: 14, fontWeight: '600', color: ui.darkText },
+  barLabel: { fontSize: 14, fontWeight: '600', color: '#1E1B33' },
   barPct:   { fontSize: 14, fontWeight: '800', position: 'absolute', right: 0, top: 0 },
-  barTrack: { height: 8, backgroundColor: ui.borderGray, borderRadius: 4, overflow: 'hidden', marginTop: 18 },
+  barTrack: { height: 8, backgroundColor: dark.glassBorder, borderRadius: 4, overflow: 'hidden', marginTop: 18 },
   barFill:  { height: '100%', borderRadius: 4 },
 
   careerSection: { marginHorizontal: 20, marginBottom: 16 },
-  careerTitle:   { fontSize: 17, fontWeight: '800', color: ui.darkText, marginBottom: 14 },
+  careerTitle:   { fontSize: 17, fontWeight: '800', color: '#1E1B33', marginBottom: 14 },
   chipRow:       { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   chip: {
     borderWidth: 1.5,
-    borderColor: ui.primaryBlue,
+    borderColor: dark.neon,
     borderRadius: 24,
     paddingHorizontal: 16,
     paddingVertical: 9,
   },
-  chipText: { fontSize: 13, fontWeight: '600', color: ui.primaryBlue },
+  chipText: { fontSize: 13, fontWeight: '600', color: dark.neon },
 });

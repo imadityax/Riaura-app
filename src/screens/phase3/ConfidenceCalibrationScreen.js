@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, SafeAreaView, StatusBar, Alert } from 'react-native';
-import { colors, ui } from '../../theme/colors';
+import {
+  View, Text, TouchableOpacity, ScrollView, StyleSheet, StatusBar, Alert,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { colors, ui, dark } from '../../theme/colors';
 import PhaseHeader from '../../components/PhaseHeader';
 import {
   calcPhase2Score, calcPhase3Score, calcCombinedScore,
@@ -9,6 +12,7 @@ import {
 import { storage } from '../../utils/storage';
 import { saveScoresToCloud } from '../../firebase/firestore';
 import { useAuth } from '../../context/AuthContext';
+import NeuralLinesBg from '../../components/NeuralLinesBg';
 
 const QUESTIONS = [
   { q: 'The human brain uses about 20% of the body\'s total energy despite being only 2% of body weight.', options: ['True', 'False'], correct: 0 },
@@ -82,8 +86,9 @@ export default function ConfidenceCalibrationScreen({ route, navigation }) {
   const canNext = answerPicked !== null && confidence !== null;
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={ui.offWhite} />
+    <SafeAreaView edges={['top', 'bottom']} style={styles.safe}>
+      <NeuralLinesBg />
+      <StatusBar barStyle="dark-content" />
       <PhaseHeader phase={3} title="Confidence Calibration" subtitle={`Metacognitive · ${current + 1}/${QUESTIONS.length}`} progress={(taskIndex + 1) / 8} onBack={handleBack} />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.qCard}>
@@ -139,36 +144,36 @@ export default function ConfidenceCalibrationScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  safe:    { flex: 1, backgroundColor: ui.offWhite },
+  safe:    { flex: 1, backgroundColor: dark.bgSolid },
   content: { padding: 20, paddingBottom: 40 },
   qCard: {
-    backgroundColor: ui.white, borderRadius: 16, padding: 18, marginBottom: 20,
-    borderLeftWidth: 3, borderLeftColor: ui.primaryBlue,
+    backgroundColor: dark.glass, borderRadius: 16, padding: 18, marginBottom: 20,
+    borderLeftWidth: 3, borderLeftColor: dark.neon,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3,
   },
-  qLabel:      { color: ui.primaryBlue, fontSize: 10, fontWeight: '700', letterSpacing: 1, marginBottom: 8 },
-  qText:       { fontSize: 15, color: ui.darkText, lineHeight: 22, fontWeight: '500' },
-  sectionLabel:{ fontSize: 12, color: ui.midText, fontWeight: '700', marginBottom: 10, letterSpacing: 0.5 },
+  qLabel:      { color: dark.neon, fontSize: 10, fontWeight: '700', letterSpacing: 1, marginBottom: 8 },
+  qText:       { fontSize: 15, color: '#1E1B33', lineHeight: 22, fontWeight: '500' },
+  sectionLabel:{ fontSize: 12, color: dark.textSub, fontWeight: '700', marginBottom: 10, letterSpacing: 0.5 },
   answerRow:   { flexDirection: 'row', gap: 12, marginBottom: 24 },
   answerBtn: {
     flex: 1, paddingVertical: 16, borderRadius: 12, alignItems: 'center',
-    backgroundColor: ui.white, borderWidth: 1.5, borderColor: ui.borderGray,
+    backgroundColor: dark.glass, borderWidth: 1.5, borderColor: dark.glassBorder,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1,
   },
-  answerSelected:     { borderColor: ui.primaryBlue, backgroundColor: ui.challengeBg },
-  answerText:         { color: ui.darkText, fontWeight: '700', fontSize: 16 },
-  answerTextSelected: { color: ui.primaryBlue },
+  answerSelected:     { borderColor: dark.neon, backgroundColor: dark.glass },
+  answerText:         { color: '#1E1B33', fontWeight: '700', fontSize: 16 },
+  answerTextSelected: { color: dark.neon },
   confRow: { flexDirection: 'row', gap: 10, marginBottom: 28 },
   confBtn: {
     flex: 1, paddingVertical: 14, borderRadius: 12, alignItems: 'center',
-    backgroundColor: ui.white, borderWidth: 1.5, borderColor: ui.borderGray,
+    backgroundColor: dark.glass, borderWidth: 1.5, borderColor: dark.glassBorder,
   },
-  confText: { color: ui.midText, fontWeight: '600', fontSize: 13 },
+  confText: { color: dark.textSub, fontWeight: '600', fontSize: 13 },
   nextBtn: {
-    backgroundColor: ui.primaryBlue, borderRadius: 28, paddingVertical: 16, alignItems: 'center',
-    shadowColor: ui.primaryBlue, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5,
+    backgroundColor: dark.neon, borderRadius: 28, paddingVertical: 16, alignItems: 'center',
+    shadowColor: dark.neon, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5,
   },
-  nextDisabled:     { backgroundColor: ui.borderGray, shadowOpacity: 0 },
+  nextDisabled:     { backgroundColor: dark.glassBorder, shadowOpacity: 0 },
   nextText:         { fontSize: 16, fontWeight: '700', color: '#fff' },
-  nextTextDisabled: { color: ui.lightText },
+  nextTextDisabled: { color: dark.textMute },
 });

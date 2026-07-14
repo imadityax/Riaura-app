@@ -12,8 +12,16 @@ const KEYS = {
   SCORES: 'rhims_scores',
   MINDFULNESS_SCORE: 'rhims_mindfulness_score',
   MINDFULNESS_DONE:  'rhims_mindfulness_done',
+  MINDFULNESS_DOMAIN_SCORES: 'rhims_mindfulness_domain_scores',
+  RIAURA_DOMAIN_SCORES: 'rhims_riaura_domain_scores',
   STREAK_COUNT:      'rhims_streak_count',
   STREAK_LAST_DATE:  'rhims_streak_last_date',
+  CHAT_HISTORY:      'rhims_chat_history',
+  GOALS:             'rhims_dev_goals',
+  REFLECTIONS:       'rhims_reflections',
+  ONBOARDED:         'rhims_onboarded',
+  PROFILE_PHOTO:     'rhims_profile_photo',
+  XP_TOTAL:          'rhims_xp_total',
 };
 
 export const storage = {
@@ -24,6 +32,11 @@ export const storage = {
   async getRegistration() {
     const v = await AsyncStorage.getItem(KEYS.REGISTRATION);
     return v ? JSON.parse(v) : null;
+  },
+
+  // Update profile fields without touching phase progress
+  async updateRegistration(data) {
+    await AsyncStorage.setItem(KEYS.REGISTRATION, JSON.stringify(data));
   },
 
   async saveConsent(data) {
@@ -87,6 +100,31 @@ export const storage = {
     return v !== null ? parseInt(v) : null;
   },
 
+  async saveMindfulnessDomainScore(domainNum, entry) {
+    const v = await AsyncStorage.getItem(KEYS.MINDFULNESS_DOMAIN_SCORES);
+    const map = v ? JSON.parse(v) : {};
+    map[domainNum] = entry;
+    await AsyncStorage.setItem(KEYS.MINDFULNESS_DOMAIN_SCORES, JSON.stringify(map));
+    return map;
+  },
+  async getMindfulnessDomainScores() {
+    const v = await AsyncStorage.getItem(KEYS.MINDFULNESS_DOMAIN_SCORES);
+    return v ? JSON.parse(v) : {};
+  },
+
+  // ── RiAura activity-based domain scores (parallel to the WHO track) ──
+  async saveRiauraDomainScore(domainNum, entry) {
+    const v = await AsyncStorage.getItem(KEYS.RIAURA_DOMAIN_SCORES);
+    const map = v ? JSON.parse(v) : {};
+    map[domainNum] = entry;
+    await AsyncStorage.setItem(KEYS.RIAURA_DOMAIN_SCORES, JSON.stringify(map));
+    return map;
+  },
+  async getRiauraDomainScores() {
+    const v = await AsyncStorage.getItem(KEYS.RIAURA_DOMAIN_SCORES);
+    return v ? JSON.parse(v) : {};
+  },
+
   async touchStreak() {
     const today = new Date().toISOString().slice(0, 10);
     const lastDate = await AsyncStorage.getItem(KEYS.STREAK_LAST_DATE);
@@ -106,7 +144,106 @@ export const storage = {
     return count;
   },
 
+  // ── XP (gamified progression) ──
+  async getXp() {
+    return parseInt(await AsyncStorage.getItem(KEYS.XP_TOTAL), 10) || 0;
+  },
+  async addXp(amount) {
+    const total = (parseInt(await AsyncStorage.getItem(KEYS.XP_TOTAL), 10) || 0) + amount;
+    await AsyncStorage.setItem(KEYS.XP_TOTAL, String(total));
+    return total;
+  },
+
+  // ── Chat history (AI Coach) ──
+  async saveChatHistory(messages) {
+    await AsyncStorage.setItem(KEYS.CHAT_HISTORY, JSON.stringify(messages.slice(-60)));
+  },
+  async getChatHistory() {
+    const v = await AsyncStorage.getItem(KEYS.CHAT_HISTORY);
+    return v ? JSON.parse(v) : [];
+  },
+  async clearChatHistory() {
+    await AsyncStorage.removeItem(KEYS.CHAT_HISTORY);
+  },
+
+  // ── Development goals ──
+  async saveGoals(goals) {
+    await AsyncStorage.setItem(KEYS.GOALS, JSON.stringify(goals));
+  },
+  async getGoals() {
+    const v = await AsyncStorage.getItem(KEYS.GOALS);
+    return v ? JSON.parse(v) : [];
+  },
+
+  // ── Post-assessment reflections ──
+  async addReflection(entry) {
+    const v = await AsyncStorage.getItem(KEYS.REFLECTIONS);
+    const list = v ? JSON.parse(v) : [];
+    list.push({ ...entry, at: new Date().toISOString() });
+    await AsyncStorage.setItem(KEYS.REFLECTIONS, JSON.stringify(list.slice(-100)));
+    return list;
+  },
+  async getReflections() {
+    const v = await AsyncStorage.getItem(KEYS.REFLECTIONS);
+    return v ? JSON.parse(v) : [];
+  },
+
+  // ── Profile photo (base64 data URI, persists across restarts) ──
+  async saveProfilePhoto(dataUri) {
+    await AsyncStorage.setItem(KEYS.PROFILE_PHOTO, dataUri);
+  },
+  async getProfilePhoto() {
+    return await AsyncStorage.getItem(KEYS.PROFILE_PHOTO);
+  },
+  async removeProfilePhoto() {
+    await AsyncStorage.removeItem(KEYS.PROFILE_PHOTO);
+  },
+
+  // ── Onboarding flag (device-level, survives sign-out) ──
+  async setOnboarded() {
+    await AsyncStorage.setItem(KEYS.ONBOARDED, 'true');
+  },
+  async getOnboarded() {
+    return (await AsyncStorage.getItem(KEYS.ONBOARDED)) === 'true';
+  },
+
+  // ── Cloud restore ──
+  // Writes a Firestore user document into local storage so progress
+  // follows the account across devices and reinstalls.
+  async hydrateFromCloud(data) {
+    if (!data) return;
+    const writes = [];
+    if (data.profile)       writes.push([KEYS.REGISTRATION, JSON.stringify(data.profile)]);
+    if (data.phase != null) writes.push([KEYS.PHASE, String(data.phase)]);
+    if (data.scores)        writes.push([KEYS.SCORES, JSON.stringify(data.scores)]);
+    if (data.phase2Answers?.answers?.length) {
+      writes.push([KEYS.PHASE2_ANSWERS, JSON.stringify(data.phase2Answers.answers)]);
+      writes.push([KEYS.PHASE2_DOMAIN, String(data.phase2Answers.domainIndex ?? 0)]);
+    }
+    if (data.phase3Scores?.scores?.length) {
+      writes.push([KEYS.PHASE3_SCORES, JSON.stringify(data.phase3Scores.scores)]);
+      writes.push([KEYS.PHASE3_TASK, String(data.phase3Scores.taskIndex ?? 0)]);
+    }
+    if (data.phase4Marks != null) writes.push([KEYS.PHASE4_MARKS, String(data.phase4Marks)]);
+    if (data.mindfulness?.score != null) {
+      writes.push([KEYS.MINDFULNESS_SCORE, String(data.mindfulness.score)]);
+      writes.push([KEYS.MINDFULNESS_DONE, 'true']);
+    }
+    if (data.mindfulnessDomains) {
+      writes.push([KEYS.MINDFULNESS_DOMAIN_SCORES, JSON.stringify(data.mindfulnessDomains)]);
+    }
+    if (data.riauraDomains) {
+      writes.push([KEYS.RIAURA_DOMAIN_SCORES, JSON.stringify(data.riauraDomains)]);
+    }
+    if (data.devGoals)    writes.push([KEYS.GOALS, JSON.stringify(data.devGoals)]);
+    if (data.reflections) writes.push([KEYS.REFLECTIONS, JSON.stringify(data.reflections)]);
+    if (data.photoUrl)    writes.push([KEYS.PROFILE_PHOTO, data.photoUrl]);
+    if (writes.length) await AsyncStorage.multiSet(writes);
+  },
+
   async clearAll() {
-    await AsyncStorage.multiRemove(Object.values(KEYS));
+    // Keep the onboarding flag so returning users skip the intro
+    const keep = new Set([KEYS.ONBOARDED]);
+    await AsyncStorage.multiRemove(Object.values(KEYS).filter(k => !keep.has(k)));
   },
 };

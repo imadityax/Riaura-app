@@ -52,7 +52,7 @@ export default function Dashboard({ adminUser }) {
         </div>
       </div>
 
-      <div style={s.content}>
+      <div style={s.content} className="scroll-area">
         {/* Stats row */}
         <div style={s.statsRow}>
           <StatCard label="Total Users" value={users.length} icon="👥" color="#2B4EFF" />
@@ -141,8 +141,8 @@ function ScorePill({ value }) {
 }
 
 const s = {
-  page:       { minHeight: '100vh', background: '#F4F6FA' },
-  header:     { background: '#fff', borderBottom: '1px solid #E5E7EB', padding: '14px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  page:       { height: '100vh', display: 'flex', flexDirection: 'column', background: '#F4F6FA', overflow: 'hidden' },
+  header:     { flexShrink: 0, flexWrap: 'wrap', gap: 12, background: '#fff', borderBottom: '1px solid #E5E7EB', padding: '14px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   headerLeft: { display: 'flex', alignItems: 'center', gap: 12 },
   logo:       { fontSize: 28 },
   brand:      { fontWeight: 800, fontSize: 16, color: '#1A1A2E' },
@@ -151,17 +151,17 @@ const s = {
   adminEmail: { fontSize: 13, color: '#6B7280' },
   signOutBtn: { padding: '7px 16px', borderRadius: 20, background: '#FEE2E2', color: '#EF4444', border: 'none', fontWeight: 700, fontSize: 13 },
 
-  content:    { padding: '24px 28px' },
-  statsRow:   { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 },
+  content:    { flex: 1, minHeight: 0, padding: '24px 28px' },
+  statsRow:   { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 24 },
   statCard:   { background: '#fff', borderRadius: 16, padding: '20px 18px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
   statIcon:   { width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, marginBottom: 12 },
   statValue:  { fontSize: 26, fontWeight: 900, marginBottom: 4 },
   statLabel:  { fontSize: 12, color: '#6B7280', fontWeight: 600 },
 
   tableCard:    { background: '#fff', borderRadius: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', overflow: 'hidden' },
-  tableHeader:  { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 20px', borderBottom: '1px solid #F3F4F6' },
+  tableHeader:  { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap', padding: '18px 20px', borderBottom: '1px solid #F3F4F6' },
   tableTitle:   { fontSize: 16, fontWeight: 800, color: '#1A1A2E' },
-  search:       { padding: '9px 14px', borderRadius: 10, border: '1px solid #E5E7EB', fontSize: 13, width: 280, outline: 'none' },
+  search:       { padding: '9px 14px', borderRadius: 10, border: '1px solid #E5E7EB', fontSize: 13, width: 280, maxWidth: '100%', flex: '1 1 220px', outline: 'none' },
   table:        { width: '100%', borderCollapse: 'collapse' },
   th:           { padding: '11px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#6B7280', letterSpacing: 0.5, background: '#F9FAFB', whiteSpace: 'nowrap' },
   tr:           { borderTop: '1px solid #F3F4F6', cursor: 'pointer', transition: 'background 0.15s' },

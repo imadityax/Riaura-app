@@ -1,14 +1,21 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet,
-  KeyboardAvoidingView, Platform, SafeAreaView, StatusBar, ScrollView, Alert, ActivityIndicator,
+  View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, StatusBar, ScrollView, Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { storage } from '../../utils/storage';
 import { auth } from '../../firebase/config';
 import { getUserData } from '../../firebase/firestore';
 import { ui } from '../../theme/colors';
+import NeuralLoader from '../../components/NeuralLoader';
+import Brain3D from '../../components/Brain3D';
+import { FadeInUp } from '../../components/anim';
+
+const PURPLE = '#7C3AED';
+const INK    = '#1E1B33';
+const GRAY   = '#8A8797';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -24,12 +31,12 @@ export default function LoginScreen({ navigation }) {
     setLoading(true);
     try {
       const { user } = await signInWithEmailAndPassword(auth, email.trim(), password);
-      // Cache profile locally so ProfileScreen can display name without extra network call
+      // Restore the full account from the cloud — profile, phase progress,
+      // scores and mindfulness domains — so a new device picks up where
+      // the user left off.
       try {
         const data = await getUserData(user.uid);
-        if (data?.profile) {
-          await AsyncStorage.setItem('rhims_registration', JSON.stringify(data.profile));
-        }
+        await storage.hydrateFromCloud(data);
       } catch (_) {}
       navigation.replace('Main');
     } catch (err) {
@@ -56,8 +63,8 @@ export default function LoginScreen({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={ui.beige} />
+    <SafeAreaView edges={['top', 'bottom']} style={styles.safe}>
+      <StatusBar barStyle="dark-content" backgroundColor="#F7F5FB" />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.flex}
@@ -67,8 +74,12 @@ export default function LoginScreen({ navigation }) {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.tagline}>BEYOND AWAKENING</Text>
+          <FadeInUp distance={12}>
+            <Brain3D size={150} style={{ marginBottom: 2, alignSelf: 'center' }} />
+            <Text style={[styles.tagline, { textAlign: 'center' }]}>BEYOND AWAKENING</Text>
+          </FadeInUp>
 
+          <FadeInUp delay={100} style={{ width: '100%' }}>
           <View style={styles.card}>
             <Text style={styles.title}>Welcome back</Text>
             <Text style={styles.subtitle}>Your intelligence journey continues</Text>
@@ -114,12 +125,13 @@ export default function LoginScreen({ navigation }) {
 
             <TouchableOpacity style={styles.signInBtn} onPress={handleSignIn} activeOpacity={0.85} disabled={loading}>
               {loading
-                ? <ActivityIndicator color={ui.white} />
+                ? <NeuralLoader size={30} color={ui.white} />
                 : <Text style={styles.signInText}>Sign In</Text>
               }
             </TouchableOpacity>
 
           </View>
+          </FadeInUp>
 
           <View style={styles.footerRow}>
             <Text style={styles.footerText}>New to RiAura? </Text>
@@ -134,7 +146,7 @@ export default function LoginScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  safe:       { flex: 1, backgroundColor: ui.beige },
+  safe:       { flex: 1, backgroundColor: '#F7F5FB' },
   flex:       { flex: 1 },
   scroll: {
     flexGrow: 1,
@@ -146,25 +158,25 @@ const styles = StyleSheet.create({
   tagline: {
     fontSize: 11,
     letterSpacing: 3,
-    color: '#7A6A58',
+    color: PURPLE,
     marginBottom: 24,
-    fontWeight: '600',
+    fontWeight: '800',
   },
   card: {
     width: '100%',
-    backgroundColor: ui.white,
+    backgroundColor: '#FFFFFF',
     borderRadius: 24,
     paddingHorizontal: 24,
     paddingVertical: 28,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
-    shadowRadius: 20,
-    elevation: 10,
+    shadowColor: '#7C6BAE',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.14,
+    shadowRadius: 22,
+    elevation: 8,
   },
-  title:    { fontSize: 26, fontWeight: '800', color: ui.darkText, marginBottom: 4 },
-  subtitle: { fontSize: 14, color: ui.midText, marginBottom: 24 },
-  label:    { fontSize: 12, fontWeight: '600', color: ui.midText, marginBottom: 8 },
+  title:    { fontSize: 26, fontWeight: '900', color: INK, marginBottom: 4 },
+  subtitle: { fontSize: 14, color: GRAY, marginBottom: 24 },
+  label:    { fontSize: 12, fontWeight: '700', color: GRAY, marginBottom: 8 },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -178,25 +190,25 @@ const styles = StyleSheet.create({
   inputText:  { flex: 1, fontSize: 14, color: ui.darkText },
   eyeBtn:     { paddingLeft: 8 },
   forgotRow:  { alignItems: 'flex-end', marginBottom: 20, marginTop: -8 },
-  forgotText: { fontSize: 13, fontWeight: '600', color: ui.primaryBlue },
+  forgotText: { fontSize: 13, fontWeight: '700', color: PURPLE },
   signInBtn: {
-    backgroundColor: ui.primaryBlue,
+    backgroundColor: PURPLE,
     borderRadius: 28,
     paddingVertical: 16,
     alignItems: 'center',
     marginBottom: 20,
-    shadowColor: ui.primaryBlue,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowColor: PURPLE,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.32,
+    shadowRadius: 12,
     elevation: 6,
   },
-  signInText:   { fontSize: 16, fontWeight: '700', color: ui.white },
+  signInText:   { fontSize: 16, fontWeight: '800', color: '#FFFFFF' },
   footerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 28,
   },
-  footerText:  { fontSize: 14, color: ui.midText },
-  createText:  { fontSize: 14, fontWeight: '700', color: ui.primaryBlue },
+  footerText:  { fontSize: 14, color: GRAY },
+  createText:  { fontSize: 14, fontWeight: '800', color: PURPLE },
 });

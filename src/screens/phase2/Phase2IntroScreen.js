@@ -1,19 +1,24 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, SafeAreaView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../../theme/colors';
+import {
+  View, Text, TouchableOpacity, ScrollView, StyleSheet,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { colors, dark } from '../../theme/colors';
 import { ui } from '../../theme/colors';
+import { Emblem } from '../../components/VisualKit';
 import { DOMAINS } from '../../data/phase2Questions';
 
 export default function Phase2IntroScreen({ navigation }) {
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView edges={['top', 'bottom']} style={styles.container}>
       <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-        <Ionicons name="chevron-back" size={22} color={ui.primaryBlue} />
+        <Ionicons name="chevron-back" size={22} color={dark.neon} />
         <Text style={styles.backText}>Back</Text>
       </TouchableOpacity>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         <View style={styles.header}>
+          <Emblem icon="clipboard-text-outline" size={68} style={{ marginBottom: 14 }} />
           <View style={styles.phaseBadge}>
             <Text style={styles.phaseText}>PHASE 2</Text>
           </View>
@@ -30,12 +35,12 @@ export default function Phase2IntroScreen({ navigation }) {
             <Text style={styles.infoLbl}>Duration</Text>
           </View>
           <View style={styles.infoCard}>
-            <Text style={styles.infoEmoji}>📊</Text>
+            <MaterialCommunityIcons name="chart-box-outline" size={22} color={dark.neon} style={styles.infoEmoji} />
             <Text style={styles.infoVal}>8</Text>
             <Text style={styles.infoLbl}>Domains</Text>
           </View>
           <View style={styles.infoCard}>
-            <Text style={styles.infoEmoji}>📝</Text>
+            <MaterialCommunityIcons name="clipboard-text-outline" size={22} color={dark.neon} style={styles.infoEmoji} />
             <Text style={styles.infoVal}>40</Text>
             <Text style={styles.infoLbl}>Questions</Text>
           </View>
@@ -68,7 +73,7 @@ export default function Phase2IntroScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: ui.offWhite },
+  container: { flex: 1, backgroundColor: dark.bgSolid },
   content: { padding: 20, paddingBottom: 40 },
   header: { alignItems: 'center', marginBottom: 24 },
   phaseBadge: {
@@ -77,23 +82,23 @@ const styles = StyleSheet.create({
     marginBottom: 12, marginTop: 20,
   },
   phaseText: { color: colors.phase2, fontSize: 11, fontWeight: '700', letterSpacing: 1 },
-  title: { fontSize: 26, fontWeight: '900', color: ui.darkText, textAlign: 'center', lineHeight: 32 },
-  sub: { fontSize: 13, color: ui.midText, textAlign: 'center', marginTop: 8, lineHeight: 20 },
+  title: { fontSize: 26, fontWeight: '900', color: '#1E1B33', textAlign: 'center', lineHeight: 32 },
+  sub: { fontSize: 13, color: dark.textSub, textAlign: 'center', marginTop: 8, lineHeight: 20 },
   infoRow: { flexDirection: 'row', gap: 12, marginBottom: 24 },
   infoCard: {
-    flex: 1, backgroundColor: ui.white, borderRadius: 14,
+    flex: 1, backgroundColor: dark.glass, borderRadius: 14,
     padding: 14, alignItems: 'center', gap: 4,
-    borderWidth: 1, borderColor: ui.borderGray,
+    borderWidth: 1, borderColor: dark.glassBorder,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1,
   },
-  infoEmoji: { fontSize: 22 },
-  infoVal: { fontSize: 20, fontWeight: '800', color: ui.primaryBlue },
-  infoLbl: { fontSize: 11, color: ui.midText, fontWeight: '600' },
-  sectionTitle: { fontSize: 14, color: ui.midText, fontWeight: '700', marginBottom: 10, letterSpacing: 0.5 },
+  infoEmoji: {},
+  infoVal: { fontSize: 20, fontWeight: '800', color: dark.neon },
+  infoLbl: { fontSize: 11, color: dark.textSub, fontWeight: '600' },
+  sectionTitle: { fontSize: 14, color: dark.textSub, fontWeight: '700', marginBottom: 10, letterSpacing: 0.5 },
   domainRow: {
-    backgroundColor: ui.white, borderRadius: 12, padding: 12,
+    backgroundColor: dark.glass, borderRadius: 12, padding: 12,
     flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8,
-    borderWidth: 1, borderColor: ui.borderGray,
+    borderWidth: 1, borderColor: dark.glassBorder,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 3, elevation: 1,
   },
   domainNum: {
@@ -101,16 +106,16 @@ const styles = StyleSheet.create({
     backgroundColor: colors.phase2 + '20', alignItems: 'center', justifyContent: 'center',
   },
   domainNumText: { color: colors.phase2, fontWeight: '800', fontSize: 13 },
-  domainName: { flex: 1, color: ui.darkText, fontSize: 13, fontWeight: '600' },
-  domainQ: { color: ui.lightText, fontSize: 11, fontWeight: '600' },
+  domainName: { flex: 1, color: '#1E1B33', fontSize: 13, fontWeight: '600' },
+  domainQ: { color: dark.textMute, fontSize: 11, fontWeight: '600' },
   scaleInfo: {
-    backgroundColor: ui.challengeBg, borderRadius: 12, padding: 14, marginVertical: 16, alignItems: 'center',
+    backgroundColor: dark.glass, borderRadius: 12, padding: 14, marginVertical: 16, alignItems: 'center',
   },
-  scaleTitle: { color: ui.primaryBlue, fontWeight: '700', fontSize: 13, marginBottom: 4 },
-  scaleDesc: { color: ui.midText, fontSize: 11 },
+  scaleTitle: { color: dark.neon, fontWeight: '700', fontSize: 13, marginBottom: 4 },
+  scaleDesc: { color: dark.textSub, fontSize: 11 },
   btn: { borderRadius: 14, overflow: 'hidden', marginTop: 8 },
-  btnInner: { paddingVertical: 16, alignItems: 'center', backgroundColor: ui.primaryBlue, borderRadius: 14 },
+  btnInner: { paddingVertical: 16, alignItems: 'center', backgroundColor: dark.neon, borderRadius: 14 },
   btnText: { fontSize: 16, fontWeight: '800', color: '#fff' },
   backBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 },
-  backText: { fontSize: 15, fontWeight: '600', color: ui.primaryBlue, marginLeft: 2 },
+  backText: { fontSize: 15, fontWeight: '600', color: dark.neon, marginLeft: 2 },
 });

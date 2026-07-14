@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
 import { colors } from '../../theme/colors';
-import { ui } from '../../theme/colors';
+import { ui, dark } from '../../theme/colors';
 import PhaseHeader from '../../components/PhaseHeader';
+import NeuralLinesBg from '../../components/NeuralLinesBg';
 
 const SCENARIOS = [
   {
@@ -95,6 +96,7 @@ export default function SituationalJudgementScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
+      <NeuralLinesBg />
       <PhaseHeader phase={3} title="Situational Judgement" subtitle={`Decision · ${current + 1}/${SCENARIOS.length}`} progress={(taskIndex + 1) / 8} onBack={() => handleBack(navigation)} />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.scenarioCard}>
@@ -141,32 +143,32 @@ export default function SituationalJudgementScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: ui.offWhite },
+  container: { flex: 1, backgroundColor: dark.bgSolid },
   content: { padding: 20, paddingBottom: 30 },
   scenarioCard: {
-    backgroundColor: ui.white, borderRadius: 14, padding: 16, marginBottom: 16,
+    backgroundColor: dark.glass, borderRadius: 14, padding: 16, marginBottom: 16,
     borderLeftWidth: 3, borderLeftColor: colors.phase4,
-    borderWidth: 1, borderColor: ui.borderGray,
+    borderWidth: 1, borderColor: dark.glassBorder,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2,
   },
   scenarioLabel: { color: colors.phase4, fontSize: 10, fontWeight: '700', letterSpacing: 1, marginBottom: 8 },
-  scenarioText: { color: ui.darkText, fontSize: 14, lineHeight: 22, fontWeight: '500' },
-  chooseLabel: { color: ui.midText, fontSize: 12, fontWeight: '600', marginBottom: 10 },
+  scenarioText: { color: '#1E1B33', fontSize: 14, lineHeight: 22, fontWeight: '500' },
+  chooseLabel: { color: dark.textSub, fontSize: 12, fontWeight: '600', marginBottom: 10 },
   optBtn: {
-    backgroundColor: ui.white, borderRadius: 12, padding: 12, marginBottom: 8,
+    backgroundColor: dark.glass, borderRadius: 12, padding: 12, marginBottom: 8,
     flexDirection: 'row', alignItems: 'flex-start', gap: 10,
-    borderWidth: 1, borderColor: ui.borderGray,
+    borderWidth: 1, borderColor: dark.glassBorder,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 3, elevation: 1,
   },
   optLetter: {
     width: 24, height: 24, borderRadius: 12,
-    backgroundColor: ui.inputBg, alignItems: 'center', justifyContent: 'center', marginTop: 1,
+    backgroundColor: dark.glass, alignItems: 'center', justifyContent: 'center', marginTop: 1,
   },
-  optLetterText: { color: ui.midText, fontSize: 11, fontWeight: '800' },
-  optText: { flex: 1, color: ui.darkText, fontSize: 13, lineHeight: 20 },
+  optLetterText: { color: dark.textSub, fontSize: 11, fontWeight: '800' },
+  optText: { flex: 1, color: '#1E1B33', fontSize: 13, lineHeight: 20 },
   bestTag: { color: colors.success, fontSize: 11, fontWeight: '800', marginTop: 2 },
   nextBtn: { borderRadius: 14, overflow: 'hidden', marginTop: 8 },
-  nextInner: { paddingVertical: 16, alignItems: 'center', backgroundColor: ui.primaryBlue, borderRadius: 14 },
+  nextInner: { paddingVertical: 16, alignItems: 'center', backgroundColor: dark.neon, borderRadius: 14 },
   nextText: { fontSize: 15, fontWeight: '800', color: '#fff' },
-  scoreInfo: { textAlign: 'center', color: ui.lightText, fontSize: 12, paddingBottom: 12 },
+  scoreInfo: { textAlign: 'center', color: dark.textMute, fontSize: 12, paddingBottom: 12 },
 });

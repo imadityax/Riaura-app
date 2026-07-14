@@ -19,7 +19,7 @@ export default function UserDetail({ user, onBack }) {
         </div>
       </div>
 
-      <div style={s.content}>
+      <div style={s.content} className="scroll-area">
         {/* Profile card */}
         <div style={s.card}>
           <div style={s.avatar}>{p.fullName?.[0]?.toUpperCase() || '?'}</div>
@@ -143,19 +143,19 @@ function PhaseBadge({ phase }) {
 }
 
 const s = {
-  page:       { minHeight: '100vh', background: '#F4F6FA' },
-  header:     { background: '#fff', borderBottom: '1px solid #E5E7EB', padding: '14px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  page:       { height: '100vh', display: 'flex', flexDirection: 'column', background: '#F4F6FA', overflow: 'hidden' },
+  header:     { flexShrink: 0, flexWrap: 'wrap', gap: 12, background: '#fff', borderBottom: '1px solid #E5E7EB', padding: '14px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   backBtn:    { background: 'none', border: 'none', color: '#2B4EFF', fontWeight: 700, fontSize: 14 },
   headerRight:{ display: 'flex', alignItems: 'center', gap: 12 },
   badge:      { padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700 },
 
-  content:    { padding: '24px 28px' },
-  card:       { background: '#fff', borderRadius: 16, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
+  content:    { flex: 1, minHeight: 0, padding: '24px 28px' },
+  card:       { background: '#fff', borderRadius: 16, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', marginBottom: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
   avatar:     { width: 52, height: 52, borderRadius: 14, background: '#2B4EFF', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 900, flexShrink: 0 },
   name:       { fontSize: 20, fontWeight: 800, color: '#1A1A2E', marginBottom: 2 },
   email:      { fontSize: 13, color: '#6B7280' },
 
-  grid:       { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 },
+  grid:       { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 },
   section:    { background: '#fff', borderRadius: 16, padding: '18px 20px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
   sectionTitle: { fontSize: 13, fontWeight: 800, color: '#1A1A2E', marginBottom: 14, letterSpacing: 0.3 },
 

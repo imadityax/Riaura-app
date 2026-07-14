@@ -4,7 +4,7 @@ export const LABS = [
   {
     id: 'light',
     name: 'Lab of Light',
-    emoji: '💡',
+    icon: 'lightbulb-outline',
     color: colors.labLight,
     focus: 'Attention, Awareness, Observation',
     domains: [0], // Attention
@@ -13,7 +13,7 @@ export const LABS = [
   {
     id: 'compass',
     name: 'Lab of Compass',
-    emoji: '🧭',
+    icon: 'compass-outline',
     color: colors.labCompass,
     focus: 'Purpose, Values, Direction',
     domains: [3, 4], // Reasoning + Decision
@@ -22,7 +22,7 @@ export const LABS = [
   {
     id: 'stillness',
     name: 'Lab of Stillness',
-    emoji: '🌿',
+    icon: 'leaf',
     color: colors.labStill,
     focus: 'Mindfulness, Emotional Balance',
     domains: [5], // Emotional
@@ -31,7 +31,7 @@ export const LABS = [
   {
     id: 'echoes',
     name: 'Lab of Echoes',
-    emoji: '🔊',
+    icon: 'volume-high',
     color: colors.labEchoes,
     focus: 'Communication and Relationships',
     domains: [6], // Social
@@ -40,7 +40,7 @@ export const LABS = [
   {
     id: 'fire',
     name: 'Lab of Fire & Flow',
-    emoji: '🔥',
+    icon: 'fire',
     color: colors.labFire,
     focus: 'Motivation and Execution',
     domains: [4, 2], // Decision + Processing
@@ -49,7 +49,7 @@ export const LABS = [
   {
     id: 'patterns',
     name: 'Lab of Patterns',
-    emoji: '🔷',
+    icon: 'shape-outline',
     color: colors.labPatterns,
     focus: 'Logic and Problem Solving',
     domains: [3, 2], // Reasoning + Processing
@@ -58,7 +58,7 @@ export const LABS = [
   {
     id: 'mirrors',
     name: 'Lab of Mirrors',
-    emoji: '🪞',
+    icon: 'mirror',
     color: colors.labMirrors,
     focus: 'Self-Awareness and Reflection',
     domains: [7], // Metacognitive
@@ -67,7 +67,7 @@ export const LABS = [
   {
     id: 'originals',
     name: 'Lab of Originals',
-    emoji: '✨',
+    icon: 'creation',
     color: colors.labOriginal,
     focus: 'Creativity and Innovation',
     domains: [6, 1], // Social + Memory

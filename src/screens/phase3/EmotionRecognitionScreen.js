@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
 import { colors } from '../../theme/colors';
-import { ui } from '../../theme/colors';
+import { ui, dark } from '../../theme/colors';
 import PhaseHeader from '../../components/PhaseHeader';
+import NeuralLinesBg from '../../components/NeuralLinesBg';
 
 const EMOTION_TRIALS = [
   { face: '😄', correct: 'Happy', options: ['Happy', 'Surprised', 'Excited', 'Proud'] },
@@ -51,8 +52,10 @@ export default function EmotionRecognitionScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
+      <NeuralLinesBg />
       <PhaseHeader phase={3} title="Emotion Recognition" subtitle={`Emotional · ${current + 1}/${EMOTION_TRIALS.length}`} progress={(taskIndex + 1) / 8} onBack={() => handleBack(navigation)} />
 
+      <ScrollView contentContainerStyle={styles.scrollBody} showsVerticalScrollIndicator={false}>
       <View style={styles.arena}>
         <Text style={styles.instruction}>What emotion does this face express?</Text>
         <View style={styles.faceBox}>
@@ -81,27 +84,30 @@ export default function EmotionRecognitionScreen({ route, navigation }) {
       </View>
 
       <Text style={styles.scoreInfo}>Score: {score}/{current}</Text>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: ui.offWhite },
+  container: { flex: 1, backgroundColor: dark.bgSolid },
+  scrollBody: { flexGrow: 1, paddingBottom: 28 },
+  resultScroll: { flexGrow: 1, justifyContent: 'center' },
   arena: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 20 },
-  instruction: { fontSize: 14, color: ui.midText, marginBottom: 24, textAlign: 'center' },
+  instruction: { fontSize: 14, color: dark.textSub, marginBottom: 24, textAlign: 'center' },
   faceBox: {
-    width: 150, height: 150, backgroundColor: ui.white,
+    width: 150, height: 150, backgroundColor: dark.glass,
     borderRadius: 30, alignItems: 'center', justifyContent: 'center',
-    marginBottom: 32, borderWidth: 2, borderColor: ui.borderGray,
+    marginBottom: 32, borderWidth: 2, borderColor: dark.glassBorder,
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 4,
   },
   face: { fontSize: 80 },
   options: { width: '100%', gap: 10 },
   optBtn: {
-    backgroundColor: ui.white, borderRadius: 12, paddingVertical: 14,
-    alignItems: 'center', borderWidth: 1.5, borderColor: ui.borderGray,
+    backgroundColor: dark.glass, borderRadius: 12, paddingVertical: 14,
+    alignItems: 'center', borderWidth: 1.5, borderColor: dark.glassBorder,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 3, elevation: 1,
   },
-  optText: { color: ui.darkText, fontSize: 15, fontWeight: '600' },
-  scoreInfo: { textAlign: 'center', color: ui.lightText, fontSize: 12, paddingBottom: 16 },
+  optText: { color: '#1E1B33', fontSize: 15, fontWeight: '600' },
+  scoreInfo: { textAlign: 'center', color: dark.textMute, fontSize: 12, paddingBottom: 16 },
 });

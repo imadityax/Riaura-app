@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, SafeAreaView, StatusBar, Alert } from 'react-native';
-import { colors, ui } from '../../theme/colors';
+import {
+  View, Text, TouchableOpacity, ScrollView, StyleSheet, StatusBar, Alert,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { colors, ui, dark } from '../../theme/colors';
 import { calcHII } from '../../utils/scoreEngine';
 import { storage } from '../../utils/storage';
+import { auth } from '../../firebase/config';
+import { savePhase4ToCloud } from '../../firebase/firestore';
 
 const INTERVIEW_QUESTIONS = [
   { domain: 'Attention',      q: 'Describe a time when you had to maintain focus on a tedious task. What strategies did you use?' },
@@ -43,6 +49,9 @@ export default function Phase4InterviewScreen({ route, navigation }) {
     if (current + 1 >= INTERVIEW_QUESTIONS.length) {
       const phase4Marks = Math.round(ratings.reduce((s, v) => s + (v / 5) * 2.5, 0));
       await storage.savePhase4Marks(phase4Marks);
+      if (auth.currentUser) {
+        savePhase4ToCloud(auth.currentUser.uid, phase4Marks).catch(() => {});
+      }
       const hii = calcHII(scores.phase2.marks, scores.phase3.marks, phase4Marks);
       const finalScores = { ...scores, phase4Marks, hii };
       await storage.saveScores(finalScores);
@@ -56,8 +65,8 @@ export default function Phase4InterviewScreen({ route, navigation }) {
   const canNext  = ratings[current] > 0;
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={ui.offWhite} />
+    <SafeAreaView edges={['top', 'bottom']} style={styles.safe}>
+      <StatusBar barStyle="dark-content" />
 
       <View style={styles.topBar}>
         <TouchableOpacity onPress={handleExit} activeOpacity={0.7}>
@@ -84,7 +93,7 @@ export default function Phase4InterviewScreen({ route, navigation }) {
 
         <View style={styles.videoArea}>
           <View style={styles.videoFace}>
-            <Text style={styles.videoFaceEmoji}>👤</Text>
+            <MaterialCommunityIcons name="account" size={44} color="#fff" style={styles.videoFaceEmoji} />
             <Text style={styles.videoFaceName}>Your Response</Text>
           </View>
           <View style={styles.videoBadge}>
@@ -93,7 +102,7 @@ export default function Phase4InterviewScreen({ route, navigation }) {
           </View>
         </View>
 
-        <Text style={styles.tipsTitle}>💡 Response Tips</Text>
+        <Text style={styles.tipsTitle}>Response Tips</Text>
         <Text style={styles.tipsText}>• Use specific examples (STAR method){'\n'}• Be concise but detailed{'\n'}• Show self-awareness and reflection</Text>
 
         <Text style={styles.rateLabel}>Rate your own response:</Text>
@@ -122,39 +131,39 @@ export default function Phase4InterviewScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  safe:    { flex: 1, backgroundColor: ui.offWhite },
+  safe:    { flex: 1, backgroundColor: dark.bgSolid },
   topBar:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 10 },
   exitBtn: { color: '#F44336', fontWeight: '700', fontSize: 13 },
-  phaseBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: ui.challengeBg, borderWidth: 1, borderColor: ui.primaryBlue + '60' },
-  phaseText:  { color: ui.primaryBlue, fontSize: 10, fontWeight: '700', letterSpacing: 0.5 },
-  progress:   { color: ui.midText, fontWeight: '700', fontSize: 13 },
-  progressTrack: { height: 4, backgroundColor: ui.borderGray, marginHorizontal: 20, borderRadius: 2, overflow: 'hidden', marginBottom: 10 },
-  progressFill:  { height: '100%', backgroundColor: ui.primaryBlue, borderRadius: 2 },
+  phaseBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: dark.glass, borderWidth: 1, borderColor: dark.neon + '60' },
+  phaseText:  { color: dark.neon, fontSize: 10, fontWeight: '700', letterSpacing: 0.5 },
+  progress:   { color: dark.textSub, fontWeight: '700', fontSize: 13 },
+  progressTrack: { height: 4, backgroundColor: dark.glassBorder, marginHorizontal: 20, borderRadius: 2, overflow: 'hidden', marginBottom: 10 },
+  progressFill:  { height: '100%', backgroundColor: dark.neon, borderRadius: 2 },
   content:    { padding: 20, paddingBottom: 40 },
-  domainBadge:{ alignSelf: 'flex-start', backgroundColor: ui.inputBg, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: ui.borderGray, marginBottom: 12 },
-  domainText: { color: ui.primaryBlue, fontSize: 12, fontWeight: '700' },
-  questionCard: { backgroundColor: ui.white, borderRadius: 16, padding: 18, marginBottom: 16, borderLeftWidth: 3, borderLeftColor: ui.primaryBlue, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3 },
-  interviewerLabel: { color: ui.primaryBlue, fontSize: 11, fontWeight: '700', letterSpacing: 0.5, marginBottom: 8 },
-  questionText:     { color: ui.darkText, fontSize: 15, lineHeight: 24, fontWeight: '500' },
-  videoArea:  { backgroundColor: ui.inputBg, borderRadius: 16, height: 150, marginBottom: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: ui.borderGray },
+  domainBadge:{ alignSelf: 'flex-start', backgroundColor: dark.glass, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: dark.glassBorder, marginBottom: 12 },
+  domainText: { color: dark.neon, fontSize: 12, fontWeight: '700' },
+  questionCard: { backgroundColor: dark.glass, borderRadius: 16, padding: 18, marginBottom: 16, borderLeftWidth: 3, borderLeftColor: dark.neon, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3 },
+  interviewerLabel: { color: dark.neon, fontSize: 11, fontWeight: '700', letterSpacing: 0.5, marginBottom: 8 },
+  questionText:     { color: '#1E1B33', fontSize: 15, lineHeight: 24, fontWeight: '500' },
+  videoArea:  { backgroundColor: dark.glass, borderRadius: 16, height: 150, marginBottom: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: dark.glassBorder },
   videoFace:  { alignItems: 'center' },
-  videoFaceEmoji: { fontSize: 44 },
-  videoFaceName:  { color: ui.midText, fontSize: 12, marginTop: 6 },
+  videoFaceEmoji: {},
+  videoFaceName:  { color: dark.textSub, fontSize: 12, marginTop: 6 },
   videoBadge: { position: 'absolute', top: 12, right: 12, flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.danger + '18', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 4 },
   recDot:     { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.danger },
   recText:    { color: colors.danger, fontSize: 10, fontWeight: '800' },
-  tipsTitle:  { fontSize: 13, fontWeight: '700', color: ui.primaryBlue, marginBottom: 6 },
-  tipsText:   { fontSize: 12, color: ui.midText, lineHeight: 20, marginBottom: 20 },
-  rateLabel:  { fontSize: 13, color: ui.midText, fontWeight: '700', marginBottom: 12 },
+  tipsTitle:  { fontSize: 13, fontWeight: '700', color: dark.neon, marginBottom: 6 },
+  tipsText:   { fontSize: 12, color: dark.textSub, lineHeight: 20, marginBottom: 20 },
+  rateLabel:  { fontSize: 13, color: dark.textSub, fontWeight: '700', marginBottom: 12 },
   ratingRow:  { flexDirection: 'row', gap: 8, marginBottom: 24 },
-  ratingBtn:  { flex: 1, backgroundColor: ui.white, borderRadius: 10, padding: 10, alignItems: 'center', borderWidth: 1.5, borderColor: ui.borderGray, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1 },
-  ratingSelected:  { borderColor: ui.primaryBlue, backgroundColor: ui.challengeBg },
-  ratingNum:       { fontSize: 18, fontWeight: '800', color: ui.midText },
-  ratingNumSelected: { color: ui.primaryBlue },
-  ratingLbl:         { fontSize: 9, color: ui.lightText, marginTop: 2, fontWeight: '600', textAlign: 'center' },
-  ratingLblSelected: { color: ui.primaryBlue },
-  nextBtn:      { backgroundColor: ui.primaryBlue, borderRadius: 28, paddingVertical: 16, alignItems: 'center', shadowColor: ui.primaryBlue, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5 },
-  nextDisabled: { backgroundColor: ui.borderGray, shadowOpacity: 0 },
+  ratingBtn:  { flex: 1, backgroundColor: dark.glass, borderRadius: 10, padding: 10, alignItems: 'center', borderWidth: 1.5, borderColor: dark.glassBorder, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1 },
+  ratingSelected:  { borderColor: dark.neon, backgroundColor: dark.glass },
+  ratingNum:       { fontSize: 18, fontWeight: '800', color: dark.textSub },
+  ratingNumSelected: { color: dark.neon },
+  ratingLbl:         { fontSize: 9, color: dark.textMute, marginTop: 2, fontWeight: '600', textAlign: 'center' },
+  ratingLblSelected: { color: dark.neon },
+  nextBtn:      { backgroundColor: dark.neon, borderRadius: 28, paddingVertical: 16, alignItems: 'center', shadowColor: dark.neon, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5 },
+  nextDisabled: { backgroundColor: dark.glassBorder, shadowOpacity: 0 },
   nextText:     { fontSize: 15, fontWeight: '700', color: '#fff' },
-  nextTextDisabled: { color: ui.lightText },
+  nextTextDisabled: { color: dark.textMute },
 });

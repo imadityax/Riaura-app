@@ -2,13 +2,14 @@ import React, { useState, useRef } from 'react';
 import {
   View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated, Alert,
 } from 'react-native';
-import { colors } from '../../theme/colors';
+import { colors, dark } from '../../theme/colors';
 import { ui } from '../../theme/colors';
 import { DOMAINS, phase2Questions, LIKERT_LABELS } from '../../data/phase2Questions';
 import PhaseHeader from '../../components/PhaseHeader';
 import { storage } from '../../utils/storage';
 import { savePhase2DataToCloud } from '../../firebase/firestore';
 import { useAuth } from '../../context/AuthContext';
+import NeuralLinesBg from '../../components/NeuralLinesBg';
 
 export default function DomainQuestionScreen({ route, navigation }) {
   const { domainIndex, answers: prevAnswers } = route.params;
@@ -59,6 +60,7 @@ export default function DomainQuestionScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
+      <NeuralLinesBg />
       <ScrollView showsVerticalScrollIndicator={false}>
         <PhaseHeader
           phase={2}
@@ -123,32 +125,32 @@ export default function DomainQuestionScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: ui.offWhite },
+  container: { flex: 1, backgroundColor: dark.bgSolid },
   qCard: {
-    backgroundColor: ui.white, borderRadius: 16,
+    backgroundColor: dark.glass, borderRadius: 16,
     padding: 16, marginBottom: 14,
-    borderWidth: 1, borderColor: ui.borderGray,
+    borderWidth: 1, borderColor: dark.glassBorder,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
   },
   qNum: { fontSize: 11, color: colors.phase2, fontWeight: '700', marginBottom: 6, letterSpacing: 0.5 },
-  qText: { fontSize: 14, color: ui.darkText, lineHeight: 20, fontWeight: '500', marginBottom: 14 },
+  qText: { fontSize: 14, color: '#1E1B33', lineHeight: 20, fontWeight: '500', marginBottom: 14 },
   ratingRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 6 },
   ratingBtn: {
     flex: 1, height: 40, borderRadius: 10,
-    backgroundColor: ui.inputBg, alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: ui.borderGray,
+    backgroundColor: dark.glass, alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: dark.glassBorder,
   },
   ratingSelected: { backgroundColor: colors.phase2 + '20', borderColor: colors.phase2 },
-  ratingNum: { fontSize: 16, fontWeight: '700', color: ui.midText },
+  ratingNum: { fontSize: 16, fontWeight: '700', color: dark.textSub },
   ratingNumSelected: { color: colors.phase2 },
   labelRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 },
-  labelText: { fontSize: 10, color: ui.lightText },
+  labelText: { fontSize: 10, color: dark.textMute },
   selectedLabel: { fontSize: 11, color: colors.phase2, fontWeight: '600', marginTop: 8, textAlign: 'center' },
   btn: { borderRadius: 14, overflow: 'hidden', marginTop: 8 },
   btnDisabled: { opacity: 0.5 },
-  btnInner: { paddingVertical: 16, alignItems: 'center', backgroundColor: ui.primaryBlue, borderRadius: 14 },
-  btnInnerDisabled: { backgroundColor: ui.borderGray },
+  btnInner: { paddingVertical: 16, alignItems: 'center', backgroundColor: dark.neon, borderRadius: 14 },
+  btnInnerDisabled: { backgroundColor: dark.glassBorder },
   btnText: { fontSize: 15, fontWeight: '800', color: '#fff' },
-  btnTextDisabled: { color: ui.lightText },
-  hint: { textAlign: 'center', color: ui.lightText, fontSize: 12, marginTop: 8 },
+  btnTextDisabled: { color: dark.textMute },
+  hint: { textAlign: 'center', color: dark.textMute, fontSize: 12, marginTop: 8 },
 });

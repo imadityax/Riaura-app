@@ -13,7 +13,7 @@ export default function CircularProgress({ percent, size = 100, strokeWidth = 8,
       <Svg width={size} height={size}>
         <Circle
           cx={size / 2} cy={size / 2} r={radius}
-          stroke={colors.navyLight} strokeWidth={strokeWidth} fill="none"
+          stroke="#ECE8F5" strokeWidth={strokeWidth} fill="none"
         />
         <Circle
           cx={size / 2} cy={size / 2} r={radius}
@@ -36,7 +36,7 @@ export default function CircularProgress({ percent, size = 100, strokeWidth = 8,
 const styles = StyleSheet.create({
   container: { alignItems: 'center', justifyContent: 'center' },
   center: { position: 'absolute', alignItems: 'center' },
-  percent: { color: colors.white, fontWeight: '800' },
-  label: { color: colors.textSub, fontWeight: '600' },
-  sublabel: { color: colors.textMuted, fontSize: 10, marginTop: 4 },
+  percent: { color: '#1E1B33', fontWeight: '800' },
+  label: { color: '#6E6A80', fontWeight: '600' },
+  sublabel: { color: '#A8A5B5', fontSize: 10, marginTop: 4 },
 });
