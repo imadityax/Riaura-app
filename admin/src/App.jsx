@@ -4,6 +4,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import NeuralBackground from './components/NeuralBackground';
 
 export default function App() {
   const [user, setUser]       = useState(null);
@@ -26,16 +27,25 @@ export default function App() {
     return unsub;
   }, []);
 
-  if (loading) return <FullScreenMsg>Loading...</FullScreenMsg>;
-  if (!user)   return <Login />;
-  if (!isAdmin) return <FullScreenMsg>Access Denied — you are not an admin.</FullScreenMsg>;
-
-  return <Dashboard adminUser={user} />;
+  return (
+    <>
+      <NeuralBackground />
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        {loading
+          ? <FullScreenMsg>Loading...</FullScreenMsg>
+          : !user
+            ? <Login />
+            : !isAdmin
+              ? <FullScreenMsg>Access Denied — you are not an admin.</FullScreenMsg>
+              : <Dashboard adminUser={user} />}
+      </div>
+    </>
+  );
 }
 
 function FullScreenMsg({ children }) {
   return (
-    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B7280', fontSize: 16 }}>
+    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#B4A5EE', fontSize: 16, textAlign: 'center', padding: 24 }}>
       {children}
     </div>
   );

@@ -142,7 +142,7 @@ export default function DevelopmentPathwayScreen({ route, navigation }) {
               placeholderTextColor={dark.textMute}
               onSubmitEditing={sendMessage}
               returnKeyType="send"
-              color={'#1E1B33'}
+              color={dark.text}
             />
             <TouchableOpacity style={styles.sendBtn} onPress={sendMessage} activeOpacity={0.8}>
               <Text style={styles.sendBtnText}>Send</Text>
@@ -177,9 +177,9 @@ const styles = StyleSheet.create({
   domainName: { width: 70, fontSize: 11, color: dark.textSub, fontWeight: '600' },
   domainBar:  { flex: 1, height: 6, backgroundColor: dark.glassBorder, borderRadius: 3, overflow: 'hidden' },
   domainFill: { height: '100%', borderRadius: 3 },
-  domainVal:  { width: 36, fontSize: 11, color: '#1E1B33', fontWeight: '700', textAlign: 'right' },
+  domainVal:  { width: 36, fontSize: 11, color: dark.text, fontWeight: '700', textAlign: 'right' },
   growthCard: { backgroundColor: dark.glass, borderRadius: 14, padding: 16, marginTop: 16, marginBottom: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3 },
-  growthTitle:{ fontSize: 14, fontWeight: '800', color: '#1E1B33', marginBottom: 10 },
+  growthTitle:{ fontSize: 14, fontWeight: '800', color: dark.text, marginBottom: 10 },
   growthTip:  { fontSize: 12, color: dark.textSub, lineHeight: 20, marginBottom: 4 },
   lockBadge:  { backgroundColor: colors.danger + '10', borderRadius: 12, borderWidth: 1, borderColor: colors.danger + '30', padding: 12, alignItems: 'center' },
   lockText:   { color: colors.danger, fontSize: 13, fontWeight: '700' },
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
   aiBubble:   { backgroundColor: dark.glass, alignSelf: 'flex-start', borderBottomLeftRadius: 4, flexDirection: 'row', gap: 8, alignItems: 'flex-start', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 1 },
   userBubble: { backgroundColor: dark.glass, alignSelf: 'flex-end', borderBottomRightRadius: 4 },
   aiAvatar:   {},
-  bubbleText: { color: '#1E1B33', fontSize: 13, lineHeight: 20, flex: 1 },
+  bubbleText: { color: dark.text, fontSize: 13, lineHeight: 20, flex: 1 },
   userBubbleText: { color: dark.neon },
   chatInput:  { flexDirection: 'row', gap: 10, padding: 12, borderTopWidth: 1, borderTopColor: dark.glassBorder, backgroundColor: dark.glass },
   chatTextInput: { flex: 1, backgroundColor: dark.glass, borderRadius: 12, borderWidth: 1, borderColor: dark.glassBorder, paddingHorizontal: 14, paddingVertical: 10, fontSize: 14 },

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Alert, ScrollView } from 'react-native';
 import { colors } from '../../theme/colors';
 import { ui, dark } from '../../theme/colors';
 import PhaseHeader from '../../components/PhaseHeader';
 import NeuralLinesBg from '../../components/NeuralLinesBg';
+import { ClayCard } from '../../components/Clay';
 
 const MATRICES = [
   {
@@ -87,21 +88,20 @@ export default function MatrixReasoningScreen({ route, navigation }) {
         <Text style={styles.optionLabel}>Choose the missing piece:</Text>
         <View style={styles.options}>
           {matrix.options.map((opt, i) => {
-            let borderColor = dark.glassBorder;
-            if (showFeedback && i === selected) {
-              borderColor = i === matrix.answer ? colors.success : colors.danger;
-            }
-            if (showFeedback && i === matrix.answer) borderColor = colors.success;
+            let tone = 'default';
+            if (showFeedback && i === selected) tone = i === matrix.answer ? 'correct' : 'incorrect';
+            else if (showFeedback && i === matrix.answer) tone = 'correct';
             return (
-              <TouchableOpacity
+              <ClayCard
                 key={i}
-                style={[styles.optBtn, { borderColor }]}
+                tone={tone}
+                radius={16}
+                style={styles.optBtn}
                 onPress={() => handleSelect(i)}
-                activeOpacity={0.8}
               >
                 <Text style={styles.optText}>{opt}</Text>
                 {showFeedback && i === matrix.answer && <Text style={styles.correctTag}>✓</Text>}
-              </TouchableOpacity>
+              </ClayCard>
             );
           })}
         </View>
@@ -130,12 +130,7 @@ const styles = StyleSheet.create({
   cellText: { fontSize: 28 },
   optionLabel: { color: dark.textSub, fontSize: 12, fontWeight: '600', marginBottom: 12 },
   options: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 12 },
-  optBtn: {
-    width: 90, height: 90, backgroundColor: dark.glass,
-    borderRadius: 14, alignItems: 'center', justifyContent: 'center',
-    borderWidth: 2,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1,
-  },
+  optBtn: { width: 90, height: 90, alignItems: 'center', justifyContent: 'center' },
   optText: { fontSize: 32 },
   correctTag: { position: 'absolute', top: 4, right: 6, color: colors.success, fontSize: 14, fontWeight: '900' },
   scoreInfo: { textAlign: 'center', color: dark.textMute, fontSize: 12, paddingBottom: 16 },

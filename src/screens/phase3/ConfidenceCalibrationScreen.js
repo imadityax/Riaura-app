@@ -13,6 +13,8 @@ import { storage } from '../../utils/storage';
 import { saveScoresToCloud } from '../../firebase/firestore';
 import { useAuth } from '../../context/AuthContext';
 import NeuralLinesBg from '../../components/NeuralLinesBg';
+import { Ionicons } from '@expo/vector-icons';
+import { ClayCard } from '../../components/Clay';
 
 const QUESTIONS = [
   { q: 'The human brain uses about 20% of the body\'s total energy despite being only 2% of body weight.', options: ['True', 'False'], correct: 0 },
@@ -99,33 +101,44 @@ export default function ConfidenceCalibrationScreen({ route, navigation }) {
         <Text style={styles.sectionLabel}>Is this statement True or False?</Text>
         <View style={styles.answerRow}>
           {q.options.map((opt, i) => (
-            <TouchableOpacity
+            <ClayCard
               key={i}
-              style={[styles.answerBtn, answerPicked === i && styles.answerSelected]}
+              tone={answerPicked === i ? 'selected' : 'default'}
+              radius={16}
+              style={styles.answerBtn}
               onPress={() => setAnswerPicked(i)}
-              activeOpacity={0.8}
             >
+              <Ionicons
+                name={opt === 'True' ? 'checkmark-circle' : 'close-circle'}
+                size={20}
+                color={answerPicked === i ? '#fff' : dark.textSub}
+              />
               <Text style={[styles.answerText, answerPicked === i && styles.answerTextSelected]}>{opt}</Text>
-            </TouchableOpacity>
+            </ClayCard>
           ))}
         </View>
 
         <Text style={styles.sectionLabel}>How confident are you?</Text>
         <View style={styles.confRow}>
           {[
-            { val: 1, label: 'Guessing',   color: colors.danger  },
-            { val: 2, label: 'Fairly Sure', color: colors.warning },
-            { val: 3, label: 'Very Sure',   color: colors.success },
-          ].map(c => (
-            <TouchableOpacity
-              key={c.val}
-              style={[styles.confBtn, confidence === c.val && { borderColor: c.color, backgroundColor: c.color + '18' }]}
-              onPress={() => setConfidence(c.val)}
-              activeOpacity={0.8}
-            >
-              <Text style={[styles.confText, confidence === c.val && { color: c.color, fontWeight: '800' }]}>{c.label}</Text>
-            </TouchableOpacity>
-          ))}
+            { val: 1, label: 'Guessing',    icon: 'help-circle-outline', color: colors.danger  },
+            { val: 2, label: 'Fairly Sure', icon: 'eye-outline',         color: colors.warning },
+            { val: 3, label: 'Very Sure',   icon: 'flash-outline',       color: colors.success },
+          ].map(c => {
+            const isSel = confidence === c.val;
+            return (
+              <ClayCard
+                key={c.val}
+                tone="default"
+                radius={16}
+                style={[styles.confBtn, isSel && { backgroundColor: c.color + '20', borderRightColor: c.color + '55', borderBottomColor: c.color + '55' }]}
+                onPress={() => setConfidence(c.val)}
+              >
+                <Ionicons name={c.icon} size={18} color={isSel ? c.color : dark.textSub} />
+                <Text style={[styles.confText, isSel && { color: c.color, fontWeight: '800' }]}>{c.label}</Text>
+              </ClayCard>
+            );
+          })}
         </View>
 
         <TouchableOpacity
@@ -155,19 +168,11 @@ const styles = StyleSheet.create({
   qText:       { fontSize: 15, color: '#1E1B33', lineHeight: 22, fontWeight: '500' },
   sectionLabel:{ fontSize: 12, color: dark.textSub, fontWeight: '700', marginBottom: 10, letterSpacing: 0.5 },
   answerRow:   { flexDirection: 'row', gap: 12, marginBottom: 24 },
-  answerBtn: {
-    flex: 1, paddingVertical: 16, borderRadius: 12, alignItems: 'center',
-    backgroundColor: dark.glass, borderWidth: 1.5, borderColor: dark.glassBorder,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1,
-  },
-  answerSelected:     { borderColor: dark.neon, backgroundColor: dark.glass },
+  answerBtn: { flex: 1, paddingVertical: 16, alignItems: 'center', gap: 6 },
   answerText:         { color: '#1E1B33', fontWeight: '700', fontSize: 16 },
-  answerTextSelected: { color: dark.neon },
+  answerTextSelected: { color: '#fff' },
   confRow: { flexDirection: 'row', gap: 10, marginBottom: 28 },
-  confBtn: {
-    flex: 1, paddingVertical: 14, borderRadius: 12, alignItems: 'center',
-    backgroundColor: dark.glass, borderWidth: 1.5, borderColor: dark.glassBorder,
-  },
+  confBtn: { flex: 1, paddingVertical: 14, alignItems: 'center', gap: 6 },
   confText: { color: dark.textSub, fontWeight: '600', fontSize: 13 },
   nextBtn: {
     backgroundColor: dark.neon, borderRadius: 28, paddingVertical: 16, alignItems: 'center',

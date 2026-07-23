@@ -66,7 +66,7 @@ export default function Phase4InterviewScreen({ route, navigation }) {
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={styles.safe}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle="light-content" />
 
       <View style={styles.topBar}>
         <TouchableOpacity onPress={handleExit} activeOpacity={0.7}>
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   domainText: { color: dark.neon, fontSize: 12, fontWeight: '700' },
   questionCard: { backgroundColor: dark.glass, borderRadius: 16, padding: 18, marginBottom: 16, borderLeftWidth: 3, borderLeftColor: dark.neon, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3 },
   interviewerLabel: { color: dark.neon, fontSize: 11, fontWeight: '700', letterSpacing: 0.5, marginBottom: 8 },
-  questionText:     { color: '#1E1B33', fontSize: 15, lineHeight: 24, fontWeight: '500' },
+  questionText:     { color: dark.text, fontSize: 15, lineHeight: 24, fontWeight: '500' },
   videoArea:  { backgroundColor: dark.glass, borderRadius: 16, height: 150, marginBottom: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: dark.glassBorder },
   videoFace:  { alignItems: 'center' },
   videoFaceEmoji: {},

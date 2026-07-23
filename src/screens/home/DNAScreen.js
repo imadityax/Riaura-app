@@ -117,11 +117,11 @@ export default function DNAScreen({ navigation }) {
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={styles.safe}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle="light-content" />
       <View style={styles.topBar}>
         {navigation.canGoBack() && (
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={22} color={'#1E1B33'} />
+            <Ionicons name="arrow-back" size={22} color={dark.text} />
           </TouchableOpacity>
         )}
         <Text style={styles.topTitle}>Intelligence Analytics</Text>
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06, shadowRadius: 4, elevation: 2,
   },
-  topTitle: { fontSize: 17, fontWeight: '800', color: '#1E1B33' },
+  topTitle: { fontSize: 17, fontWeight: '800', color: dark.text },
 
   archetypeCard: {
     margin: 20,
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
     elevation: 3,
     marginBottom: 16,
   },
-  radarTitle: { fontSize: 17, fontWeight: '800', color: '#1E1B33', marginBottom: 4 },
+  radarTitle: { fontSize: 17, fontWeight: '800', color: dark.text, marginBottom: 4 },
 
   barsCard: {
     marginHorizontal: 20,
@@ -235,13 +235,13 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   barRow:   { gap: 6 },
-  barLabel: { fontSize: 14, fontWeight: '600', color: '#1E1B33' },
+  barLabel: { fontSize: 14, fontWeight: '600', color: dark.text },
   barPct:   { fontSize: 14, fontWeight: '800', position: 'absolute', right: 0, top: 0 },
   barTrack: { height: 8, backgroundColor: dark.glassBorder, borderRadius: 4, overflow: 'hidden', marginTop: 18 },
   barFill:  { height: '100%', borderRadius: 4 },
 
   careerSection: { marginHorizontal: 20, marginBottom: 16 },
-  careerTitle:   { fontSize: 17, fontWeight: '800', color: '#1E1B33', marginBottom: 14 },
+  careerTitle:   { fontSize: 17, fontWeight: '800', color: dark.text, marginBottom: 14 },
   chipRow:       { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   chip: {
     borderWidth: 1.5,

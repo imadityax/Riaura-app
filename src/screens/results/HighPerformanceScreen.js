@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   },
   bestLabStar:  { fontSize: 28, marginBottom: 8 },
   bestLabLabel: { fontSize: 11, color: dark.neon, fontWeight: '700', letterSpacing: 1, marginBottom: 6 },
-  bestLabName:  { fontSize: 20, fontWeight: '900', color: '#1E1B33', marginBottom: 8 },
+  bestLabName:  { fontSize: 20, fontWeight: '900', color: dark.text, marginBottom: 8 },
   bestLabDesc:  { fontSize: 12, color: dark.textSub, textAlign: 'center', lineHeight: 18, marginBottom: 8 },
   bestLabScore: { fontSize: 14, color: dark.neon, fontWeight: '800' },
   phase4Card: {
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
     backgroundColor: dark.glass, paddingHorizontal: 10, paddingVertical: 4,
     borderRadius: 10, alignSelf: 'flex-start', marginBottom: 10,
   },
-  phase4Title: { fontSize: 18, fontWeight: '800', color: '#1E1B33', lineHeight: 24, marginBottom: 6 },
+  phase4Title: { fontSize: 18, fontWeight: '800', color: dark.text, lineHeight: 24, marginBottom: 6 },
   phase4Sub:   { fontSize: 12, color: dark.textSub, lineHeight: 18, marginBottom: 16 },
   phase4Btn: {
     backgroundColor: dark.neon, borderRadius: 28, paddingVertical: 14, alignItems: 'center',

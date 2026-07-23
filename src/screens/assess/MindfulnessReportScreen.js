@@ -289,13 +289,13 @@ const s = StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 6, marginBottom: 14,
     flexDirection: 'row', alignItems: 'center', gap: 6,
   },
-  domainPillText: { fontSize: 13, fontWeight: '700', color: '#1E1B33' },
+  domainPillText: { fontSize: 13, fontWeight: '700', color: dark.text },
   tierIcon:   { marginBottom: 8 },
-  scoreNum:   { fontSize: rf(34), fontWeight: '900', color: '#1E1B33', lineHeight: rf(38), marginTop: 2 },
+  scoreNum:   { fontSize: rf(34), fontWeight: '900', color: dark.text, lineHeight: rf(38), marginTop: 2 },
   scoreUnit:  { fontSize: 10, fontWeight: '700', color: 'rgba(255,255,255,0.7)', letterSpacing: 0.5 },
   scoreOut:   { fontSize: 14, color: 'rgba(255,255,255,0.7)', fontWeight: '600', marginBottom: 14 },
   tierBadge:  { borderRadius: 20, paddingHorizontal: 18, paddingVertical: 8 },
-  tierLabel:  { fontSize: 14, fontWeight: '700', color: '#1E1B33' },
+  tierLabel:  { fontSize: 14, fontWeight: '700', color: dark.text },
 
   content:    { padding: 20, paddingTop: 20 },
 
@@ -311,7 +311,7 @@ const s = StyleSheet.create({
     flex: 1, backgroundColor: dark.glass, borderRadius: 14, padding: 14, alignItems: 'center',
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 2,
   },
-  statVal: { fontSize: 16, fontWeight: '800', color: '#1E1B33', marginBottom: 4 },
+  statVal: { fontSize: 16, fontWeight: '800', color: dark.text, marginBottom: 4 },
   statLbl: { fontSize: 10, color: dark.textSub, fontWeight: '600' },
 
   frameworkCard: {
@@ -321,14 +321,14 @@ const s = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 2,
   },
   frameworkLabel: { fontSize: 12, color: dark.textSub, fontWeight: '600' },
-  frameworkVal:   { fontSize: 13, fontWeight: '800', color: '#1E1B33' },
+  frameworkVal:   { fontSize: 13, fontWeight: '800', color: dark.text },
 
   reportPlaceholder: {
     backgroundColor: dark.glass, borderRadius: 16, padding: 20,
     alignItems: 'center', marginBottom: 20, borderWidth: 1.5, borderStyle: 'dashed', borderColor: dark.glassBorder,
   },
   reportIcon:  { marginBottom: 10 },
-  reportTitle: { fontSize: 15, fontWeight: '800', color: '#1E1B33', marginBottom: 8 },
+  reportTitle: { fontSize: 15, fontWeight: '800', color: dark.text, marginBottom: 8 },
   reportDesc:  { fontSize: 13, color: dark.textSub, lineHeight: 20, textAlign: 'center', marginBottom: 12 },
   reportTag:   { backgroundColor: dark.glass, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 6 },
   reportTagText: { fontSize: 12, fontWeight: '700', color: dark.neon },
@@ -346,7 +346,7 @@ const s = StyleSheet.create({
     backgroundColor: dark.glass, borderRadius: 16, padding: 16,
     borderWidth: 1, borderColor: dark.glassBorder, marginBottom: 4,
   },
-  reflectQ:    { fontSize: 13.5, fontWeight: '700', color: '#1E1B33', marginBottom: 12 },
+  reflectQ:    { fontSize: 13.5, fontWeight: '700', color: dark.text, marginBottom: 12 },
   reflectWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   reflectChip: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
@@ -356,7 +356,7 @@ const s = StyleSheet.create({
   reflectChipText: { fontSize: 12, fontWeight: '700', color: dark.neon },
   reflectDone:     { flexDirection: 'row', alignItems: 'center', gap: 10 },
   reflectDoneText: { flex: 1, fontSize: 13, color: dark.textSub, lineHeight: 18 },
-  factText: { fontSize: 14, color: '#1E1B33', lineHeight: 22, textAlign: 'center', fontWeight: '500' },
+  factText: { fontSize: 14, color: dark.text, lineHeight: 22, textAlign: 'center', fontWeight: '500' },
   factNav:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 20, marginVertical: 12 },
   factNavBtn:  { backgroundColor: dark.glass, borderRadius: 20, width: 40, height: 40, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: dark.glassBorder },
   factNavArrow:{ fontSize: 22, fontWeight: '700', color: dark.neon, lineHeight: 26 },
@@ -368,7 +368,7 @@ const s = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
   },
   infoIcon:  { marginTop: 2 },
-  infoTitle: { fontSize: 14, fontWeight: '800', color: '#1E1B33', marginBottom: 6 },
+  infoTitle: { fontSize: 14, fontWeight: '800', color: dark.text, marginBottom: 6 },
   infoText:  { fontSize: 12, color: dark.textSub, lineHeight: 18 },
 
   primaryBtn: {

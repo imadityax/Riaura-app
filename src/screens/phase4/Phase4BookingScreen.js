@@ -3,9 +3,21 @@ import {
   View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert, StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { colors, ui, dark } from '../../theme/colors';
 import { Emblem } from '../../components/VisualKit';
+import { ClayCard, ClayBubble } from '../../components/Clay';
+
+function StarRating({ rating, size = 12 }) {
+  const full = Math.round(rating);
+  return (
+    <View style={{ flexDirection: 'row', gap: 1 }}>
+      {[0, 1, 2, 3, 4].map(i => (
+        <Ionicons key={i} name={i < full ? 'star' : 'star-outline'} size={size} color={dark.gold} />
+      ))}
+    </View>
+  );
+}
 
 const SLOTS = [
   { day: 'Monday',    date: 'Jun 30', times: ['10:00 AM', '2:00 PM', '5:00 PM'] },
@@ -41,7 +53,7 @@ export default function Phase4BookingScreen({ route, navigation }) {
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={styles.safe}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle="light-content" />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} activeOpacity={0.7}>
           <Text style={styles.backBtnText}>← Back</Text>
@@ -66,37 +78,51 @@ export default function Phase4BookingScreen({ route, navigation }) {
         </View>
 
         <Text style={styles.sectionTitle}>Select an Interviewer</Text>
-        {INTERVIEWERS.map((iv, i) => (
-          <TouchableOpacity key={i} style={[styles.ivCard, selectedInterviewer === i && styles.ivSelected]} onPress={() => setSelectedInterviewer(i)} activeOpacity={0.8}>
-            <MaterialCommunityIcons name={iv.icon} size={30} color={dark.neon} style={styles.ivEmoji} />
-            <View style={styles.ivInfo}>
-              <Text style={styles.ivName}>{iv.name}</Text>
-              <Text style={styles.ivTitle}>{iv.title}</Text>
-              <Text style={styles.ivRating}>⭐ {iv.rating}</Text>
-            </View>
-            {selectedInterviewer === i && <Text style={styles.selectedMark}>✓</Text>}
-          </TouchableOpacity>
-        ))}
+        {INTERVIEWERS.map((iv, i) => {
+          const isSel = selectedInterviewer === i;
+          return (
+            <ClayCard key={i} tone={isSel ? 'selected' : 'default'} radius={16} style={styles.ivCard} onPress={() => setSelectedInterviewer(i)}>
+              <ClayBubble size={48} tone={isSel ? 'selected' : 'default'} style={isSel && styles.avatarOnSelected}>
+                <MaterialCommunityIcons name={iv.icon} size={26} color={isSel ? '#fff' : dark.neon} />
+              </ClayBubble>
+              <View style={styles.ivInfo}>
+                <Text style={[styles.ivName, isSel && styles.textOnSelected]}>{iv.name}</Text>
+                <Text style={[styles.ivTitle, isSel && styles.textOnSelected]}>{iv.title}</Text>
+                <View style={styles.ivRatingRow}>
+                  <StarRating rating={iv.rating} />
+                  <Text style={[styles.ivRatingNum, isSel && styles.textOnSelected]}>{iv.rating}</Text>
+                </View>
+              </View>
+              {isSel && <Ionicons name="checkmark-circle" size={22} color="#fff" />}
+            </ClayCard>
+          );
+        })}
 
         <Text style={styles.sectionTitle}>Select a Date</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.daysScroll}>
-          {SLOTS.map((slot, i) => (
-            <TouchableOpacity key={i} style={[styles.dayCard, selectedDay === i && styles.daySelected]} onPress={() => { setSelectedDay(i); setSelectedTime(null); }} activeOpacity={0.8}>
-              <Text style={[styles.dayName, selectedDay === i && styles.dayTextSelected]}>{slot.day.slice(0, 3)}</Text>
-              <Text style={[styles.dayDate, selectedDay === i && styles.dayDateSelected]}>{slot.date}</Text>
-            </TouchableOpacity>
-          ))}
+          {SLOTS.map((slot, i) => {
+            const isSel = selectedDay === i;
+            return (
+              <ClayCard key={i} tone={isSel ? 'selected' : 'default'} radius={14} style={styles.dayCard} onPress={() => { setSelectedDay(i); setSelectedTime(null); }}>
+                <Text style={[styles.dayName, isSel && styles.textOnSelected]}>{slot.day.slice(0, 3)}</Text>
+                <Text style={[styles.dayDate, isSel && styles.textOnSelected]}>{slot.date}</Text>
+              </ClayCard>
+            );
+          })}
         </ScrollView>
 
         {selectedDay !== null && (
           <>
             <Text style={styles.sectionTitle}>Select a Time</Text>
             <View style={styles.timeRow}>
-              {SLOTS[selectedDay].times.map(t => (
-                <TouchableOpacity key={t} style={[styles.timeBtn, selectedTime === t && styles.timeSelected]} onPress={() => setSelectedTime(t)} activeOpacity={0.8}>
-                  <Text style={[styles.timeText, selectedTime === t && styles.timeTextSelected]}>{t}</Text>
-                </TouchableOpacity>
-              ))}
+              {SLOTS[selectedDay].times.map(t => {
+                const isSel = selectedTime === t;
+                return (
+                  <ClayCard key={t} tone={isSel ? 'selected' : 'default'} radius={12} style={styles.timeBtn} onPress={() => setSelectedTime(t)}>
+                    <Text style={[styles.timeText, isSel && styles.textOnSelected]}>{t}</Text>
+                  </ClayCard>
+                );
+              })}
             </View>
           </>
         )}
@@ -131,7 +157,7 @@ const styles = StyleSheet.create({
   header:       { alignItems: 'center', marginBottom: 20, marginTop: 8 },
   phaseBadge:   { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 20, backgroundColor: dark.glass, borderWidth: 1, borderColor: dark.neon + '60', marginBottom: 10 },
   phaseText:    { color: dark.neon, fontSize: 11, fontWeight: '700', letterSpacing: 1 },
-  title:        { fontSize: 24, fontWeight: '900', color: '#1E1B33', textAlign: 'center', lineHeight: 30 },
+  title:        { fontSize: 24, fontWeight: '900', color: dark.text, textAlign: 'center', lineHeight: 30 },
   sub:          { fontSize: 12, color: dark.textSub, marginTop: 6 },
   infoRow:      { flexDirection: 'row', gap: 12, marginBottom: 24 },
   infoCard:     { flex: 1, backgroundColor: dark.glass, borderRadius: 14, padding: 12, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 6, elevation: 2 },
@@ -139,28 +165,27 @@ const styles = StyleSheet.create({
   infoVal:      { fontSize: 16, fontWeight: '800', color: dark.neon },
   infoLbl:      { fontSize: 10, color: dark.textSub, fontWeight: '600', marginTop: 2 },
   sectionTitle: { fontSize: 12, color: dark.textSub, fontWeight: '700', marginBottom: 10, marginTop: 8, letterSpacing: 0.5 },
-  ivCard:       { backgroundColor: dark.glass, borderRadius: 14, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8, borderWidth: 1.5, borderColor: 'transparent', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 },
-  ivSelected:   { borderColor: dark.neon },
-  ivEmoji:      {},
+  textOnSelected: { color: '#fff' },
+  avatarOnSelected: {
+    backgroundColor: 'rgba(255,255,255,0.28)',
+    borderTopColor: 'rgba(255,255,255,0.6)', borderLeftColor: 'rgba(255,255,255,0.6)',
+    borderRightColor: 'rgba(255,255,255,0.15)', borderBottomColor: 'rgba(255,255,255,0.15)',
+  },
+  ivCard:       { padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 10 },
   ivInfo:       { flex: 1 },
-  ivName:       { fontSize: 14, fontWeight: '700', color: '#1E1B33' },
+  ivName:       { fontSize: 14, fontWeight: '700', color: dark.text },
   ivTitle:      { fontSize: 11, color: dark.textSub, marginTop: 2 },
-  ivRating:     { fontSize: 11, color: '#F59E0B', marginTop: 3, fontWeight: '600' },
-  selectedMark: { color: dark.neon, fontSize: 18, fontWeight: '900' },
+  ivRatingRow:  { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 4 },
+  ivRatingNum:  { fontSize: 11, color: dark.textSub, fontWeight: '700' },
   daysScroll:   { marginBottom: 4 },
-  dayCard:      { backgroundColor: dark.glass, borderRadius: 12, padding: 12, alignItems: 'center', marginRight: 10, minWidth: 64, borderWidth: 1.5, borderColor: 'transparent', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 1 },
-  daySelected:  { borderColor: dark.neon, backgroundColor: dark.glass },
+  dayCard:      { padding: 12, alignItems: 'center', marginRight: 10, minWidth: 64 },
   dayName:      { fontSize: 12, color: dark.textSub, fontWeight: '600' },
-  dayDate:      { fontSize: 13, color: '#1E1B33', fontWeight: '700', marginTop: 2 },
-  dayTextSelected: { color: dark.neon },
-  dayDateSelected: { color: dark.neon },
+  dayDate:      { fontSize: 13, color: dark.text, fontWeight: '700', marginTop: 2 },
   timeRow:      { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 16 },
-  timeBtn:      { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 10, backgroundColor: dark.glass, borderWidth: 1.5, borderColor: dark.glassBorder },
-  timeSelected: { borderColor: dark.neon, backgroundColor: dark.glass },
+  timeBtn:      { paddingHorizontal: 16, paddingVertical: 10 },
   timeText:     { color: dark.textSub, fontWeight: '600', fontSize: 13 },
-  timeTextSelected: { color: dark.neon, fontWeight: '700' },
   summaryCard:  { backgroundColor: dark.glass, borderRadius: 14, padding: 16, marginBottom: 16, borderLeftWidth: 3, borderLeftColor: dark.neon, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8, elevation: 3 },
-  summaryTitle: { fontSize: 13, fontWeight: '800', color: '#1E1B33', marginBottom: 10 },
+  summaryTitle: { fontSize: 13, fontWeight: '800', color: dark.text, marginBottom: 10 },
   summaryLine:  { fontSize: 13, color: dark.textSub, marginBottom: 6 },
   bookBtn:      { backgroundColor: dark.neon, borderRadius: 28, paddingVertical: 16, alignItems: 'center', marginBottom: 10, shadowColor: dark.neon, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5 },
   bookBtnDisabled: { backgroundColor: dark.glassBorder, shadowOpacity: 0 },

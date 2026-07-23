@@ -6,6 +6,7 @@ import PhaseHeader from '../../components/PhaseHeader';
 import GameBackButton from '../../components/GameBackButton';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import NeuralLinesBg from '../../components/NeuralLinesBg';
+import { ClayCard } from '../../components/Clay';
 
 const COLOR_OPTIONS = [
   { name: 'Red', hex: '#FF4444' },
@@ -125,10 +126,16 @@ export default function StroopTestScreen({ route, navigation }) {
 
       <View style={styles.options}>
         {COLOR_OPTIONS.map(opt => (
-          <TouchableOpacity key={opt.name} style={[styles.colorBtn, { borderColor: opt.hex }]} onPress={() => handleTap(opt.name)} activeOpacity={0.8}>
+          <ClayCard
+            key={opt.name}
+            tone="default"
+            radius={14}
+            style={[styles.colorBtn, { backgroundColor: opt.hex + '14' }]}
+            onPress={() => handleTap(opt.name)}
+          >
             <View style={[styles.colorDot, { backgroundColor: opt.hex }]} />
             <Text style={styles.colorLabel}>{opt.name}</Text>
-          </TouchableOpacity>
+          </ClayCard>
         ))}
       </View>
 
@@ -157,9 +164,7 @@ const styles = StyleSheet.create({
   options: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 12, padding: 20 },
   colorBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: dark.glass, borderRadius: 12, borderWidth: 2,
     paddingHorizontal: 16, paddingVertical: 12, minWidth: 130,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1,
   },
   colorDot: { width: 16, height: 16, borderRadius: 8 },
   colorLabel: { color: '#1E1B33', fontWeight: '700', fontSize: 14 },

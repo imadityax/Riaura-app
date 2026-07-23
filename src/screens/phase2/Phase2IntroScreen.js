@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     marginBottom: 12, marginTop: 20,
   },
   phaseText: { color: colors.phase2, fontSize: 11, fontWeight: '700', letterSpacing: 1 },
-  title: { fontSize: 26, fontWeight: '900', color: '#1E1B33', textAlign: 'center', lineHeight: 32 },
+  title: { fontSize: 26, fontWeight: '900', color: dark.text, textAlign: 'center', lineHeight: 32 },
   sub: { fontSize: 13, color: dark.textSub, textAlign: 'center', marginTop: 8, lineHeight: 20 },
   infoRow: { flexDirection: 'row', gap: 12, marginBottom: 24 },
   infoCard: {
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.phase2 + '20', alignItems: 'center', justifyContent: 'center',
   },
   domainNumText: { color: colors.phase2, fontWeight: '800', fontSize: 13 },
-  domainName: { flex: 1, color: '#1E1B33', fontSize: 13, fontWeight: '600' },
+  domainName: { flex: 1, color: dark.text, fontSize: 13, fontWeight: '600' },
   domainQ: { color: dark.textMute, fontSize: 11, fontWeight: '600' },
   scaleInfo: {
     backgroundColor: dark.glass, borderRadius: 12, padding: 14, marginVertical: 16, alignItems: 'center',

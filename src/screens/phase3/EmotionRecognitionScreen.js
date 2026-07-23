@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
-import { colors } from '../../theme/colors';
+import { View, Text, StyleSheet, Alert, ScrollView } from 'react-native';
 import { ui, dark } from '../../theme/colors';
 import PhaseHeader from '../../components/PhaseHeader';
 import NeuralLinesBg from '../../components/NeuralLinesBg';
+import { ClayCard } from '../../components/Clay';
+
+const EMOJI_MAP = {
+  Happy: '😄', Surprised: '😮', Excited: '🤩', Proud: '😌',
+  Sad: '😢', Tired: '😪', Hurt: '🥺', Scared: '😨',
+  Angry: '😡', Annoyed: '😒', Frustrated: '😤', Disgusted: '🤢',
+  Shocked: '😲', Nervous: '😬', Sick: '🤒', Upset: '😞',
+  Curious: '🤔', Bored: '😑', Calm: '😌', Content: '🙂', Relieved: '😌',
+  Celebrating: '🥳', Disappointed: '😔', Ashamed: '😳', Awed: '😍',
+};
 
 const EMOTION_TRIALS = [
   { face: '😄', correct: 'Happy', options: ['Happy', 'Surprised', 'Excited', 'Proud'] },
@@ -64,20 +73,22 @@ export default function EmotionRecognitionScreen({ route, navigation }) {
 
         <View style={styles.options}>
           {trial.options.map(opt => {
-            let extra = {};
+            let tone = 'default';
             if (selected !== null) {
-              if (opt === trial.correct) extra = { borderColor: colors.success, backgroundColor: colors.success + '15' };
-              else if (opt === selected) extra = { borderColor: colors.danger, backgroundColor: colors.danger + '10' };
+              if (opt === trial.correct) tone = 'correct';
+              else if (opt === selected) tone = 'incorrect';
             }
             return (
-              <TouchableOpacity
+              <ClayCard
                 key={opt}
-                style={[styles.optBtn, extra]}
+                tone={tone}
+                radius={14}
+                style={styles.optBtn}
                 onPress={() => handleSelect(opt)}
-                activeOpacity={0.8}
               >
+                <Text style={styles.optEmoji}>{EMOJI_MAP[opt] || '🙂'}</Text>
                 <Text style={styles.optText}>{opt}</Text>
-              </TouchableOpacity>
+              </ClayCard>
             );
           })}
         </View>
@@ -102,12 +113,12 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 4,
   },
   face: { fontSize: 80 },
-  options: { width: '100%', gap: 10 },
+  options: { width: '100%', gap: 12 },
   optBtn: {
-    backgroundColor: dark.glass, borderRadius: 12, paddingVertical: 14,
-    alignItems: 'center', borderWidth: 1.5, borderColor: dark.glassBorder,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 3, elevation: 1,
+    paddingVertical: 14, flexDirection: 'row', alignItems: 'center',
+    justifyContent: 'center', gap: 8,
   },
+  optEmoji: { fontSize: 20 },
   optText: { color: '#1E1B33', fontSize: 15, fontWeight: '600' },
   scoreInfo: { textAlign: 'center', color: dark.textMute, fontSize: 12, paddingBottom: 16 },
 });

@@ -6,7 +6,7 @@ html, body, #root {
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #F4F6FA;
+  background: linear-gradient(135deg, #170B3B 0%, #241255 45%, #3B1F88 100%);
   color: #1A1A2E;
   font-size: 14px;
   /* Let pages own their vertical scroll; never scroll sideways at the body. */
@@ -22,3 +22,106 @@ input  { font-family: inherit; }
 .scroll-area::-webkit-scrollbar-thumb { background: #C7CDD6; border-radius: 8px; border: 2px solid transparent; background-clip: content-box; }
 .scroll-area::-webkit-scrollbar-thumb:hover { background: #A9B0BD; background-clip: content-box; }
 .scroll-area::-webkit-scrollbar-track { background: transparent; }
+
+/* ── App-wide neural background (floating neurons, particles, brain waves, gradient lighting) ──
+   Mounted once at the app root (see App.jsx) so it stays put — and keeps animating
+   uninterrupted — behind every screen (login, dashboard, user detail). */
+.neural-bg {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.neural-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  mix-blend-mode: screen;
+  animation: neural-blob-pulse 10s ease-in-out infinite;
+}
+.blob-1 { top: -12%; left: -10%; width: 420px; height: 420px; background: radial-gradient(circle, rgba(108,77,255,0.55), transparent 70%); }
+.blob-2 { bottom: -15%; right: -10%; width: 480px; height: 480px; background: radial-gradient(circle, rgba(76,201,240,0.4), transparent 70%); animation-delay: 2s; animation-duration: 13s; }
+.blob-3 { top: 32%; left: 58%; width: 360px; height: 360px; background: radial-gradient(circle, rgba(217,70,239,0.35), transparent 70%); animation-delay: 4s; animation-duration: 11s; }
+
+.neural-connections { position: absolute; inset: 0; width: 100%; height: 100%; }
+.neural-connections line {
+  stroke: #8B7CF6;
+  stroke-width: 0.15;
+  vector-effect: non-scaling-stroke;
+  animation: neural-synapse 5s ease-in-out infinite;
+}
+
+.neural-neuron {
+  position: absolute;
+  border-radius: 50%;
+  animation-name: neural-float;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.neural-particle {
+  position: absolute;
+  bottom: -10px;
+  border-radius: 50%;
+  animation-name: neural-drift;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.wave-layer {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 120px;
+  opacity: 0.28;
+  overflow: hidden;
+}
+.wave-track {
+  display: flex;
+  width: 200%;
+  height: 100%;
+  animation-name: neural-wave-scroll;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.wave-svg { width: 50%; height: 100%; flex-shrink: 0; display: block; }
+.wave-svg path { fill: none; stroke-width: 2; filter: drop-shadow(0 0 6px currentColor); }
+
+@keyframes neural-float {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.55; }
+  50%      { transform: translateY(-18px) scale(1.2); opacity: 1; }
+}
+
+@keyframes neural-drift {
+  0%   { transform: translateY(0) translateX(0); opacity: 0; }
+  10%  { opacity: 0.9; }
+  90%  { opacity: 0.9; }
+  100% { transform: translateY(-105vh) translateX(24px); opacity: 0; }
+}
+
+@keyframes neural-blob-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%      { opacity: 0.85; transform: scale(1.12); }
+}
+
+@keyframes neural-synapse {
+  0%, 100% { opacity: 0.08; }
+  50%      { opacity: 0.4; }
+}
+
+@keyframes neural-wave-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.neural-input::placeholder { color: rgba(241,237,255,0.35); }
+.neural-input:focus {
+  border-color: #4CC9F0 !important;
+  box-shadow: 0 0 0 3px rgba(76,201,240,0.18);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neural-bg * { animation: none !important; }
+}

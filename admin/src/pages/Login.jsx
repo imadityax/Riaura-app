@@ -59,7 +59,7 @@ export default function Login() {
 
   return (
     <div style={s.page} className="scroll-area">
-      <div style={s.card}>
+      <div style={s.card} className="neural-card">
         <div style={s.logo}>🧠</div>
         <h1 style={s.title}>RiAura Admin</h1>
         <p style={s.sub}>
@@ -89,7 +89,7 @@ export default function Login() {
               <label style={s.label} htmlFor="name">Full name</label>
               <input
                 id="name"
-                className="auth-input"
+                className="auth-input neural-input"
                 style={s.input}
                 type="text"
                 value={name}
@@ -105,7 +105,7 @@ export default function Login() {
             <label style={s.label} htmlFor="email">Email</label>
             <input
               id="email"
-              className="auth-input"
+              className="auth-input neural-input"
               style={s.input}
               type="email"
               value={email}
@@ -121,7 +121,7 @@ export default function Login() {
             <div style={s.pwWrap}>
               <input
                 id="password"
-                className="auth-input"
+                className="auth-input neural-input"
                 style={{ ...s.input, paddingRight: 64 }}
                 type={showPw ? 'text' : 'password'}
                 value={password}
@@ -146,7 +146,7 @@ export default function Login() {
               <label style={s.label} htmlFor="confirm">Confirm password</label>
               <input
                 id="confirm"
-                className="auth-input"
+                className="auth-input neural-input"
                 style={s.input}
                 type={showPw ? 'text' : 'password'}
                 value={confirm}
@@ -204,29 +204,39 @@ function mapAuthError(code, isSignup) {
 }
 
 const s = {
-  // display:flex + margin:auto on the card centres it while still allowing the
-  // page to scroll when the card is taller than the viewport (short screens).
-  page:  { minHeight: '100vh', display: 'flex', padding: 24, background: '#F4F6FA' },
-  card:  { margin: 'auto', background: '#fff', borderRadius: 20, padding: '40px 36px', width: 400, maxWidth: '100%', boxShadow: '0 8px 32px rgba(0,0,0,0.10)' },
-  logo:  { fontSize: 40, textAlign: 'center', marginBottom: 12 },
-  title: { fontSize: 24, fontWeight: 800, textAlign: 'center', color: '#1A1A2E', marginBottom: 4 },
-  sub:   { fontSize: 13, color: '#6B7280', textAlign: 'center', marginBottom: 24 },
+  page:  {
+    minHeight: '100vh', display: 'flex', padding: 24,
+  },
+  card:  {
+    margin: 'auto', position: 'relative', zIndex: 1,
+    background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(22px)', WebkitBackdropFilter: 'blur(22px)',
+    border: '1px solid rgba(255,255,255,0.14)',
+    borderRadius: 20, padding: '40px 36px', width: 400, maxWidth: '100%',
+    boxShadow: '0 8px 40px rgba(0,0,0,0.45), 0 0 60px rgba(108,77,255,0.15)',
+  },
+  logo:  { fontSize: 40, textAlign: 'center', marginBottom: 12, filter: 'drop-shadow(0 0 14px rgba(76,201,240,0.6))' },
+  title: { fontSize: 24, fontWeight: 800, textAlign: 'center', color: '#F1EDFF', marginBottom: 4 },
+  sub:   { fontSize: 13, color: '#B4A5EE', textAlign: 'center', marginBottom: 24 },
 
-  tabs:  { display: 'flex', gap: 4, background: '#F0F2F7', borderRadius: 12, padding: 4, marginBottom: 24 },
-  tab:   { flex: 1, padding: '10px 0', borderRadius: 9, border: 'none', background: 'transparent', color: '#6B7280', fontWeight: 600, fontSize: 14, transition: 'all .15s ease' },
-  tabActive: { background: '#fff', color: '#1A1A2E', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' },
+  tabs:  { display: 'flex', gap: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 12, padding: 4, marginBottom: 24 },
+  tab:   { flex: 1, padding: '10px 0', borderRadius: 9, border: 'none', background: 'transparent', color: '#B4A5EE', fontWeight: 600, fontSize: 14, transition: 'all .15s ease' },
+  tabActive: { background: 'rgba(255,255,255,0.14)', color: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' },
 
   form:  { display: 'flex', flexDirection: 'column', gap: 16 },
   field: { display: 'flex', flexDirection: 'column', gap: 6 },
-  label: { fontSize: 12, fontWeight: 600, color: '#6B7280' },
-  input: { width: '100%', padding: '12px 14px', borderRadius: 10, border: '1px solid #E5E7EB', fontSize: 14, outline: 'none', color: '#1A1A2E', background: '#fff', transition: 'border-color .15s ease, box-shadow .15s ease' },
+  label: { fontSize: 12, fontWeight: 600, color: '#B4A5EE' },
+  input: { width: '100%', padding: '12px 14px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.14)', fontSize: 14, outline: 'none', color: '#F1EDFF', background: 'rgba(255,255,255,0.06)', transition: 'border-color .15s ease, box-shadow .15s ease' },
 
   pwWrap:   { position: 'relative', display: 'flex', alignItems: 'center' },
-  pwToggle: { position: 'absolute', right: 12, background: 'none', border: 'none', color: '#2B4EFF', fontSize: 12, fontWeight: 600, padding: 4 },
+  pwToggle: { position: 'absolute', right: 12, background: 'none', border: 'none', color: '#2EF3FF', fontSize: 12, fontWeight: 600, padding: 4 },
 
-  error: { color: '#EF4444', fontSize: 13, margin: 0 },
-  btn:   { marginTop: 4, padding: '13px', borderRadius: 28, background: '#2B4EFF', color: '#fff', fontWeight: 700, fontSize: 15, border: 'none' },
+  error: { color: '#FF8A8A', fontSize: 13, margin: 0 },
+  btn:   {
+    marginTop: 4, padding: '13px', borderRadius: 28, color: '#fff', fontWeight: 700, fontSize: 15, border: 'none',
+    background: 'linear-gradient(135deg, #6C4DFF, #4CC9F0)',
+    boxShadow: '0 4px 20px rgba(108,77,255,0.5)',
+  },
 
-  footer: { textAlign: 'center', fontSize: 13, color: '#6B7280', marginTop: 24 },
-  link:   { background: 'none', border: 'none', color: '#2B4EFF', fontWeight: 700, fontSize: 13, padding: 0 },
+  footer: { textAlign: 'center', fontSize: 13, color: '#B4A5EE', marginTop: 24 },
+  link:   { background: 'none', border: 'none', color: '#2EF3FF', fontWeight: 700, fontSize: 13, padding: 0 },
 };

@@ -11,6 +11,7 @@ import MindfulnessAssessScreen from '../screens/assess/MindfulnessAssessScreen';
 import MindfulnessReportScreen from '../screens/assess/MindfulnessReportScreen';
 import ActivityAssessScreen from '../screens/assess/ActivityAssessScreen';
 import ActivityGameScreen from '../screens/assess/ActivityGameScreen';
+import WebActivityScreen from '../screens/assess/WebActivityScreen';
 import CompletionScreen from '../screens/CompletionScreen';
 
 // Phase 1
@@ -94,6 +95,7 @@ export default function AppNavigator() {
         <Stack.Screen name="MindfulnessAssess"  component={MindfulnessAssessScreen} />
         <Stack.Screen name="ActivityAssess"     component={ActivityAssessScreen} />
         <Stack.Screen name="ActivityGame"       component={ActivityGameScreen} />
+        <Stack.Screen name="WebActivity"        component={WebActivityScreen} />
         <Stack.Screen name="MindfulnessReport"  component={MindfulnessReportScreen} options={fadeOptions} />
         <Stack.Screen name="Completion"         component={CompletionScreen} options={fadeOptions} />
 

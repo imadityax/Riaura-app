@@ -12,7 +12,7 @@ export default function UserDetail({ user, onBack }) {
         <button style={s.backBtn} onClick={onBack}>← Back to Dashboard</button>
         <div style={s.headerRight}>
           {isHigh !== undefined && (
-            <span style={{ ...s.badge, background: isHigh ? '#D1FAE5' : '#FEF3C7', color: isHigh ? '#065F46' : '#92400E' }}>
+            <span style={{ ...s.badge, background: isHigh ? 'rgba(16,185,129,0.18)' : 'rgba(245,158,11,0.18)', color: isHigh ? '#34D399' : '#FBBF24', border: `1px solid ${isHigh ? 'rgba(16,185,129,0.35)' : 'rgba(245,158,11,0.35)'}` }}>
               {isHigh ? '🏆 High Performance' : '📈 Development Pathway'}
             </span>
           )}
@@ -110,8 +110,8 @@ function ScoreBar({ label, value, color, small }) {
   return (
     <div style={{ marginBottom: small ? 8 : 14 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-        <span style={{ fontSize: small ? 12 : 13, color: '#374151', fontWeight: 600 }}>{label}</span>
-        <span style={{ fontSize: small ? 12 : 13, fontWeight: 700, color: pct != null ? color : '#9CA3AF' }}>
+        <span style={{ fontSize: small ? 12 : 13, color: '#D9D4F0', fontWeight: 600 }}>{label}</span>
+        <span style={{ fontSize: small ? 12 : 13, fontWeight: 700, color: pct != null ? color : '#8A85A8' }}>
           {pct != null ? `${pct}%` : '—'}
         </span>
       </div>
@@ -136,38 +136,55 @@ function PhaseBadge({ phase }) {
   const colors = { 0: '#6B7280', 1: '#3B82F6', 2: '#8B5CF6', 3: '#F59E0B', 4: '#10B981' };
   const p = phase ?? 0;
   return (
-    <span style={{ padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700, background: (colors[p] || '#6B7280') + '18', color: colors[p] || '#6B7280', marginLeft: 'auto' }}>
+    <span style={{ padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700, background: (colors[p] || '#6B7280') + '2A', color: colors[p] || '#6B7280', marginLeft: 'auto' }}>
       {labels[p] || 'Unknown'}
     </span>
   );
 }
 
 const s = {
-  page:       { height: '100vh', display: 'flex', flexDirection: 'column', background: '#F4F6FA', overflow: 'hidden' },
-  header:     { flexShrink: 0, flexWrap: 'wrap', gap: 12, background: '#fff', borderBottom: '1px solid #E5E7EB', padding: '14px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  backBtn:    { background: 'none', border: 'none', color: '#2B4EFF', fontWeight: 700, fontSize: 14 },
+  page:       { height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+  header:     {
+    flexShrink: 0, flexWrap: 'wrap', gap: 12, padding: '14px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+    background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)',
+    borderBottom: '1px solid rgba(255,255,255,0.12)',
+  },
+  backBtn:    { background: 'none', border: 'none', color: '#2EF3FF', fontWeight: 700, fontSize: 14 },
   headerRight:{ display: 'flex', alignItems: 'center', gap: 12 },
   badge:      { padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700 },
 
   content:    { flex: 1, minHeight: 0, padding: '24px 28px' },
-  card:       { background: '#fff', borderRadius: 16, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', marginBottom: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
-  avatar:     { width: 52, height: 52, borderRadius: 14, background: '#2B4EFF', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 900, flexShrink: 0 },
-  name:       { fontSize: 20, fontWeight: 800, color: '#1A1A2E', marginBottom: 2 },
-  email:      { fontSize: 13, color: '#6B7280' },
+  card:       {
+    display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', marginBottom: 20, padding: '20px 24px',
+    background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)',
+    border: '1px solid rgba(255,255,255,0.12)', borderRadius: 16,
+    boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
+  },
+  avatar:     {
+    width: 52, height: 52, borderRadius: 14, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 900, flexShrink: 0,
+    background: 'linear-gradient(135deg, #6C4DFF, #4CC9F0)', boxShadow: '0 4px 16px rgba(108,77,255,0.45)',
+  },
+  name:       { fontSize: 20, fontWeight: 800, color: '#F1EDFF', marginBottom: 2 },
+  email:      { fontSize: 13, color: '#B4A5EE' },
 
   grid:       { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 },
-  section:    { background: '#fff', borderRadius: 16, padding: '18px 20px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
-  sectionTitle: { fontSize: 13, fontWeight: 800, color: '#1A1A2E', marginBottom: 14, letterSpacing: 0.3 },
+  section:    {
+    padding: '18px 20px',
+    background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)',
+    border: '1px solid rgba(255,255,255,0.12)', borderRadius: 16,
+    boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
+  },
+  sectionTitle: { fontSize: 13, fontWeight: 800, color: '#F1EDFF', marginBottom: 14, letterSpacing: 0.3 },
 
-  row:        { display: 'flex', justifyContent: 'space-between', paddingBottom: 10, borderBottom: '1px solid #F3F4F6', marginBottom: 10 },
-  rowLabel:   { fontSize: 12, color: '#6B7280', fontWeight: 600 },
-  rowValue:   { fontSize: 13, color: '#1A1A2E', fontWeight: 600 },
+  row:        { display: 'flex', justifyContent: 'space-between', paddingBottom: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', marginBottom: 10 },
+  rowLabel:   { fontSize: 12, color: '#B4A5EE', fontWeight: 600 },
+  rowValue:   { fontSize: 13, color: '#F1EDFF', fontWeight: 600 },
 
-  barTrack:   { height: 6, background: '#F3F4F6', borderRadius: 3, overflow: 'hidden' },
+  barTrack:   { height: 6, background: 'rgba(255,255,255,0.08)', borderRadius: 3, overflow: 'hidden' },
   barFill:    { height: '100%', borderRadius: 3, transition: 'width 0.4s ease' },
 
   scoreGrid:  { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginTop: 14 },
-  scoreStat:  { background: '#F9FAFB', borderRadius: 10, padding: '10px 12px', textAlign: 'center' },
-  scoreStatVal: { fontSize: 18, fontWeight: 900, color: '#1A1A2E', marginBottom: 2 },
-  scoreStatLbl: { fontSize: 10, color: '#6B7280', fontWeight: 700, letterSpacing: 0.5 },
+  scoreStat:  { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '10px 12px', textAlign: 'center' },
+  scoreStatVal: { fontSize: 18, fontWeight: 900, color: '#F1EDFF', marginBottom: 2 },
+  scoreStatLbl: { fontSize: 10, color: '#B4A5EE', fontWeight: 700, letterSpacing: 0.5 },
 };

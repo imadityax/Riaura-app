@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.phase3 + '18', borderWidth: 1, borderColor: colors.phase3, marginBottom: 12,
   },
   phaseText: { color: colors.phase3, fontSize: 11, fontWeight: '700', letterSpacing: 1 },
-  title: { fontSize: 26, fontWeight: '900', color: '#1E1B33', textAlign: 'center', lineHeight: 32 },
+  title: { fontSize: 26, fontWeight: '900', color: dark.text, textAlign: 'center', lineHeight: 32 },
   sub: { fontSize: 13, color: dark.textSub, textAlign: 'center', marginTop: 8, lineHeight: 20 },
   infoRow: { flexDirection: 'row', gap: 12, marginBottom: 24 },
   infoCard: {
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   },
   taskIcon: { marginRight: 2 },
   taskInfo: { flex: 1 },
-  taskName: { color: '#1E1B33', fontWeight: '700', fontSize: 13 },
+  taskName: { color: dark.text, fontWeight: '700', fontSize: 13 },
   taskDomain: { color: colors.phase3, fontSize: 10, fontWeight: '600', marginVertical: 2 },
   taskDesc: { color: dark.textSub, fontSize: 11 },
   taskNum: {
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8,
     borderWidth: 1.5, borderColor: colors.phase3 + '55',
   },
-  gameName: { color: '#1E1B33', fontWeight: '800', fontSize: 15 },
+  gameName: { color: dark.text, fontWeight: '800', fontSize: 15 },
   btn: { borderRadius: 14, overflow: 'hidden', marginTop: 16 },
   btnInner: { paddingVertical: 16, alignItems: 'center', backgroundColor: dark.neon, borderRadius: 14 },
   btnText: { fontSize: 16, fontWeight: '800', color: '#fff' },

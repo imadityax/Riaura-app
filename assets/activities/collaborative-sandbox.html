@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>The Collaborative Sandbox — Creative Problem-Solving</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky:#CBEAF7; --sky-2:#A9DBF0; --sky-grey:#B7C4CE;
+    --grass:#7FB84F; --grass-2:#6AA83E; --grass-dark:#568A31;
+    --sand:#EFDCA8; --sand-2:#E4CB8A;
+    --sun:#F6B42C; --sun-dark:#D9971A;
+    --coral:#EF6F5E; --coral-dark:#D9543F;
+    --teal:#1E9E93; --teal-dark:#16776E;
+    --plum:#7C5A8F;
+    --ink:#2C3A44; --ink-soft:#5C6B76;
+    --panel:#FFFFFF; --line:#E6DFCF;
+    --shadow:0 14px 30px rgba(44,58,68,.16);
+    --shadow-sm:0 6px 14px rgba(44,58,68,.14);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Nunito',system-ui,sans-serif;color:var(--ink);
+    background:radial-gradient(130% 90% at 50% -10%, #EAF7FE 0%, #FBF6EA 60%, #F6EFDF 100%);
+    min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:20px 14px 40px;
+  }
+  h1,h2,h3,.display{font-family:'Baloo 2',system-ui,sans-serif;font-weight:800;}
+  .app{width:100%;max-width:600px;}
+
+  .btn{font-family:'Baloo 2';font-weight:700;font-size:1.1rem;border:none;border-radius:18px;padding:14px 24px;cursor:pointer;color:#fff;background:var(--teal);box-shadow:0 6px 0 var(--teal-dark);transition:transform .08s,box-shadow .08s;}
+  .btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--teal-dark);}
+  .btn.sun{background:var(--sun);box-shadow:0 6px 0 var(--sun-dark);}
+  .btn.sun:active{box-shadow:0 2px 0 var(--sun-dark);}
+  .btn.coral{background:var(--coral);box-shadow:0 6px 0 var(--coral-dark);}
+  .btn.ghostbtn{background:#fff;color:var(--ink);box-shadow:0 4px 0 var(--line);border:2px solid var(--line);}
+  .btn:focus-visible,.pick:focus-visible,.tile:focus-visible{outline:4px solid var(--sun);outline-offset:3px;}
+  .btn:disabled{opacity:0.5; cursor:not-allowed; box-shadow:0 6px 0 var(--line); background:var(--line);}
+
+  .panel{background:var(--panel);border-radius:28px;padding:26px 22px 28px;box-shadow:var(--shadow);border:3px solid #fff;}
+  .center{text-align:center;}
+  .lead{color:var(--ink-soft);font-size:1.02rem;line-height:1.5;}
+  .grown{display:inline-block;background:var(--plum);color:#fff;font-family:'Baloo 2';font-weight:700;font-size:.8rem;padding:5px 13px;border-radius:13px;letter-spacing:.4px;}
+
+  /* Home & Pickers */
+  .home-title{font-size:2.3rem;line-height:1.05;margin:.3em 0 .1em;color:var(--teal-dark);}
+  .home-sub{font-family:'Baloo 2';font-weight:600;color:var(--coral);font-size:1.25rem;margin:0 0 .5em;}
+  .picks{display:grid;gap:14px;margin-top:6px;}
+  .pick{display:flex;gap:14px;align-items:center;text-align:left;background:#fff;border:3px solid var(--line);border-radius:20px;padding:14px 16px;cursor:pointer;box-shadow:0 5px 0 var(--line);transition:transform .08s,box-shadow .08s,border-color .15s;}
+  .pick:hover{border-color:var(--sun);}
+  .pick:active{transform:translateY(3px);box-shadow:0 2px 0 var(--line);}
+  .pick .badge{width:52px;height:52px;border-radius:15px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2';font-weight:800;color:#fff;font-size:1.3rem;}
+  .pick.easy .badge{background:var(--teal);}
+  .pick.moderate .badge{background:var(--sun);}
+  .pick.hard .badge{background:var(--coral);}
+  .pick .t{font-family:'Baloo 2';font-weight:800;font-size:1.18rem;}
+  .pick .d{color:var(--ink-soft);font-size:.92rem;font-weight:600;}
+
+  /* Settings */
+  .settings{margin-top:20px;border:2px dashed var(--line);border-radius:18px;padding:4px 16px;}
+  .settings summary{cursor:pointer;font-family:'Baloo 2';font-weight:700;color:var(--plum);padding:12px 0;list-style:none;}
+  .settings summary::-webkit-details-marker{display:none;}
+  .settings summary::before{content:"⚙ ";}
+  .set-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line);}
+  .set-row .lbl{font-weight:700;font-size:.94rem;}
+  .set-row .hint{font-size:.78rem;color:var(--ink-soft);font-weight:600;}
+  .set-row input[type=number]{width:74px;font-family:'Baloo 2';font-weight:700;font-size:1rem;padding:8px 10px;border:2px solid var(--line);border-radius:12px;text-align:center;}
+
+  /* Simulation */
+  .instruct{background:#fff;border:3px solid var(--line);border-radius:18px;padding:12px 16px;font-weight:700;font-size:1.08rem;margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+  .scene-wrap{position:relative;border-radius:22px;overflow:hidden;box-shadow:var(--shadow);border:3px solid #fff;background:var(--sky);}
+  .scene-wrap::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:19px;box-shadow:inset 0 -26px 40px rgba(24,40,60,.10), inset 0 12px 26px rgba(255,255,255,.22);}
+  .scene-wrap svg.bg{display:block;width:100%;height:auto;}
+  .placed-layer{position:absolute;inset:0;pointer-events:none;}
+  .placed{position:absolute;transform:translate(-50%,-50%);width:20%;pointer-events:none;filter:drop-shadow(0 5px 5px rgba(24,40,60,.28));}
+  .leo-hit{position:absolute;cursor:pointer;border-radius:16px;}
+  .rain{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+  .drop{position:absolute;top:-12%;width:2px;height:14px;background:rgba(120,170,210,.75);border-radius:2px;animation:fall linear infinite;}
+  @keyframes fall{to{transform:translateY(360px);}}
+
+  .tray{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:14px;background:var(--sand);border:3px solid var(--sand-2);border-radius:20px;padding:14px 12px; min-height: 100px;}
+  .tray .cap{width:100%;text-align:center;font-family:'Baloo 2';font-weight:700;color:var(--ink-soft);font-size:.82rem;margin-bottom:-4px;}
+  .tile{background:#fff;border:2px solid var(--line);border-radius:16px;padding:8px 6px 4px;width:82px;text-align:center;cursor:grab;box-shadow:0 4px 0 var(--line);touch-action:none;transition:transform .08s;}
+  .tile:active{cursor:grabbing;}
+  .tile svg{width:52px;height:52px;display:block;margin:0 auto 2px;pointer-events:none;filter:drop-shadow(0 2px 2px rgba(24,40,60,.16));}
+  .tile .lbl{font-family:'Baloo 2';font-weight:700;font-size:.78rem;line-height:1;color:var(--ink);}
+  .ghost{position:fixed;z-index:999;pointer-events:none;opacity:.92;transform:scale(1.05);}
+  .ghost .lbl{display:none;}
+
+  /* Timeline (moderate) */
+  .timeline{display:flex;gap:10px;justify-content:center;margin-top:14px;}
+  .slot{width:96px;height:96px;border-radius:18px;border:3px dashed var(--teal);background:#EAF7F5;display:flex;align-items:center;justify-content:center;position:relative;}
+  .slot .num{position:absolute;top:4px;left:8px;font-family:'Baloo 2';font-weight:800;color:var(--teal);opacity:.5;}
+  .slot.filled{border-style:solid;background:#fff;}
+  .slot svg{width:64px;height:64px;}
+  .slot .clear{position:absolute;top:2px;right:4px;cursor:pointer;color:var(--coral);font-family:'Baloo 2';font-weight:800;font-size:1rem;}
+  .arrow{align-self:center;color:var(--teal);font-size:1.4rem;font-weight:800;}
+  .simbar{display:flex;justify-content:center;gap:12px;margin-top:14px;}
+
+  /* Outcome & Toasts */
+  .toast{position:absolute;top:10%;left:5%;right:5%;background:#fff;border:3px solid var(--coral);border-radius:16px;padding:12px;text-align:center;font-weight:700;box-shadow:0 8px 16px rgba(0,0,0,.15);z-index:50;animation:pop .3s cubic-bezier(.2,1,.3,1);}
+  @keyframes pop{from{transform:translateY(20px) scale(.9);opacity:0;}}
+
+  .over{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(44,58,68,.4);backdrop-filter:blur(2px);z-index:60;padding:20px;}
+  .over .card2{background:#fff;border-radius:26px;padding:26px 24px;box-shadow:var(--shadow);max-width:420px;text-align:center;}
+  .over .em{font-size:3rem;display:block;margin-bottom:6px;}
+  .over h3{margin:.2em 0;font-size:1.3rem;}
+  .over p{color:var(--ink-soft);font-weight:600;margin:.2em 0 1em;}
+
+  /* Results */
+  .score-hero{text-align:center;margin:16px 0 6px;}
+  .score-big{font-family:'Baloo 2';font-weight:800;font-size:3.2rem;color:var(--teal);line-height:1;}
+  .score-big small{font-size:1.4rem;color:var(--ink-soft);}
+  .metric{margin:14px 0;}
+  .metric .top{display:flex;justify-content:space-between;align-items:baseline;}
+  .metric h4{font-family:'Baloo 2';font-weight:700;margin:0;font-size:1rem;}
+  .metric .val{font-family:'Baloo 2';font-weight:800;color:var(--teal-dark);}
+  .metric .note{font-size:.82rem;color:var(--ink-soft);font-weight:600;margin:2px 0 6px;}
+  .bar{height:14px;background:var(--line);border-radius:9px;overflow:hidden;}
+  .bar span{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--teal),var(--sun));transition:width .8s cubic-bezier(.2,1,.3,1);}
+  .divider{border:none;border-top:2px dashed var(--line);margin:20px 0;}
+  .foot{display:flex;gap:10px;justify-content:center;margin-top:22px;flex-wrap:wrap;}
+  .tiny{font-size:.8rem;color:var(--ink-soft);text-align:center;margin-top:16px;line-height:1.5;font-weight:600;}
+
+  .exit{position:fixed;top:14px;right:16px;z-index:20;background:#fff;border:2px solid var(--line);border-radius:50%;width:40px;height:40px;font-size:1.2rem;cursor:pointer;color:var(--ink-soft);box-shadow:var(--shadow-sm);display:none;}
+  .exit.show{display:block;}
+
+  /* Hard Timer */
+  .hard-timer { position:absolute; top:12px; right:14px; background:#fff; border:3px solid var(--coral); color:var(--coral); font-family:'Baloo 2'; font-weight:800; font-size:1.2rem; padding:4px 12px; border-radius:12px; box-shadow:var(--shadow-sm); z-index:10; }
+</style>
+</head>
+<body>
+<button class="exit no-print" id="exit" aria-label="Start over">✕</button>
+<div class="app" id="app"></div>
+
+<script>
+/* =========================================================
+   THE COLLABORATIVE SANDBOX
+   Cognitive Mapping via Drag & Drop Interaction
+   ========================================================= */
+const SCENE_W=500, SCENE_H=340;
+
+/* ---------------- Shared gradient / lighting defs ---------------- */
+// Reusable gradients so scenes, characters and props read with real depth and
+// a consistent top-left light source. Included once per inline <svg>; duplicate
+// IDs across separate SVGs resolve harmlessly (all definitions are identical).
+function svgDefs(){
+  return `<defs>
+    <radialGradient id="skyG" cx="50%" cy="26%" r="95%">
+      <stop offset="0%" stop-color="#EAF7FF"/><stop offset="58%" stop-color="#C6E7F6"/><stop offset="100%" stop-color="#A9D8ED"/>
+    </radialGradient>
+    <linearGradient id="skyGRain" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#CCD6DD"/><stop offset="100%" stop-color="#A6B4BD"/>
+    </linearGradient>
+    <linearGradient id="grassG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#93CE5E"/><stop offset="100%" stop-color="#5C9C34"/>
+    </linearGradient>
+    <linearGradient id="waterG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#86D3EE"/><stop offset="45%" stop-color="#4FB0D6"/><stop offset="100%" stop-color="#3691BC"/>
+    </linearGradient>
+    <radialGradient id="sunG" cx="42%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#FFF0B8"/><stop offset="55%" stop-color="#F9C63E"/><stop offset="100%" stop-color="#F0A21A"/>
+    </radialGradient>
+    <linearGradient id="skinG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FBDBBF"/><stop offset="100%" stop-color="#EEBF9A"/>
+    </linearGradient>
+    <linearGradient id="skinG2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F1C49E"/><stop offset="100%" stop-color="#DFA579"/>
+    </linearGradient>
+    <linearGradient id="shirtB" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0%" stop-color="#5EA0EA"/><stop offset="100%" stop-color="#3160A8"/>
+    </linearGradient>
+    <linearGradient id="dressT" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0%" stop-color="#2FC4B6"/><stop offset="100%" stop-color="#0F7B70"/>
+    </linearGradient>
+    <linearGradient id="woodG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#CB9558"/><stop offset="100%" stop-color="#986739"/>
+    </linearGradient>
+  </defs>`;
+}
+
+/* ---------------- Avatars ---------------- */
+function faceHuman(expr){
+  let mouth, brows='';
+  const eye=(cx)=>`<g><ellipse cx="${cx}" cy="45" rx="4" ry="4.4" fill="#fff"/><circle cx="${cx}" cy="45.6" r="2.7" fill="#3a2b38"/><circle cx="${cx+1.1}" cy="44.2" r=".9" fill="#fff"/></g>`;
+  const eyes=eye(42)+eye(58);
+  const cheeks=`<circle cx="33" cy="53" r="4" fill="#F49890" opacity=".45"/><circle cx="67" cy="53" r="4" fill="#F49890" opacity=".45"/>`;
+  const nose=`<path d="M50 47 q2 4 -1 6" fill="none" stroke="#d9a97f" stroke-width="1.6" stroke-linecap="round"/>`;
+  if(expr==='sad'){brows=`<path d="M36 38 q6 -3 10 -1" stroke="#5c4433" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M54 37 q4 -2 10 1" stroke="#5c4433" stroke-width="2.2" fill="none" stroke-linecap="round"/>`;mouth=`<path d="M43 62 q7 -6 14 0" stroke="#a1503f" stroke-width="2.8" fill="none" stroke-linecap="round"/>`;}
+  else if(expr==='frustrated'){brows=`<path d="M36 39 l10 3M64 39 l-10 3" stroke="#5c4433" stroke-width="2.6" stroke-linecap="round"/>`;mouth=`<path d="M43 62 q7 -5 14 0" stroke="#a1503f" stroke-width="2.8" fill="none" stroke-linecap="round"/>`;}
+  else if(expr==='happy'){brows=`<path d="M36 37 q5 -2.5 10 0M54 37 q5 -2.5 10 0" stroke="#5c4433" stroke-width="2" fill="none" stroke-linecap="round"/>`;mouth=`<path d="M41 56 q9 9 18 0 q-9 5 -18 0Z" fill="#8f4433"/><path d="M44.5 57 q5.5 3 11 0Z" fill="#fff" opacity=".85"/>`;}
+  else{mouth=`<path d="M44 58 q6 5 12 0" stroke="#a1503f" stroke-width="2.5" fill="none" stroke-linecap="round"/>`;}
+  return cheeks+nose+brows+eyes+mouth;
+}
+function leo(expr='neutral',armsCrossed=false){
+  const arms = armsCrossed
+    ? `<path d="M34 96 q16 6 32 -4" stroke="url(#shirtB)" stroke-width="11" fill="none" stroke-linecap="round"/><path d="M66 92 q-16 6 -32 -4" stroke="#2f5aa0" stroke-width="11" fill="none" stroke-linecap="round"/>`
+    : `<path d="M33 92 q-14 8 -13 27" stroke="url(#shirtB)" stroke-width="11" fill="none" stroke-linecap="round"/><path d="M67 92 q14 8 13 27" stroke="url(#shirtB)" stroke-width="11" fill="none" stroke-linecap="round"/>`;
+  return `<g>
+    <ellipse cx="50" cy="147" rx="25" ry="5.5" fill="rgba(0,0,0,.14)"/>
+    <rect x="39" y="116" width="9" height="27" rx="4.5" fill="#33506e"/><rect x="52" y="116" width="9" height="27" rx="4.5" fill="#33506e"/>
+    <path d="M37 140 q-6 1 -6 5 h18 v-5Z" fill="#26262e"/><path d="M63 140 q6 1 6 5 h-18 v-5Z" fill="#26262e"/>
+    <path d="M50 80 q-21 2 -21 23 v13 q0 7 21 7 q21 0 21 -7 v-13 q0 -21 -21 -23Z" fill="url(#shirtB)"/>
+    <path d="M50 80 q-21 2 -21 23 v13 q0 7 9 7 v-43Z" fill="#2f5aa0" opacity=".3"/>
+    <path d="M44 81 q6 7 12 0" fill="none" stroke="#2f5aa0" stroke-width="2"/>
+    ${arms}
+    <circle cx="20" cy="118" r="6.5" fill="url(#skinG)"/><circle cx="80" cy="118" r="6.5" fill="url(#skinG)"/>
+    <rect x="45" y="66" width="10" height="10" rx="4" fill="url(#skinG2)"/>
+    <ellipse cx="26.5" cy="47" rx="3.6" ry="5" fill="url(#skinG2)"/><ellipse cx="73.5" cy="47" rx="3.6" ry="5" fill="url(#skinG2)"/>
+    <circle cx="50" cy="46" r="24" fill="url(#skinG)"/>
+    <path d="M26 44 q0 -27 24 -27 q24 0 24 27 q-7 -13 -24 -13 q-17 0 -24 13Z" fill="#6B4A2E"/>
+    <path d="M31 34 q8 -10 19 -10 q11 0 19 10 q-8 -4 -19 -4 q-11 0 -19 4Z" fill="#82613e" opacity=".65"/>
+    ${faceHuman(expr)}
+  </g>`;
+}
+function maya(expr='neutral'){
+  return `<g>
+    <ellipse cx="50" cy="147" rx="25" ry="5.5" fill="rgba(0,0,0,.14)"/>
+    <rect x="41" y="120" width="7" height="24" rx="3.5" fill="#c88a5f"/><rect x="52" y="120" width="7" height="24" rx="3.5" fill="#c88a5f"/>
+    <path d="M39 141 q-5 1 -5 4 h16 v-4Z" fill="#7c5a8f"/><path d="M61 141 q5 1 5 4 h-16 v-4Z" fill="#7c5a8f"/>
+    <path d="M50 79 q-23 4 -25 42 h50 q-2 -38 -25 -42Z" fill="url(#dressT)"/>
+    <path d="M50 79 q-23 4 -25 42 h10 q1 -34 15 -42Z" fill="#0f6d63" opacity=".28"/>
+    <path d="M31 92 q-13 8 -12 27" stroke="url(#dressT)" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <path d="M69 92 q13 8 12 27" stroke="url(#dressT)" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <circle cx="19" cy="118" r="6" fill="url(#skinG2)"/><circle cx="81" cy="118" r="6" fill="url(#skinG2)"/>
+    <circle cx="22" cy="38" r="10" fill="#4A2E22"/><circle cx="78" cy="38" r="10" fill="#4A2E22"/>
+    <circle cx="19.5" cy="35" r="3.4" fill="#5c3a2b" opacity=".8"/><circle cx="75.5" cy="35" r="3.4" fill="#5c3a2b" opacity=".8"/>
+    <rect x="45" y="66" width="10" height="10" rx="4" fill="url(#skinG2)"/>
+    <circle cx="50" cy="46" r="24" fill="url(#skinG2)"/>
+    <path d="M25 45 q0 -29 25 -29 q25 0 25 29 q-5 -17 -25 -17 q-20 0 -25 17Z" fill="#4A2E22"/>
+    <path d="M31 33 q9 -9 19 -9 q10 0 19 9 q-9 -4 -19 -4 q-10 0 -19 4Z" fill="#5e3b2a" opacity=".65"/>
+    ${faceHuman(expr)}
+  </g>`;
+}
+
+/* ---------------- Backdrops ---------------- */
+function cloud(x,y,s,o){
+  return `<g transform="translate(${x},${y}) scale(${s})" opacity="${o}"><ellipse cx="-24" cy="6" rx="22" ry="14" fill="#fff"/><ellipse cx="24" cy="6" rx="24" ry="15" fill="#fff"/><ellipse cx="0" cy="0" rx="30" ry="18" fill="#fff"/><ellipse cx="0" cy="9" rx="42" ry="13" fill="#fff"/></g>`;
+}
+function flower(x,y,c){
+  return `<g transform="translate(${x},${y})"><circle r="5" fill="${c}"/><circle cx="7" cy="0" r="5" fill="${c}"/><circle cx="-7" cy="0" r="5" fill="${c}"/><circle cx="0" cy="7" r="5" fill="${c}"/><circle cx="0" cy="-7" r="5" fill="${c}"/><circle r="3.4" fill="#FFE79A"/></g>`;
+}
+function grassTufts(ys){
+  return `<g fill="#4E8C2C" opacity=".8">${[24,70,140,352,420,468].map(x=>`<path d="M${x} ${ys} q3 -13 6 0Z"/><path d="M${x+6} ${ys+2} q3 -11 6 0Z"/>`).join('')}</g>`;
+}
+function bgBackyard(rainy){
+  return `<svg class="bg" viewBox="0 0 ${SCENE_W} ${SCENE_H}">
+    ${svgDefs()}
+    <rect width="${SCENE_W}" height="${SCENE_H}" fill="${rainy?'url(#skyGRain)':'url(#skyG)'}"/>
+    ${rainy?'':'<circle cx="428" cy="58" r="48" fill="#FFE79A" opacity=".5"/><circle cx="428" cy="58" r="30" fill="url(#sunG)"/>'}
+    ${cloud(120,70,1,rainy?.85:.95)}${cloud(322,48,.8,rainy?.8:.82)}
+    <path d="M0 250 q125 -18 250 0 q125 18 250 0 v90 H0Z" fill="url(#grassG)"/>
+    <path d="M0 262 q125 -12 250 0 q125 12 250 0 v13 q-125 12 -250 0 q-125 -12 -250 0Z" fill="#6BAA40" opacity=".45"/>
+    ${grassTufts(252)}
+    ${flower(60,300,'#EF6F5E')}${flower(112,316,'#F6B42C')}${flower(398,306,'#7C5A8F')}${flower(452,320,'#EF6F5E')}
+    <g transform="translate(250,110) scale(1.3)">${maya('sad')}</g>
+  </svg>`;
+}
+function bgGate(){
+  return `<svg class="bg" viewBox="0 0 ${SCENE_W} ${SCENE_H}">
+    ${svgDefs()}
+    <rect width="${SCENE_W}" height="${SCENE_H}" fill="url(#skyG)"/>
+    ${cloud(380,58,.8,.85)}
+    <path d="M0 250 q250 -18 500 0 v90 H0Z" fill="url(#grassG)"/>
+    <ellipse cx="250" cy="266" rx="82" ry="12" fill="#D8C79A" opacity=".65"/>
+    ${grassTufts(252)}
+    <rect x="195" y="114" width="110" height="152" rx="9" fill="#7d5330"/>
+    <rect x="201" y="120" width="47" height="140" rx="5" fill="url(#woodG)"/><rect x="252" y="120" width="47" height="140" rx="5" fill="url(#woodG)"/>
+    <g stroke="#8a5f34" stroke-width="1.4" opacity=".45"><line x1="213" y1="122" x2="213" y2="258"/><line x1="228" y1="122" x2="228" y2="258"/><line x1="266" y1="122" x2="266" y2="258"/><line x1="284" y1="122" x2="284" y2="258"/></g>
+    <rect x="201" y="150" width="98" height="8" rx="3" fill="#6b4526" opacity=".5"/><rect x="201" y="212" width="98" height="8" rx="3" fill="#6b4526" opacity=".5"/>
+    <circle cx="243" cy="192" r="7.5" fill="#4a4a52"/><circle cx="243" cy="192" r="4" fill="#2c2c33"/><rect x="240" y="196" width="6" height="14" rx="3" fill="#3a3a42"/>
+    <g transform="translate(90,110) scale(1.25)">${leo('sad')}</g>
+    <g transform="translate(320,110) scale(1.25)">${maya('sad')}</g>
+  </svg>`;
+}
+function bgStream(){
+  return `<svg class="bg" viewBox="0 0 ${SCENE_W} ${SCENE_H}">
+    ${svgDefs()}
+    <rect width="${SCENE_W}" height="${SCENE_H}" fill="url(#skyG)"/>
+    <path d="M0 110 q250 -12 500 0 v46 H0Z" fill="url(#grassG)"/>
+    <rect x="0" y="150" width="${SCENE_W}" height="88" fill="url(#waterG)"/>
+    <g stroke="#C4EAF7" stroke-width="2.4" fill="none" opacity=".7" stroke-linecap="round">
+      <path d="M22 172 q18 -6 36 0 t36 0"/><path d="M262 186 q18 -6 36 0 t36 0"/><path d="M120 210 q18 -6 36 0 t36 0"/><path d="M330 216 q18 -6 36 0 t36 0"/>
+    </g>
+    <path d="M0 150 h${SCENE_W} v6 H0Z" fill="#2f88b0" opacity=".4"/>
+    <path d="M0 236 q250 -14 500 0 v104 H0Z" fill="url(#grassG)"/>
+    ${grassTufts(238)}
+    <g fill="#3E7A2A" opacity=".85">${[10,26,468,484].map(x=>`<path d="M${x} 150 q2 -24 5 0Z"/>`).join('')}</g>
+    <g transform="translate(200,18) scale(1.15)">${leo('frustrated',true)}</g>
+  </svg>`;
+}
+
+/* ---------------- Item Art ---------------- */
+// Props drawn as small shaded solids (lighter top-left face, darker right/under
+// face) so they read as tangible 3-D objects rather than flat icons.
+const ART={
+  blocks:`<svg viewBox="0 0 64 64">
+    <path d="M8 42 l12 -6 l12 6 l-12 6Z" fill="#F39A8D"/><path d="M8 42 v9 l12 6 v-9Z" fill="#E2604C"/><path d="M20 48 l12 -6 v9 l-12 6Z" fill="#CF4A37"/>
+    <path d="M32 42 l12 -6 l12 6 l-12 6Z" fill="#FFD375"/><path d="M32 42 v9 l12 6 v-9Z" fill="#F3B23C"/><path d="M44 48 l12 -6 v9 l-12 6Z" fill="#E09A22"/>
+    <path d="M20 25 l12 -6 l12 6 l-12 6Z" fill="#54D2C4"/><path d="M20 25 v9 l12 6 v-9Z" fill="#25A99B"/><path d="M32 31 l12 -6 v9 l-12 6Z" fill="#1C8D80"/>
+  </svg>`,
+  roof:`<svg viewBox="0 0 64 64"><path d="M10 42 L32 15 L54 42Z" fill="#D1774A"/><path d="M32 15 L10 42 L20 42 L32 24Z" fill="#E28B5C"/><path d="M32 15 L54 42 L44 42 L32 24Z" fill="#A5522E"/><rect x="14" y="42" width="36" height="7" rx="1.5" fill="#8a4426"/><rect x="14" y="42" width="36" height="2" fill="#6f3620"/></svg>`,
+  leaf:`<svg viewBox="0 0 64 64"><path d="M14 50 C14 22 40 12 52 14 C50 40 30 52 14 50Z" fill="#5FAF3E"/><path d="M14 50 C14 22 40 12 52 14 C47 30 33 44 14 50Z" fill="#7BC94F"/><path d="M16 49 C28 37 42 23 50 15" stroke="#3E7A2A" stroke-width="2.2" fill="none"/><g stroke="#3E7A2A" stroke-width="1.3" opacity=".65"><path d="M30 40 l-7 2"/><path d="M36 33 l-7 1"/><path d="M42 26 l-6 1"/></g></svg>`,
+  box:`<svg viewBox="0 0 64 64"><path d="M12 24 L32 18 L52 24 L32 30Z" fill="#E6B877"/><path d="M12 24 L32 30 L32 52 L12 46Z" fill="#C99A58"/><path d="M52 24 L32 30 L32 52 L52 46Z" fill="#B5843F"/><g stroke="#9c6b3f" stroke-width="1.3" opacity=".55"><line x1="16" y1="30" x2="16" y2="44"/><line x1="28" y1="33" x2="28" y2="49"/><line x1="48" y1="30" x2="48" y2="44"/><line x1="36" y1="33" x2="36" y2="49"/></g></svg>`,
+  umbrella:`<svg viewBox="0 0 64 64"><path d="M9 34 A23 23 0 0 1 55 34 Z" fill="#EF6F5E"/><path d="M32 11 v23 M20 34 q3 -14 12 -23 M44 34 q-3 -14 -12 -23" stroke="#C94B3B" stroke-width="1.5" fill="none"/><path d="M9 34 q6 5 11.5 0 q6 5 11.5 0 q6 5 11.5 0 q5.5 5 11.5 0" fill="none" stroke="#C94B3B" stroke-width="1.5"/><path d="M14 29 A20 20 0 0 1 33 15" stroke="#FF9F92" stroke-width="2" fill="none" opacity=".7"/><path d="M32 34 v15 q0 6 -8 6" stroke="#7a4a2f" stroke-width="3" fill="none"/></svg>`,
+  blanket:`<svg viewBox="0 0 64 64"><path d="M10 26 q12 -8 22 0 q10 8 22 0 v22 q-12 8 -22 0 q-10 -8 -22 0Z" fill="#8368A0"/><path d="M10 26 q12 -8 22 0 q10 8 22 0 v6 q-12 8 -22 0 q-10 -8 -22 0Z" fill="#9A80B5"/><g stroke="#6F5487" stroke-width="1.5" opacity=".55"><path d="M18 30 v20"/><path d="M32 33 v20"/><path d="M46 30 v20"/></g></svg>`,
+  bin:`<svg viewBox="0 0 64 64"><path d="M16 24 h32 l-4 30 h-24Z" fill="#5BC0E6"/><path d="M16 24 h32 l-1.5 11 h-29Z" fill="#7FD0EC"/><ellipse cx="32" cy="24" rx="16" ry="4" fill="#3796BF"/><path d="M20 24 q12 -12 24 0" fill="none" stroke="#3796BF" stroke-width="2"/></svg>`,
+  birdkey:`<svg viewBox="0 0 64 64"><ellipse cx="34" cy="28" rx="14" ry="9.5" fill="#5BC0E6"/><ellipse cx="34" cy="25" rx="12" ry="6" fill="#7FD0EC"/><path d="M22 30 q-10 -2 -13 -10 q10 2 13 6Z" fill="#F6B42C"/><path d="M48 27 l6 -2 -2 4Z" fill="#E0902B"/><circle cx="42" cy="24" r="2" fill="#2c3a44"/><path d="M32 37 l3 9 M34 41 h5 M34 45 h5" stroke="#E0B021" stroke-width="2.6" fill="none"/></svg>`,
+  trampoline:`<svg viewBox="0 0 64 64"><ellipse cx="32" cy="30" rx="22" ry="7" fill="#2c3a44"/><ellipse cx="32" cy="28.5" rx="17" ry="5" fill="#4FB0D6"/><ellipse cx="32" cy="27.5" rx="12" ry="3" fill="#7FD0EC" opacity=".7"/><rect x="12" y="30" width="4" height="20" rx="2" fill="#5C6B76"/><rect x="48" y="30" width="4" height="20" rx="2" fill="#5C6B76"/><rect x="20" y="36" width="4" height="16" rx="2" fill="#6b7a86"/><rect x="40" y="36" width="4" height="16" rx="2" fill="#6b7a86"/></svg>`,
+  magnify:`<svg viewBox="0 0 64 64"><circle cx="28" cy="28" r="15" fill="#BFE8F6"/><circle cx="28" cy="28" r="15" fill="none" stroke="#5C6B76" stroke-width="3.5"/><path d="M20 22 a11 11 0 0 1 9 -5" stroke="#fff" stroke-width="3" fill="none" opacity=".8"/><path d="M39 39 l12 12" stroke="#41505a" stroke-width="6" stroke-linecap="round"/></svg>`,
+  wand:`<svg viewBox="0 0 64 64"><rect x="18" y="22" width="6" height="30" rx="3" transform="rotate(35 21 37)" fill="#7C5A8F"/><path d="M42 12 l3.5 8 l8 3.5 l-8 3.5 l-3.5 8 l-3.5 -8 l-8 -3.5 l8 -3.5Z" fill="#F6B42C"/><path d="M42 12 l3.5 8 l8 3.5 l-8 3.5Z" fill="#F9C63E"/><circle cx="20" cy="52" r="2" fill="#F6B42C"/><circle cx="52" cy="40" r="1.5" fill="#F6B42C"/></svg>`,
+  dirt:`<svg viewBox="0 0 64 64"><path d="M8 46 q10 -15 24 -15 q14 0 24 15Z" fill="#7A5228"/><path d="M8 46 q10 -15 24 -15 q14 0 24 15 q-14 -6 -24 -6 q-14 0 -24 6Z" fill="#8F6231"/><ellipse cx="24" cy="41" rx="2" ry="1.4" fill="#5f3f1e"/><ellipse cx="38" cy="43" rx="2" ry="1.4" fill="#5f3f1e"/></svg>`,
+  ladder:`<svg viewBox="0 0 64 64"><rect x="21" y="10" width="5" height="44" rx="2.5" fill="#C0863F"/><rect x="21" y="10" width="2" height="44" fill="#D9A566"/><rect x="38" y="10" width="5" height="44" rx="2.5" fill="#C0863F"/><rect x="38" y="10" width="2" height="44" fill="#D9A566"/><g fill="#9C6B3F"><rect x="21" y="18" width="22" height="4.5" rx="1"/><rect x="21" y="30" width="22" height="4.5" rx="1"/><rect x="21" y="42" width="22" height="4.5" rx="1"/></g></svg>`,
+  pebbles:`<svg viewBox="0 0 64 64"><ellipse cx="24" cy="42" rx="11" ry="7.5" fill="#8B98A0"/><ellipse cx="22" cy="40" rx="7" ry="4" fill="#AAB6BD" opacity=".7"/><ellipse cx="41" cy="37" rx="9" ry="6.5" fill="#A6B3BA"/><ellipse cx="39" cy="35" rx="5" ry="3" fill="#C3CED3" opacity=".7"/><ellipse cx="36" cy="47" rx="8" ry="5.5" fill="#79868E"/></svg>`,
+  boat:`<svg viewBox="0 0 64 64"><path d="M12 34 h40 l-8 13 h-24Z" fill="#EF6F5E"/><path d="M12 34 h40 l-2 3 h-36Z" fill="#FF9F92"/><path d="M32 34 V14 l16 14Z" fill="#fff" stroke="#d9543f" stroke-width="1.5"/><path d="M32 34 V14 l7 6Z" fill="#EDEDED"/></svg>`,
+  log:`<svg viewBox="0 0 64 64"><rect x="8" y="24" width="48" height="13" rx="6.5" fill="#A9743D"/><rect x="8" y="24" width="48" height="5" rx="2.5" fill="#C08A4A" opacity=".85"/><ellipse cx="9" cy="30.5" rx="5" ry="6.5" fill="#D9A566"/><ellipse cx="9" cy="30.5" rx="2.4" ry="3.4" fill="#B5843F"/><rect x="8" y="40" width="48" height="13" rx="6.5" fill="#9C6B37"/><ellipse cx="9" cy="46.5" rx="5" ry="6.5" fill="#C99A58"/><ellipse cx="9" cy="46.5" rx="2.4" ry="3.4" fill="#A5762F"/></svg>`,
+  axe:`<svg viewBox="0 0 64 64"><rect x="28" y="14" width="6" height="38" rx="3" fill="#A9743D"/><rect x="28" y="14" width="2.4" height="38" fill="#C99A58"/><path d="M33 18 L52 13 L52 33 L33 28Z" fill="#AAB6BD"/><path d="M33 18 L52 13 L52 20 L33 22Z" fill="#CDD6DB"/><path d="M33 18 L38 17 L38 27 L33 28Z" fill="#8B98A0"/></svg>`,
+  rope:`<svg viewBox="0 0 64 64"><path d="M12 34 Q 24 8 32 34 T 52 34" fill="none" stroke="#D9B56B" stroke-width="7" stroke-linecap="round"/><path d="M12 34 Q 24 8 32 34 T 52 34" fill="none" stroke="#EFD08A" stroke-width="3" stroke-linecap="round"/><g stroke="#B5904A" stroke-width="1" opacity=".7"><path d="M16 30 l3 4"/><path d="M23 22 l3 4"/><path d="M31 22 l3 4"/><path d="M41 30 l3 4"/><path d="M47 30 l3 4"/></g></svg>`
+};
+
+const LABEL={blocks:'Blocks',roof:'Roof',leaf:'Big leaf',box:'Box',umbrella:'Umbrella',blanket:'Blanket',bin:'Bin',
+  birdkey:'Bird & key',trampoline:'Trampoline',magnify:'Magnifier',wand:'Magic wand',dirt:'Dig / dirt',ladder:'Ladder',
+  log:'Logs',boat:'Paper boat',pebbles:'Pebbles', axe:'Axe', rope:'Rope'};
+
+const EASY_ITEMS=['blocks','roof','leaf','box','umbrella','blanket','bin'];
+const STORY_CARDS=['birdkey','trampoline','magnify','wand','dirt','ladder'];
+
+/* ---------------- App state ---------------- */
+const app=document.getElementById('app'), exitBtn=document.getElementById('exit');
+let currentDrop=null, dragCtx=null;
+let state={
+  screen:'home', level:null,
+  settings:{immediateSec:5, delayCutoffSec:30},
+  easy:null, mod:null, hard:null, score:null, locked:false
+};
+exitBtn.onclick=()=>{
+  if(state.hard && state.hard.timerInt) clearInterval(state.hard.timerInt);
+  state.screen='home'; state.level=null; state.locked=false; render();
+};
+
+/* ---------------- Native bridge ---------------- */
+function postToNative(payload){
+  try { if(window.ReactNativeWebView) window.ReactNativeWebView.postMessage(JSON.stringify(payload)); } catch(e){}
+}
+
+/* ---------------- Drag engine ---------------- */
+function attachDrag(el){
+  el.addEventListener('pointerdown',e=>{
+    if(state.locked)return; e.preventDefault();
+    const r=el.getBoundingClientRect();
+    const g=el.cloneNode(true); g.classList.add('ghost');
+    g.style.width=r.width+'px'; g.style.height=r.height+'px';
+    document.body.appendChild(g);
+    dragCtx={key:el.dataset.key, ghost:g, ox:e.clientX-r.left, oy:e.clientY-r.top};
+    place(e.clientX,e.clientY);
+    el.setPointerCapture(e.pointerId);
+    el.addEventListener('pointermove',mv); el.addEventListener('pointerup',up); el.addEventListener('pointercancel',up);
+    function mv(ev){ if(dragCtx) place(ev.clientX,ev.clientY); }
+    function up(ev){
+      if(!dragCtx)return;
+      const x=ev.clientX,y=ev.clientY,key=dragCtx.key;
+      dragCtx.ghost.remove(); dragCtx=null;
+      el.removeEventListener('pointermove',mv); el.removeEventListener('pointerup',up); el.removeEventListener('pointercancel',up);
+      if(currentDrop) currentDrop(key,x,y);
+    }
+    function place(x,y){ g.style.left=(x-dragCtx.ox)+'px'; g.style.top=(y-dragCtx.oy)+'px'; }
+  });
+}
+function sceneCoords(x,y){
+  const s=document.getElementById('scene').getBoundingClientRect();
+  return {inside:(x>=s.left&&x<=s.right&&y>=s.top&&y<=s.bottom), sx:(x-s.left)/s.width*SCENE_W, sy:(y-s.top)/s.height*SCENE_H, rect:s};
+}
+
+/* ---------------- Render ---------------- */
+function render(){
+  exitBtn.classList.toggle('show', state.screen!=='home');
+  currentDrop=null; state.locked=false;
+  ({home:renderHome, setup:renderSetup, play:renderPlay, results:renderResults})[state.screen]();
+}
+
+function renderHome(){
+  app.innerHTML=`<div class="panel center">
+    <div class="scene-wrap" style="margin-bottom:8px">${bgBackyard(false).replace(maya('sad'),'')}
+      <svg class="bg" viewBox="0 0 ${SCENE_W} ${SCENE_H}" style="position:absolute;inset:0">
+        ${svgDefs()}
+        <g transform="translate(150,150) scale(1.15)">${leo('happy')}</g>
+        <g transform="translate(300,150) scale(1.15)">${maya('happy')}</g>
+      </svg>
+    </div>
+    <h1 class="home-title">The Collaborative Sandbox</h1>
+    <p class="home-sub">Creative Problem-Solving with Leo &amp; Maya</p>
+    <button class="btn sun" id="go" style="margin-top:16px">Start ▶</button>
+  </div>`;
+  document.getElementById('go').onclick=()=>{ state.screen='setup'; render(); };
+}
+
+function renderSetup(){
+  const s=state.settings;
+  const pick=(k,tag,title,desc)=>`<button class="pick ${k}" data-lv="${k}"><div class="badge">${tag}</div><div><div class="t">${title}</div><div class="d">${desc}</div></div></button>`;
+  app.innerHTML=`<div class="panel">
+    <h2 style="margin:12px 0 2px">Choose an activity</h2>
+    <div class="picks">
+      ${pick('easy','E','Free-Build Shelter','Rain is coming — build a dry shelter for Maya')}
+      ${pick('moderate','M','Unfinished Story','A locked gate — finish the story with picture cards')}
+      ${pick('hard','H','Creative Intervention','Multi-stage bridge builder')}
+    </div>
+    <details class="settings">
+      <summary>Timing Configurations</summary>
+      <div class="set-row"><div><div class="lbl">Immediate response window</div></div>
+        <div><input type="number" id="imm" min="1" max="60" value="${s.immediateSec}"> <span class="hint">sec</span></div></div>
+      <div class="set-row"><div><div class="lbl">Delay response threshold</div></div>
+        <div><input type="number" id="cut" min="5" max="120" value="${s.delayCutoffSec}"> <span class="hint">sec</span></div></div>
+    </details>
+  </div>`;
+  document.getElementById('imm').onchange=e=>s.immediateSec=Math.max(1,+e.target.value||5);
+  document.getElementById('cut').onchange=e=>s.delayCutoffSec=Math.max(5,+e.target.value||30);
+  app.querySelectorAll('.pick').forEach(b=>b.onclick=()=>{ state.level=b.dataset.lv; startScenario(); });
+}
+
+function startScenario(){
+  state.screen='play';
+  if(state.level==='easy') state.easy={placed:[], start:performance.now(), firstT:null};
+  if(state.level==='moderate') state.mod={slots:[null,null,null], start:performance.now()};
+  if(state.level==='hard') {
+    if(state.hard && state.hard.timerInt) clearInterval(state.hard.timerInt);
+    state.hard={
+      items:['pebbles', 'log'],
+      sequence: [],
+      failures:0,
+      start:performance.now(),
+      firstActionT:null,
+      logPlaced:false, axePlaced:false, ropePlaced:false, abandoned:false,
+      timerInt: null,
+      timeLeft: 10
+    };
+  }
+  render();
+}
+
+function trayHTML(keys,cap){
+  return `<div class="tray" id="tray"><div class="cap">${cap}</div>${keys.map(k=>`<div class="tile" data-key="${k}" tabindex="0">${ART[k]}<div class="lbl">${LABEL[k]}</div></div>`).join('')}</div>`;
+}
+
+function renderPlay(){
+  if(state.level==='easy') return playEasy();
+  if(state.level==='moderate') return playModerate();
+  if(state.level==='hard') return playHard();
+}
+
+/* ---------- EASY ---------- */
+function playEasy(){
+  app.innerHTML=`<div class="panel">
+    <div class="instruct">Oh no, it's starting to rain! Maya needs a dry place to sit. Can you build a shelter for her?</div>
+    <div class="scene-wrap"><div id="scene">${bgBackyard(true)}<div class="placed-layer" id="placed"></div><div class="rain" id="rain"></div></div></div>
+    ${trayHTML(EASY_ITEMS,'Drag things onto Maya to keep her dry')}
+    <div class="simbar"><button class="btn" id="done">I'm done building ✓</button></div>
+  </div>`;
+  const r=document.getElementById('rain'); for(let i=0;i<34;i++){const d=document.createElement('div');d.className='drop';d.style.left=(Math.random()*100)+'%';d.style.animationDuration=(.5+Math.random()*.5)+'s';d.style.animationDelay=(Math.random())+'s';r.appendChild(d);}
+  app.querySelectorAll('.tile').forEach(attachDrag);
+
+  currentDrop=(key,x,y)=>{
+    const c=sceneCoords(x,y); if(!c.inside)return;
+    const now=(performance.now()-state.easy.start)/1000;
+    if(state.easy.firstT===null) state.easy.firstT=now;
+    const el=document.createElement('div'); el.className='placed'; el.style.left=(c.sx/SCENE_W*100)+'%'; el.style.top=(c.sy/SCENE_H*100)+'%';
+    el.innerHTML=ART[key]; document.getElementById('placed').appendChild(el);
+    state.easy.placed.push({key,x:c.sx,y:c.sy,t:now});
+  };
+  document.getElementById('done').onclick=()=>{ state.score=scoreEasy(); showOutcome(state.level); };
+}
+
+/* ---------- MODERATE ---------- */
+function playModerate(){
+  app.innerHTML=`<div class="panel">
+    <div class="instruct">What happens next? You finish the story!</div>
+    <div class="scene-wrap"><div id="gatescene">${bgGate()}</div></div>
+    <div class="timeline" id="timeline">${[0,1,2].map(i=>`<div class="slot" data-slot="${i}"><span class="num">${i+1}</span></div>`).join('')}</div>
+    ${trayHTML(STORY_CARDS,'Drag 2–3 cards into the boxes to make your ending')}
+    <div class="simbar"><button class="btn" id="done">Play my story ▶</button></div>
+  </div>`;
+  app.querySelectorAll('.tile').forEach(attachDrag);
+  currentDrop=(key,x,y)=>{
+    const slots=[...document.querySelectorAll('.slot')];
+    let target=slots.find(s=>{const r=s.getBoundingClientRect(); return (x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom);}) || slots.find(s=>!s.classList.contains('filled'));
+    if(!target) return;
+    const i=+target.dataset.slot; state.mod.slots[i]=key;
+    target.classList.add('filled');
+    target.innerHTML=`<span class="num">${i+1}</span><span class="clear" data-i="${i}">✕</span>${ART[key]}`;
+    target.querySelector('.clear').onclick=(ev)=>{ev.stopPropagation();state.mod.slots[i]=null;target.classList.remove('filled');target.innerHTML=`<span class="num">${i+1}</span>`;};
+  };
+  document.getElementById('done').onclick=()=>{ state.score=scoreModerate(); showOutcome(state.level); };
+}
+
+/* ---------- HARD (Multi-Stage with Strict Sequence Timer) ---------- */
+function playHard(){
+  app.innerHTML=`<div class="panel">
+    <div class="instruct">Leo's bridge keeps breaking and he is upset. How can you use your imagination to help him cross the water?</div>
+    <div class="scene-wrap">
+      <div id="scene">${bgStream()}
+        <div class="placed-layer" id="placed"></div>
+        <div id="timerDisplay" class="hard-timer">10s</div>
+      </div>
+    </div>
+    <div style="margin-top:14px; text-align:center;">
+        <button class="btn coral" id="forcePassBtn" style="width:100%;">Force him to pass the stream</button>
+    </div>
+    <div id="trayContainer">${trayHTML(state.hard.items,'Drag items into the stream')}</div>
+    <div class="simbar"><button class="btn" id="done" disabled>Complete Bridge ✓</button></div>
+  </div>`;
+
+  // Timer Logic
+  state.hard.timeLeft = 10;
+  document.getElementById('timerDisplay').innerText = `${state.hard.timeLeft}s`;
+  state.hard.timerInt = setInterval(() => {
+    state.hard.timeLeft--;
+    if(state.hard.timeLeft >= 0) {
+      document.getElementById('timerDisplay').innerText = `${state.hard.timeLeft}s`;
+    }
+  }, 1000);
+
+  // Bind the drag elements
+  bindHardTray();
+
+  // Force pass interaction
+  document.getElementById('forcePassBtn').onclick = () => {
+    if(state.locked) return; state.locked=true;
+    clearInterval(state.hard.timerInt);
+
+    if(state.hard.firstActionT === null) {
+      state.hard.firstActionT = (performance.now() - state.hard.start) / 1000;
+    }
+    state.hard.sequence.push('forcePass');
+    state.hard.abandoned = true;
+    toastMsg("You forced Leo to pass the stream.");
+    setTimeout(()=>{ state.score=scoreHard(); showOutcome(state.level); }, 1500);
+  };
+}
+
+function bindHardTray(){
+  app.querySelectorAll('.tile').forEach(attachDrag);
+  currentDrop=(key,x,y)=>{
+    const c=sceneCoords(x,y); if(!c.inside)return;
+    const now = (performance.now() - state.hard.start) / 1000;
+
+    if(state.hard.firstActionT === null) {
+      state.hard.firstActionT = now;
+    }
+
+    state.hard.sequence.push(key);
+
+    if(key==='pebbles'){
+      state.hard.failures++;
+      toastMsg("Oh no, the water is too fast! The pebbles washed away.");
+      replaceHardItems('pebbles', ['boat']);
+    }
+    else if(key==='boat'){
+      state.hard.failures++;
+      toastMsg("Oh no, the paper got wet and sank! We need something stronger.");
+      replaceHardItems('boat', []);
+    }
+    else if(key==='log' && !state.hard.logPlaced){
+      state.hard.logPlaced=true;
+      drawHardItem(key, c);
+      toastMsg("Good idea! But how do we make them stay together?");
+      replaceHardItems('log', ['axe', 'rope']);
+    }
+    else if(key==='axe' && state.hard.logPlaced && !state.hard.axePlaced){
+      state.hard.axePlaced=true;
+      drawHardItem(key, c);
+      replaceHardItems('axe', []);
+      checkHardDone();
+    }
+    else if(key==='rope' && state.hard.logPlaced && !state.hard.ropePlaced){
+      state.hard.ropePlaced=true;
+      drawHardItem(key, c);
+      replaceHardItems('rope', []);
+      checkHardDone();
+    }
+  };
+}
+
+function replaceHardItems(removeKey, addKeys){
+  state.hard.items = state.hard.items.filter(k => k !== removeKey);
+  if(addKeys && addKeys.length > 0) state.hard.items.push(...addKeys);
+  document.getElementById('trayContainer').innerHTML = trayHTML(state.hard.items, state.hard.items.includes('axe')?'Drag tools to secure the logs':'Drag items into the stream');
+  bindHardTray();
+}
+
+function drawHardItem(key, c){
+    const el=document.createElement('div'); el.className='placed'; el.style.left=(c.sx/SCENE_W*100)+'%'; el.style.top=(c.sy/SCENE_H*100)+'%';
+    el.innerHTML=ART[key]; document.getElementById('placed').appendChild(el);
+}
+
+function checkHardDone(){
+  if(state.hard.logPlaced && state.hard.axePlaced && state.hard.ropePlaced){
+    const btn = document.getElementById('done');
+    btn.disabled=false;
+    clearInterval(state.hard.timerInt);
+    btn.onclick=()=>{ state.score=scoreHard(); showOutcome(state.level); };
+  }
+}
+
+function toastMsg(msg){
+  const t = document.createElement('div'); t.className='toast'; t.innerText=msg;
+  document.getElementById('scene').appendChild(t);
+  setTimeout(()=>t.remove(), 2500);
+}
+
+
+/* =====================  SCORING ENGINE  ===================== */
+
+function packMetrics(vals, notes, metricDefs, metaObj){
+  const m = metricDefs.map(x=>({...x, earned: vals[x.key], note: notes[x.key]||''}));
+  return { metrics: m, total: m.reduce((a,b)=>a+b.earned,0), max: 5, meta: metaObj };
+}
+
+/* --- Easy Metrics --- */
+const EASY_METRICS = [
+  {key:'divergent',name:'Divergent Thinking',max:2.0},
+  {key:'empathy',name:'Cognitive Empathy',max:1.5},
+  {key:'ecn',name:'ECN Gating (Executive Control)',max:1.5}
+];
+
+function scoreEasy(){
+  const P=state.easy.placed;
+  const used=[...new Set(P.map(p=>p.key))];
+  const headItems=P.filter(p=>p.y < 180);
+  const lowerItems=P.filter(p=>p.y >= 180);
+  const v={}, n={};
+
+  const allOptimalChoices = used.length > 0 && used.every(k => ['box','roof','umbrella'].includes(k));
+  if(allOptimalChoices){ v.divergent=2.0; n.divergent='Optimal: Used only the standard optimal answers (Box, Roof, Umbrella).'; }
+  else { v.divergent=0; n.divergent='Rigid: Selected at least one object outside the standard optimal answers, or built nothing.'; }
+
+  const immediateRoof = headItems.some(p => (p.key==='roof' || p.key==='umbrella') && p.t <= state.settings.immediateSec);
+  if(immediateRoof){ v.empathy=1.5; n.empathy='Optimal: Immediately built a roof or umbrella directly over the avatar.'; }
+  else { v.empathy=0; n.empathy='Rigid: Kept objects away, built unrelated objects over avatar, or acted too slowly.'; }
+
+  const hasRoofOver = headItems.some(p => p.key==='roof' || p.key==='umbrella');
+  const hasBoxBelow = lowerItems.some(p => p.key==='box');
+  if(hasRoofOver && hasBoxBelow){ v.ecn=1.5; n.ecn='Optimal: Shelter is physically sound (Roof/Umbrella over, Box below).'; }
+  else { v.ecn=0; n.ecn='Rigid: Structure logic fails or collapses immediately.'; }
+
+  return packMetrics(v, n, EASY_METRICS, {items:used.join(', ')||'none', firstT:state.easy.firstT});
+}
+
+/* --- Moderate Metrics --- */
+const MOD_METRICS = [
+  {key:'blend',name:'Conceptual Blending',max:2.0},
+  {key:'tom',name:'ToM / Goal Resolution',max:1.5},
+  {key:'ecn',name:'ECN Gating (Executive Control)',max:1.5}
+];
+
+function scoreModerate(){
+  const seq=state.mod.slots.filter(Boolean);
+  const hasBypass = seq.some(k=>['ladder','trampoline','birdkey','dirt','wand'].includes(k));
+  const v={},n={};
+
+  if(seq.includes('magnify') && seq.includes('birdkey')){ v.blend=2.0; n.blend='Optimal: Combined an investigation card (Magnifier) with a bypass card (Bird & Key).'; }
+  else { v.blend=0; n.blend='Rigid: Left cards isolated or did not use the target blend.'; }
+
+  if(hasBypass){ v.tom=1.5; n.tom='Optimal: A Bypass card was used, allowing avatars to get past the gate.'; }
+  else { v.tom=0; n.tom='Rigid: Ignored the core problem entirely.'; }
+
+  if(seq.join(',') === 'magnify,ladder' || (seq[0]==='magnify' && seq[1]==='ladder')){ v.ecn=1.5; n.ecn='Optimal: Sequence makes logical narrative sense (Search → Find solution).'; }
+  else { v.ecn=0; n.ecn='Rigid: Sequence evaluates as pure chaos or random placement.'; }
+
+  return packMetrics(v, n, MOD_METRICS, {items:seq.map(k=>LABEL[k]).join(' → ')||'none'});
+}
+
+/* --- Hard Metrics --- */
+const HARD_METRICS = [
+  {key:'flex',name:'Cognitive Flexibility & Resilience',max:2.0},
+  {key:'empathy',name:'Cognitive Empathy / ToM',max:1.5},
+  {key:'ecn',name:'ECN Gating (Executive Control)',max:1.5}
+];
+
+function scoreHard(){
+  const h=state.hard;
+  const seqStr = h.sequence.join(',');
+  const v={},n={};
+
+  // Cognitive Flexibility (Strict order for 2.0, max -1.0 deduction for failures)
+  if (seqStr === 'log,axe,rope') {
+    v.flex = 2.0;
+    n.flex = 'Optimal: Had 0 failures and directly selected logs, then axe, then rope in this order only without any others.';
+  } else if (h.logPlaced && h.axePlaced && h.ropePlaced && h.failures === 1) {
+    v.flex = 1.0;
+    n.flex = 'Alternative: Completed sequence, but 1 mark deducted for selecting 1 wrong option initially.';
+  } else {
+    v.flex = 0;
+    n.flex = 'Rigid: Multiple wrong options selected, abandoned the task, or did not finish the bridge.';
+  }
+
+  // Cognitive Empathy / ToM (Timers & first item check)
+  if(h.abandoned || h.firstActionT === null || h.firstActionT > 10){
+    v.empathy = 0;
+    n.empathy = 'Rigid: Ignored cues, forced walk away, or delayed intervention beyond the 10-second threshold.';
+  } else if (h.sequence[0] === 'log' && h.firstActionT <= 5) {
+    v.empathy = 1.5;
+    n.empathy = 'Optimal: Selected Logs as the first option before 5 seconds elapsed.';
+  } else {
+    v.empathy = 0.75;
+    n.empathy = 'Alternative: Intervened within 10 seconds, but did not immediately select Logs within 5 seconds.';
+  }
+
+  // ECN Gating (Strict Sequence tracking)
+  if(seqStr === 'log,axe,rope'){
+    v.ecn=1.5;
+    n.ecn='Optimal: Correctly identified and sequenced the physical components (Logs + Axe + Rope) in the strict standard order from the start.';
+  } else {
+    v.ecn=0;
+    n.ecn='Rigid: Failed to combine the necessary dependent tools in the right standard order from the start.';
+  }
+
+  return packMetrics(v, n, HARD_METRICS, {items: seqStr || 'None'});
+}
+
+/* =====================  OUTCOMES  ===================== */
+function showOutcome(level){
+  const o=document.createElement('div'); o.className='over';
+  const sc=state.score;
+  let html='';
+
+  if(level==='easy'){
+    const sound = sc.metrics.find(m=>m.key==='ecn').earned > 0;
+    html = `<span class="em">${sound?'☀️':'🌧️'}</span><h3>${sound?'Maya is warm and dry!':'Maya is still in the rain!'}</h3>
+            <p>${sound?'The structure is sound.':'The shelter collapsed.'}</p>`;
+  } else if(level==='moderate'){
+    const resolved = sc.metrics.find(m=>m.key==='tom').earned > 0;
+    html = `<span class="em">${resolved?'🎉':'🤔'}</span><h3>Your story!</h3>
+            <p>${resolved?'Leo and Maya get through the gate!':'They are still stuck at the gate.'}</p>`;
+  } else if(level==='hard'){
+    const complete = sc.metrics.find(m=>m.key==='ecn').earned === 1.5;
+    const forcePass = state.hard.abandoned;
+    if(forcePass) {
+        html = `<span class="em">😔</span><h3>Forced to cross!</h3>
+            <p>You forced Leo to pass the stream, but the bridge was not built.</p>`;
+    } else {
+        html = `<span class="em">${complete?'🌉':'🤔'}</span><h3>${complete?'Bridge Complete!':'Bridge Complete, but...'}</h3>
+            <p>${complete?'You built a strong bridge perfectly in order!':'You finished it, but made some mistakes along the way.'}</p>`;
+    }
+  }
+
+  o.innerHTML=`<div class="card2">${html}<button class="btn" id="cont" style="margin-top:14px">See results ▶</button></div>`;
+  document.body.appendChild(o);
+  o.querySelector('#cont').onclick=()=>{ o.remove(); state.screen='results'; render(); };
+}
+
+/* =====================  RESULTS  ===================== */
+function renderResults(){
+  const sc=state.score, lv={easy:'Free-Build Shelter',moderate:'Unfinished Story',hard:'Creative Intervention'}[state.level];
+  app.innerHTML=`<div class="panel" id="report">
+    <p class="grown">For the grown-up · ${lv}</p>
+    <div class="score-hero"><div class="score-big">${sc.total.toFixed(2)}<small> / 5</small></div>
+      <div class="lead" style="margin-top:2px">Sequence evaluated: <strong>${sc.meta.items}</strong></div></div>
+    <hr class="divider">
+    ${sc.metrics.map(m=>`<div class="metric">
+        <div class="top"><h4>${m.name}</h4><span class="val">${m.earned.toFixed(2)} / ${m.max}</span></div>
+        <div class="note">${m.note}</div>
+        <div class="bar"><span style="width:${m.max?(m.earned/m.max*100):0}%"></span></div>
+      </div>`).join('')}
+    <div class="foot no-print">
+      <button class="btn ghostbtn" id="again">Change activity</button>
+      <button class="btn" id="replay">Play again</button>
+    </div>
+  </div>`;
+  // Signal completion to the native app (RiAura marks the activity done).
+  postToNative({ type:'complete', total: sc.total, level: state.level });
+  document.getElementById('again').onclick=()=>{state.screen='setup';render();};
+  document.getElementById('replay').onclick=()=>{startScenario();};
+}
+
+render();
+</script>
+</body>
+</html>

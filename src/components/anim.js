@@ -169,6 +169,46 @@ export function Breathe({ size = 200, color = 'rgba(139,92,246,0.22)', duration 
   );
 }
 
+// ── Typewriter ──────────────────────────────────────────────────
+// Reveals `text` one character at a time with a blinking cursor — for short
+// motivational lines. Re-triggers whenever `text` changes.
+export function Typewriter({ text, duration = 1100, style, cursorColor = '#7C3AED' }) {
+  const [shown, setShown] = useState('');
+  const cursorOpacity = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    setShown('');
+    const chars = text.length;
+    if (chars === 0) return;
+    const step = Math.max(duration / chars, 12);
+    let i = 0;
+    const id = setInterval(() => {
+      i += 1;
+      setShown(text.slice(0, i));
+      if (i >= chars) clearInterval(id);
+    }, step);
+    return () => clearInterval(id);
+  }, [text]);
+
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(cursorOpacity, { toValue: 0, duration: 450, useNativeDriver: true }),
+        Animated.timing(cursorOpacity, { toValue: 1, duration: 450, useNativeDriver: true }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, []);
+
+  return (
+    <Animated.Text style={style}>
+      {shown}
+      <Animated.Text style={{ opacity: cursorOpacity, color: cursorColor }}>▍</Animated.Text>
+    </Animated.Text>
+  );
+}
+
 // ── Pulse ───────────────────────────────────────────────────────
 // Gentle infinite heartbeat — draws the eye to streaks and live badges.
 export function Pulse({ children, to = 1.12, duration = 700, style }) {

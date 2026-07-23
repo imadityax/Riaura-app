@@ -4,6 +4,7 @@ import { colors } from '../../theme/colors';
 import { ui, dark } from '../../theme/colors';
 import PhaseHeader from '../../components/PhaseHeader';
 import NeuralLinesBg from '../../components/NeuralLinesBg';
+import { ClayCard, ClayBubble } from '../../components/Clay';
 
 const SCENARIOS = [
   {
@@ -106,24 +107,25 @@ export default function SituationalJudgementScreen({ route, navigation }) {
 
         <Text style={styles.chooseLabel}>What is the BEST response?</Text>
         {s.options.map((opt, i) => {
-          let extra = {};
+          let tone = 'default';
           if (revealed) {
-            if (i === s.best) extra = { borderColor: colors.success, backgroundColor: colors.success + '15' };
-            else if (i === selected) extra = { borderColor: colors.danger, backgroundColor: colors.danger + '10' };
+            if (i === s.best) tone = 'correct';
+            else if (i === selected) tone = 'incorrect';
           }
           return (
-            <TouchableOpacity
+            <ClayCard
               key={i}
-              style={[styles.optBtn, extra]}
+              tone={tone}
+              radius={16}
+              style={styles.optBtn}
               onPress={() => handleSelect(i)}
-              activeOpacity={0.8}
             >
-              <View style={styles.optLetter}>
+              <ClayBubble size={26} tone={tone} style={styles.optLetter}>
                 <Text style={styles.optLetterText}>{String.fromCharCode(65 + i)}</Text>
-              </View>
+              </ClayBubble>
               <Text style={styles.optText}>{opt}</Text>
               {revealed && i === s.best && <Text style={styles.bestTag}>✓ Best</Text>}
-            </TouchableOpacity>
+            </ClayCard>
           );
         })}
 
@@ -155,15 +157,10 @@ const styles = StyleSheet.create({
   scenarioText: { color: '#1E1B33', fontSize: 14, lineHeight: 22, fontWeight: '500' },
   chooseLabel: { color: dark.textSub, fontSize: 12, fontWeight: '600', marginBottom: 10 },
   optBtn: {
-    backgroundColor: dark.glass, borderRadius: 12, padding: 12, marginBottom: 8,
+    padding: 12, marginBottom: 10,
     flexDirection: 'row', alignItems: 'flex-start', gap: 10,
-    borderWidth: 1, borderColor: dark.glassBorder,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 3, elevation: 1,
   },
-  optLetter: {
-    width: 24, height: 24, borderRadius: 12,
-    backgroundColor: dark.glass, alignItems: 'center', justifyContent: 'center', marginTop: 1,
-  },
+  optLetter: { marginTop: 1 },
   optLetterText: { color: dark.textSub, fontSize: 11, fontWeight: '800' },
   optText: { flex: 1, color: '#1E1B33', fontSize: 13, lineHeight: 20 },
   bestTag: { color: colors.success, fontSize: 11, fontWeight: '800', marginTop: 2 },

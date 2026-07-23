@@ -66,6 +66,7 @@ export default function Dashboard({ adminUser }) {
           <div style={s.tableHeader}>
             <h2 style={s.tableTitle}>All Users</h2>
             <input
+              className="neural-input"
               style={s.search}
               placeholder="Search by name, email or city..."
               value={search}
@@ -115,7 +116,7 @@ export default function Dashboard({ adminUser }) {
 function StatCard({ label, value, icon, color }) {
   return (
     <div style={s.statCard}>
-      <div style={{ ...s.statIcon, background: color + '18' }}>{icon}</div>
+      <div style={{ ...s.statIcon, background: color + '2A' }}>{icon}</div>
       <div style={{ ...s.statValue, color }}>{value}</div>
       <div style={s.statLabel}>{label}</div>
     </div>
@@ -127,7 +128,7 @@ function PhaseBadge({ phase }) {
   const colors = { 0: '#6B7280', 1: '#3B82F6', 2: '#8B5CF6', 3: '#F59E0B', 4: '#10B981' };
   const p = phase ?? 0;
   return (
-    <span style={{ ...s.badge, background: (colors[p] || '#6B7280') + '18', color: colors[p] || '#6B7280' }}>
+    <span style={{ ...s.badge, background: (colors[p] || '#6B7280') + '2A', color: colors[p] || '#6B7280' }}>
       {labels[p] || 'Unknown'}
     </span>
   );
@@ -137,36 +138,48 @@ function ScorePill({ value }) {
   if (value == null) return <span style={{ color: '#9CA3AF' }}>—</span>;
   const pct = Math.round(value);
   const color = pct >= 60 ? '#10B981' : '#F59E0B';
-  return <span style={{ ...s.badge, background: color + '18', color }}>{pct}%</span>;
+  return <span style={{ ...s.badge, background: color + '2A', color }}>{pct}%</span>;
 }
 
 const s = {
-  page:       { height: '100vh', display: 'flex', flexDirection: 'column', background: '#F4F6FA', overflow: 'hidden' },
-  header:     { flexShrink: 0, flexWrap: 'wrap', gap: 12, background: '#fff', borderBottom: '1px solid #E5E7EB', padding: '14px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  page:       { height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+  header:     {
+    flexShrink: 0, flexWrap: 'wrap', gap: 12, padding: '14px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+    background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)',
+    borderBottom: '1px solid rgba(255,255,255,0.12)',
+  },
   headerLeft: { display: 'flex', alignItems: 'center', gap: 12 },
-  logo:       { fontSize: 28 },
-  brand:      { fontWeight: 800, fontSize: 16, color: '#1A1A2E' },
-  brandSub:   { fontSize: 11, color: '#6B7280', fontWeight: 600, letterSpacing: 0.5 },
+  logo:       { fontSize: 28, filter: 'drop-shadow(0 0 10px rgba(76,201,240,0.5))' },
+  brand:      { fontWeight: 800, fontSize: 16, color: '#F1EDFF' },
+  brandSub:   { fontSize: 11, color: '#B4A5EE', fontWeight: 600, letterSpacing: 0.5 },
   headerRight:{ display: 'flex', alignItems: 'center', gap: 14 },
-  adminEmail: { fontSize: 13, color: '#6B7280' },
-  signOutBtn: { padding: '7px 16px', borderRadius: 20, background: '#FEE2E2', color: '#EF4444', border: 'none', fontWeight: 700, fontSize: 13 },
+  adminEmail: { fontSize: 13, color: '#B4A5EE' },
+  signOutBtn: { padding: '7px 16px', borderRadius: 20, background: 'rgba(239,68,68,0.15)', color: '#FF8A8A', border: '1px solid rgba(239,68,68,0.3)', fontWeight: 700, fontSize: 13 },
 
   content:    { flex: 1, minHeight: 0, padding: '24px 28px' },
   statsRow:   { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 24 },
-  statCard:   { background: '#fff', borderRadius: 16, padding: '20px 18px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
+  statCard:   {
+    background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)',
+    border: '1px solid rgba(255,255,255,0.12)', borderRadius: 16, padding: '20px 18px',
+    boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
+  },
   statIcon:   { width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, marginBottom: 12 },
   statValue:  { fontSize: 26, fontWeight: 900, marginBottom: 4 },
-  statLabel:  { fontSize: 12, color: '#6B7280', fontWeight: 600 },
+  statLabel:  { fontSize: 12, color: '#B4A5EE', fontWeight: 600 },
 
-  tableCard:    { background: '#fff', borderRadius: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', overflow: 'hidden' },
-  tableHeader:  { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap', padding: '18px 20px', borderBottom: '1px solid #F3F4F6' },
-  tableTitle:   { fontSize: 16, fontWeight: 800, color: '#1A1A2E' },
-  search:       { padding: '9px 14px', borderRadius: 10, border: '1px solid #E5E7EB', fontSize: 13, width: 280, maxWidth: '100%', flex: '1 1 220px', outline: 'none' },
+  tableCard:    {
+    background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)',
+    border: '1px solid rgba(255,255,255,0.12)', borderRadius: 16, overflow: 'hidden',
+    boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
+  },
+  tableHeader:  { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap', padding: '18px 20px', borderBottom: '1px solid rgba(255,255,255,0.1)' },
+  tableTitle:   { fontSize: 16, fontWeight: 800, color: '#F1EDFF' },
+  search:       { padding: '9px 14px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.14)', fontSize: 13, width: 280, maxWidth: '100%', flex: '1 1 220px', outline: 'none', color: '#F1EDFF', background: 'rgba(255,255,255,0.06)' },
   table:        { width: '100%', borderCollapse: 'collapse' },
-  th:           { padding: '11px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#6B7280', letterSpacing: 0.5, background: '#F9FAFB', whiteSpace: 'nowrap' },
-  tr:           { borderTop: '1px solid #F3F4F6', cursor: 'pointer', transition: 'background 0.15s' },
-  td:           { padding: '12px 14px', fontSize: 13, color: '#374151', whiteSpace: 'nowrap' },
-  nameCell:     { fontWeight: 700, color: '#1A1A2E' },
+  th:           { padding: '11px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#B4A5EE', letterSpacing: 0.5, background: 'rgba(255,255,255,0.03)', whiteSpace: 'nowrap' },
+  tr:           { borderTop: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', transition: 'background 0.15s' },
+  td:           { padding: '12px 14px', fontSize: 13, color: '#D9D4F0', whiteSpace: 'nowrap' },
+  nameCell:     { fontWeight: 700, color: '#F1EDFF' },
   badge:        { padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700 },
-  center:       { padding: 40, textAlign: 'center', color: '#9CA3AF' },
+  center:       { padding: 40, textAlign: 'center', color: '#B4A5EE' },
 };

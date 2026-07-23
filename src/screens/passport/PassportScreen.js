@@ -156,7 +156,7 @@ export default function PassportScreen({ navigation }) {
           <View style={s.heroTopRow}>
             {navigation.canGoBack() ? (
               <TouchableOpacity onPress={() => navigation.goBack()} style={s.heroBack}>
-                <Ionicons name="arrow-back" size={20} color="#1E1B33" />
+                <Ionicons name="arrow-back" size={20} color={dark.text} />
               </TouchableOpacity>
             ) : <View style={s.heroBack} />}
             <View style={s.heroBadge}>
@@ -226,12 +226,12 @@ export default function PassportScreen({ navigation }) {
                     </View>
                   ))}
                   <View style={s.chipRow}>
-                    <View style={[s.chip, { backgroundColor: '#D1FAE5' }]}>
-                      <Text style={[s.chipText, { color: '#065F46' }]}>Strongest · {domains[0].label.replace(' Intelligence', '')}</Text>
+                    <View style={[s.chip, { backgroundColor: 'rgba(52,211,153,0.18)' }]}>
+                      <Text style={[s.chipText, { color: dark.green }]}>Strongest · {domains[0].label.replace(' Intelligence', '')}</Text>
                     </View>
                     {domains.length > 1 && (
-                      <View style={[s.chip, { backgroundColor: '#FEF3C7' }]}>
-                        <Text style={[s.chipText, { color: '#92400E' }]}>Focus · {domains[domains.length - 1].label.replace(' Intelligence', '')}</Text>
+                      <View style={[s.chip, { backgroundColor: 'rgba(251,191,36,0.18)' }]}>
+                        <Text style={[s.chipText, { color: dark.gold }]}>Focus · {domains[domains.length - 1].label.replace(' Intelligence', '')}</Text>
                       </View>
                     )}
                   </View>
@@ -361,7 +361,7 @@ const s = StyleSheet.create({
     margin: 20, backgroundColor: dark.glass, borderRadius: 20, padding: 26, alignItems: 'center',
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2,
   },
-  emptyTitle: { fontSize: 16, fontWeight: '800', color: '#1E1B33', marginTop: 12, textAlign: 'center' },
+  emptyTitle: { fontSize: 16, fontWeight: '800', color: dark.text, marginTop: 12, textAlign: 'center' },
   emptySub:   { fontSize: 13, color: dark.textSub, textAlign: 'center', marginTop: 6, lineHeight: 19 },
   emptyBtn:   { backgroundColor: dark.neon, borderRadius: 24, paddingHorizontal: 26, paddingVertical: 13, marginTop: 16 },
   emptyBtnText: { fontSize: 14, fontWeight: "800", color: "#05233A" },
@@ -377,7 +377,7 @@ const s = StyleSheet.create({
 
   domainRow:   { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
   domainIcon:  { width: 28, height: 28, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
-  domainLabel: { width: 92, fontSize: 12, fontWeight: '700', color: '#1E1B33' },
+  domainLabel: { width: 92, fontSize: 12, fontWeight: '700', color: dark.text },
   domainScore: { width: 30, fontSize: 12.5, fontWeight: '800', textAlign: 'right' },
   chipRow:  { flexDirection: 'row', gap: 8, marginTop: 4, flexWrap: 'wrap' },
   chip:     { borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5 },
@@ -389,7 +389,7 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: dark.glassBorder,
   },
   styleTitle: { fontSize: 10.5, fontWeight: '800', letterSpacing: 0.5, color: dark.textMute, marginTop: 8 },
-  styleValue: { fontSize: 14.5, fontWeight: '800', color: '#1E1B33', marginTop: 2 },
+  styleValue: { fontSize: 14.5, fontWeight: '800', color: dark.text, marginTop: 2 },
   styleNote:  { fontSize: 11.5, color: dark.textSub, lineHeight: 16, marginTop: 6 },
 
   careerWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
@@ -401,7 +401,7 @@ const s = StyleSheet.create({
   careerText: { fontSize: 12, fontWeight: '700', color: dark.neon },
 
   narrativeCard: { borderLeftWidth: 3, borderLeftColor: dark.neon },
-  narrativeText: { fontSize: 13.5, color: '#1E1B33', lineHeight: 21 },
+  narrativeText: { fontSize: 13.5, color: dark.text, lineHeight: 21 },
 
   goalsBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,

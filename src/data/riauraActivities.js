@@ -180,11 +180,26 @@ const RIAURA_ACTIVITIES = {
   },
 };
 
+// Domain 7 · Social & Originality · ages 3–6 gets one interactive WebView game
+// (The Collaborative Sandbox) instead of the text checklist. Other child groups
+// (6–9, 9–12) keep the standard checklist.
+const RIAURA_DOMAIN7_G3_6 = [
+  {
+    title: 'The Collaborative Sandbox',
+    desc: 'Help Leo & Maya solve creative problems by dragging things into the scene.',
+    web: 'collaborative-sandbox',
+    minutes: 8,
+  },
+];
+
 export function getRiauraActivities(domainNum, groupKey) {
   // Domain 1 uses the detailed per-age-group bank; everything else uses the
   // tier-based (child/teen/adult) checklist activities.
   if (domainNum === 1) {
     return RIAURA_DOMAIN1_ACTIVITIES[groupKey] || [];
+  }
+  if (domainNum === 7 && groupKey === 'g3_6') {
+    return RIAURA_DOMAIN7_G3_6;
   }
   const tier = tierForGroup(groupKey);
   return RIAURA_ACTIVITIES[domainNum]?.[tier] || [];

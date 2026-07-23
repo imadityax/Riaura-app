@@ -89,6 +89,16 @@ export default function ActivityAssessScreen({ navigation, route }) {
     });
   }
 
+  // Launch a self-contained WebView activity (e.g. the Collaborative Sandbox).
+  // Finishing it just marks the row done — no numeric score is fed back.
+  function openWeb(i, a) {
+    navigation.navigate('WebActivity', {
+      activity: a,
+      color: domain.color,
+      onComplete: () => setDone(d => ({ ...d, [i]: true })),
+    });
+  }
+
   const doneCount = Object.values(done).filter(Boolean).length;
   const total     = activities.length;
   const progress  = total ? doneCount / total : 0;
@@ -227,13 +237,15 @@ export default function ActivityAssessScreen({ navigation, route }) {
         {activities.map((a, i) => {
           const isDone = !!done[i];
           const detailed = !!a.framework;   // Domain 1 rich activities
+          const web = !!a.web;              // WebView activity (e.g. Collaborative Sandbox)
+          const playable = detailed || web; // shows a play button + launches instead of toggling
           const isOpen = !!expanded[i];
           return (
             <FadeInUp key={i} delay={i * 45}>
               <View style={[s.actCard, isDone && { borderColor: domain.color, backgroundColor: domain.color + '0C' }]}>
                 {/* Top row — playable activities launch the game; others toggle */}
-                <PressableScale style={s.actTopRow} scaleTo={0.98} onPress={() => detailed ? openGame(i, a) : toggle(i)}>
-                  {detailed ? (
+                <PressableScale style={s.actTopRow} scaleTo={0.98} onPress={() => web ? openWeb(i, a) : detailed ? openGame(i, a) : toggle(i)}>
+                  {playable ? (
                     <View style={[s.playBtn, { backgroundColor: domain.color + '18' }, isDone && { backgroundColor: domain.color }]}>
                       <Ionicons name={isDone ? 'checkmark' : 'play'} size={16} color={isDone ? '#fff' : domain.color} />
                     </View>

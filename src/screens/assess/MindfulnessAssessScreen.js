@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  View, Text, TouchableOpacity, ScrollView, StyleSheet, StatusBar, Animated,
+  View, Text, TouchableOpacity, ScrollView, StyleSheet, StatusBar, Animated, Easing,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { PressableScale, FadeInUp, ProgressBar, Pulse } from '../../components/anim';
+import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
+import { PressableScale, FadeInUp, Pulse, Float, Breathe, Typewriter } from '../../components/anim';
 import { BRAIN_FACTS } from '../../data/brainFacts';
 import NeuralLoader from '../../components/NeuralLoader';
 import { ui, dark } from '../../theme/colors';
@@ -16,6 +18,81 @@ import { AGE_GROUPS, getMindfulnessQuestions, scoreMindfulnessBank } from '../..
 import { saveMindfulnessToCloud, saveMindfulnessDomainsToCloud } from '../../firebase/firestore';
 import { useAuth } from '../../context/AuthContext';
 import NeuralLinesBg from '../../components/NeuralLinesBg';
+import { ClayCard, ClayBubble, ClaySurface } from '../../components/Clay';
+
+const MOTIVATION_LINES = [
+  'Every answer improves your intelligence map.',
+  'Building your cognitive fingerprint…',
+];
+
+// One-line hint under an answer, keyed by the cleaned frequency-scale label.
+const FREQUENCY_HINTS = {
+  'Never': 'This almost never happens to you',
+  'Never/ Rarely': 'This rarely or never happens to you',
+  'Rarely': 'This happens only occasionally',
+  'Sometimes': 'This happens some of the time',
+  'Often': 'This happens fairly often',
+  'Very Often': 'This happens most of the time',
+  'Always': 'This is true almost all the time',
+  'Almost Always': 'This is true almost all the time',
+  'Almost Never': 'This is rarely true for you',
+  'Somewhat Often': 'This happens somewhat often',
+  'Somewhat Rarely': 'This happens somewhat rarely',
+};
+
+const DIFF_TONE  = { Easy: 'correct', Moderate: 'warning', Hard: 'incorrect' };
+const DIFF_COLOR = { Easy: '#065F46', Moderate: '#92400E', Hard: '#991B1B' };
+const DIFF_ICON  = { Easy: 'leaf-outline', Moderate: 'trending-up', Hard: 'flash' };
+
+// A single answer card — owns its own persistent "lifted" animation so
+// selecting it feels like it physically rises off the page, distinct from
+// ClayCard's transient press-scale.
+function AnswerOption({ opt, selected, onSelect }) {
+  const lift = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.spring(lift, { toValue: selected ? 1 : 0, useNativeDriver: true, speed: 18, bounciness: 8 }).start();
+  }, [selected]);
+
+  const hint = FREQUENCY_HINTS[opt.label] || '';
+
+  return (
+    <Animated.View
+      style={{
+        transform: [
+          { scale: lift.interpolate({ inputRange: [0, 1], outputRange: [1, 1.02] }) },
+          { translateY: lift.interpolate({ inputRange: [0, 1], outputRange: [0, -2] }) },
+        ],
+      }}
+    >
+      <ClayCard
+        tone={selected ? 'selected' : 'default'}
+        radius={18}
+        style={s.optionCard}
+        scaleTo={0.97}
+        onPress={onSelect}
+        accessibilityRole="button"
+        accessibilityState={{ selected }}
+        accessibilityLabel={`Option ${opt.value}: ${opt.label}${hint ? `. ${hint}` : ''}`}
+      >
+        <View style={s.optionRow}>
+          <ClayBubble size={32} tone={selected ? 'selected' : 'default'} style={selected && s.optionNumOnSelected}>
+            <Text style={[s.optionNumText, selected && s.optionNumTextSelected]}>{opt.value}</Text>
+          </ClayBubble>
+          <View style={{ flex: 1 }}>
+            <Text style={[s.optionLabel, selected && s.optionLabelSelected]}>{opt.label}</Text>
+            {!!hint && <Text style={[s.optionHint, selected && s.optionHintSelected]}>{hint}</Text>}
+          </View>
+        </View>
+        {selected && (
+          <View style={s.optionCheck}>
+            <Ionicons name="checkmark-circle" size={18} color="#fff" />
+          </View>
+        )}
+      </ClayCard>
+    </Animated.View>
+  );
+}
 
 export const MINDFULNESS_DOMAINS = [
   { num: 1, label: 'Attention Intelligence',     icon: 'target',            color: '#2196F3', desc: 'Fronto-parietal attention network' },
@@ -70,7 +147,12 @@ export default function MindfulnessAssessScreen({ navigation, route }) {
   const [selected, setSelected]       = useState(null);
   const [seconds, setSeconds]         = useState(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
+  const progressAnim = useRef(new Animated.Value(0)).current;
   const { currentUser } = useAuth();
+
+  const progress    = questions.length ? (current + 1) / questions.length : 0;
+  const remainingQ  = questions.length - current - 1;
+  const estMinutes  = Math.ceil((remainingQ * 12) / 60);
 
   useFocusEffect(useCallback(() => {
     storage.getMindfulnessDomainScores().then(setDoneMap);
@@ -81,6 +163,17 @@ export default function MindfulnessAssessScreen({ navigation, route }) {
     const id = setInterval(() => setSeconds(s => s + 1), 1000);
     return () => clearInterval(id);
   }, [phase]);
+
+  useEffect(() => {
+    Animated.timing(progressAnim, {
+      toValue: progress, duration: 500, easing: Easing.out(Easing.cubic), useNativeDriver: false,
+    }).start();
+  }, [progress]);
+
+  function handleSelectOption(value) {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    setSelected(value);
+  }
 
   function openDomain(d) {
     setDomain(d);
@@ -176,30 +269,35 @@ export default function MindfulnessAssessScreen({ navigation, route }) {
 
           {/* Compact hero */}
           <View style={s.heroWrap}>
-            <View style={s.heroTop}>
-              <View style={s.heroIconBg}>
-                <BrainIcon size={28} color="#fff" strokeWidth={2} />
+            <LinearGradient colors={[dark.neon, '#4F8CFF']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.heroTop}>
+              <View pointerEvents="none" style={s.heroGlowWrap}>
+                <Breathe size={130} color="rgba(255,255,255,0.18)" duration={2800} />
               </View>
+              <Float distance={6} duration={3200}>
+                <View style={s.heroIconBg}>
+                  <BrainIcon size={28} color="#fff" strokeWidth={2} />
+                </View>
+              </Float>
               <Text style={s.heroCardTitle}>MINDFULNESS MEASUREMENT SCALE</Text>
-            </View>
+            </LinearGradient>
             <View style={s.heroBottom}>
               <View style={s.heroBadges}>
-                <View style={[s.badge, s.badgeGreen]}>
+                <ClaySurface tone="correct" radius={20} style={s.clayBadge}>
                   <Text style={[s.badgeText, s.badgeTextGreen]}>Validated Scale</Text>
-                </View>
-                <View style={[s.badge, s.badgeBlue]}>
+                </ClaySurface>
+                <ClaySurface tone="default" radius={20} style={s.clayBadge}>
                   <Text style={[s.badgeText, s.badgeTextBlue]}>Age-Adaptive</Text>
-                </View>
+                </ClaySurface>
               </View>
               <Text style={s.heroDesc}>
                 Pick a domain below, choose your age group, and answer a short set of
                 clinically validated questions (C-OMM, S-CAMM, MAAS-A, FFMQ). You'll
                 receive a score report after each domain.
               </Text>
-              <View style={s.progressPill}>
+              <ClaySurface tone="default" radius={12} style={s.progressPill}>
                 <Ionicons name="checkmark-circle" size={15} color={doneCount ? '#059669' : dark.textSub} />
                 <Text style={s.progressPillText}>{doneCount} of 8 domains completed</Text>
-              </View>
+              </ClaySurface>
             </View>
           </View>
 
@@ -209,10 +307,14 @@ export default function MindfulnessAssessScreen({ navigation, route }) {
             const done = doneMap[d.num];
             return (
               <FadeInUp key={d.num} delay={di * 60}>
-              <PressableScale
+              <ClayCard
+                tone={done ? 'correct' : 'default'}
+                radius={18}
                 style={s.domainCard}
                 scaleTo={0.97}
                 onPress={() => openDomain(d)}
+                accessibilityRole="button"
+                accessibilityLabel={`Domain ${d.num} of 8: ${d.label}${done ? `, completed with score ${done.score}` : ''}`}
               >
                 <View style={s.domainCardHead}>
                   <View style={[s.domainNumPill, { backgroundColor: d.color + '18' }]}>
@@ -236,7 +338,7 @@ export default function MindfulnessAssessScreen({ navigation, route }) {
                     <Ionicons name="chevron-forward" size={16} color={d.color} />
                   </View>
                 </View>
-              </PressableScale>
+              </ClayCard>
               </FadeInUp>
             );
           })}
@@ -269,23 +371,27 @@ export default function MindfulnessAssessScreen({ navigation, route }) {
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.ageContent}>
-          <View style={[s.selectedDomainCard, { borderLeftColor: domain.color }]}>
+          <ClaySurface tone="default" radius={16} style={[s.selectedDomainCard, { borderLeftWidth: 4, borderLeftColor: domain.color }]}>
             <Icon name={domain.icon} size={24} color={domain.color} />
             <View style={{ flex: 1 }}>
               <Text style={s.selectedDomainKicker}>DOMAIN {domain.num} OF 8</Text>
               <Text style={s.selectedDomainLabel}>{domain.label}</Text>
             </View>
-          </View>
+          </ClaySurface>
 
           {AGE_GROUPS.map((g) => {
             const meta = AGE_GROUP_META[g.key] || { icon: 'person-outline', color: dark.neon };
             const bank = getMindfulnessQuestions(domain.num, g.key);
             return (
               <FadeInUp key={g.key} delay={AGE_GROUPS.indexOf(g) * 50}>
-              <PressableScale
+              <ClayCard
+                tone="default"
+                radius={18}
                 style={s.ageCard}
                 scaleTo={0.97}
                 onPress={() => startAssessment(g)}
+                accessibilityRole="button"
+                accessibilityLabel={`${g.label} years, ${bank.framework}, ${bank.questions.length} items`}
               >
                 <View style={[s.ageIconBg, { backgroundColor: meta.color + '18' }]}>
                   <Ionicons name={meta.icon} size={22} color={meta.color} />
@@ -299,7 +405,7 @@ export default function MindfulnessAssessScreen({ navigation, route }) {
                 <View style={[s.chevronBg, { backgroundColor: meta.color + '15' }]}>
                   <Ionicons name="chevron-forward" size={16} color={meta.color} />
                 </View>
-              </PressableScale>
+              </ClayCard>
               </FadeInUp>
             );
           })}
@@ -330,32 +436,56 @@ export default function MindfulnessAssessScreen({ navigation, route }) {
 
   const q        = questions[current];
   const opts     = options;
-  const progress = (current + 1) / questions.length;
   const isLast   = current + 1 === questions.length;
+
+  const diffTone  = DIFF_TONE[q.difficulty]  || 'default';
+  const diffColor = DIFF_COLOR[q.difficulty] || dark.textSub;
+  const diffIcon  = DIFF_ICON[q.difficulty]  || 'help-circle-outline';
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={s.safe}>
       <NeuralLinesBg />
       <StatusBar barStyle="dark-content" />
 
-      <View style={s.qTopBar}>
-        <TouchableOpacity onPress={() => setPhase('age')} style={s.backBtn}>
-          <Text style={s.backText}>‹</Text>
-        </TouchableOpacity>
-        <View style={s.timerPill}>
-          <Text style={s.timerText}>⏱ {formatTime(seconds)}</Text>
-        </View>
-        <Text style={s.progressText}>{current + 1} / {questions.length}</Text>
+      <View pointerEvents="none" style={s.heroBrainFlourish}>
+        <Breathe size={150} color="rgba(139,92,246,0.16)" duration={3000} />
+        <Float distance={8} duration={4200}>
+          <BrainIcon size={104} color={dark.violet} strokeWidth={1.3} style={{ opacity: 0.14 }} />
+        </Float>
       </View>
 
-      <ProgressBar
-        progress={progress}
-        height={6}
-        trackColor={dark.glassBorder}
-        fillColor={domain.color}
-        duration={500}
-        style={s.progressTrack}
-      />
+      <View style={s.qTopBar}>
+        <TouchableOpacity onPress={() => setPhase('age')} accessibilityRole="button" accessibilityLabel="Go back to age selection" hitSlop={8}>
+          <ClayBubble size={38} tone="default">
+            <Ionicons name="chevron-back" size={20} color={dark.neon} />
+          </ClayBubble>
+        </TouchableOpacity>
+        <ClaySurface tone="default" radius={20} style={s.timerPill}>
+          <View style={s.timerRow}>
+            <Pulse to={1.15} duration={650}>
+              <Ionicons name="time-outline" size={14} color={dark.neon} />
+            </Pulse>
+            <Text style={s.timerText}>{formatTime(seconds)}</Text>
+          </View>
+        </ClaySurface>
+        <ClaySurface tone="default" radius={16} style={s.counterPill}>
+          <Text style={s.progressText}>{current + 1} / {questions.length}</Text>
+        </ClaySurface>
+      </View>
+
+      <View style={s.progressTrack}>
+        <Animated.View
+          style={{
+            height: '100%', borderRadius: 3, overflow: 'hidden',
+            width: progressAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
+          }}
+        >
+          <LinearGradient colors={[dark.violet, '#4F8CFF']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ flex: 1 }} />
+        </Animated.View>
+      </View>
+      <Text style={s.progressCaption}>
+        {remainingQ <= 0 ? 'Last question' : `~${Math.max(estMinutes, 1)} min remaining`}
+      </Text>
 
       <ScrollView
         style={s.scroll}
@@ -371,27 +501,24 @@ export default function MindfulnessAssessScreen({ navigation, route }) {
         )}
 
         <View style={s.frameworkRow}>
-          <View style={[s.frameworkBadge, { backgroundColor: domain.color + '18' }]}>
-            <Text style={[s.frameworkText, { color: domain.color }]}>
-              <Icon name={domain.icon} size={12} color={domain.color} />
-              {'  '}{domain.label}
-            </Text>
-          </View>
-          <View style={s.frameworkBadge}>
-            <Text style={s.frameworkText}>{framework}</Text>
-          </View>
-        </View>
-
-        <View style={[s.diffBadge,
-          q.difficulty === 'Easy'     && s.diffEasy,
-          q.difficulty === 'Moderate' && s.diffMid,
-          q.difficulty === 'Hard'     && s.diffHard,
-        ]}>
-          <Text style={[s.diffText,
-            q.difficulty === 'Easy'     && s.diffTextEasy,
-            q.difficulty === 'Moderate' && s.diffTextMid,
-            q.difficulty === 'Hard'     && s.diffTextHard,
-          ]}>{q.difficulty}</Text>
+          <ClaySurface tone="default" radius={14} style={s.chip}>
+            <View style={s.chipRow}>
+              <Icon name={domain.icon} size={13} color={domain.color} />
+              <Text style={[s.chipText, { color: domain.color }]}>{domain.label}</Text>
+            </View>
+          </ClaySurface>
+          <ClaySurface tone="default" radius={14} style={s.chip}>
+            <View style={s.chipRow}>
+              <MaterialCommunityIcons name="flask-outline" size={13} color={dark.neon} />
+              <Text style={s.chipText}>{framework}</Text>
+            </View>
+          </ClaySurface>
+          <ClaySurface tone={diffTone} radius={14} style={s.chip}>
+            <View style={s.chipRow}>
+              <Ionicons name={diffIcon} size={13} color={diffColor} />
+              <Text style={[s.chipText, { color: diffColor }]}>{q.difficulty}</Text>
+            </View>
+          </ClaySurface>
         </View>
 
         <Animated.View
@@ -400,45 +527,45 @@ export default function MindfulnessAssessScreen({ navigation, route }) {
             transform: [{ translateY: fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [14, 0] }) }],
           }}
         >
-          <Text style={s.questionText}>{q.text}</Text>
+          <ClaySurface tone="default" radius={20} style={s.questionCard}>
+            <Text style={s.questionText}>{q.text}</Text>
+            <Text style={s.questionCaption}>Choose the option that best describes you.</Text>
+          </ClaySurface>
 
           <View style={s.optionsWrap}>
             {opts.map((opt) => (
-              <PressableScale
+              <AnswerOption
                 key={opt.value}
-                style={[s.optionCard, selected === opt.value && s.optionCardSelected]}
-                scaleTo={0.95}
-                onPress={() => setSelected(opt.value)}
-              >
-                <View style={s.optionRow}>
-                  <View style={[s.optionNum, selected === opt.value && s.optionNumSelected]}>
-                    <Text style={[s.optionNumText, selected === opt.value && s.optionNumTextSelected]}>
-                      {opt.value}
-                    </Text>
-                  </View>
-                  <Text style={[s.optionLabel, selected === opt.value && s.optionLabelSelected]}>
-                    {opt.label}
-                  </Text>
-                </View>
-                {selected === opt.value && (
-                  <View style={s.optionCheck}>
-                    <Ionicons name="checkmark-circle" size={18} color="#fff" />
-                  </View>
-                )}
-              </PressableScale>
+                opt={opt}
+                selected={selected === opt.value}
+                onSelect={() => handleSelectOption(opt.value)}
+              />
             ))}
           </View>
         </Animated.View>
+
+        <Typewriter key={current} text={MOTIVATION_LINES[current % MOTIVATION_LINES.length]} style={s.motivationText} />
 
         <PressableScale
           style={[s.nextBtn, selected === null && s.nextBtnDisabled]}
           scaleTo={0.95}
           onPress={handleNext}
           disabled={selected === null}
+          accessibilityRole="button"
+          accessibilityLabel={isLast ? 'Complete assessment' : 'Continue to next question'}
         >
-          <Text style={[s.nextBtnText, selected === null && s.nextBtnTextDisabled]}>
-            {isLast ? 'Submit  ✓' : 'Next  →'}
-          </Text>
+          {selected === null ? (
+            <Text style={[s.nextBtnText, s.nextBtnTextDisabled]}>
+              {isLast ? 'Complete Assessment' : 'Continue Assessment'}
+            </Text>
+          ) : (
+            <LinearGradient colors={[dark.neon, '#4F8CFF']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.nextBtnGradient}>
+              <Text style={s.nextBtnText}>{isLast ? 'Complete Assessment' : 'Continue Assessment'}</Text>
+              <Pulse to={1.25} duration={550}>
+                <Ionicons name={isLast ? 'checkmark' : 'arrow-forward'} size={16} color="#fff" />
+              </Pulse>
+            </LinearGradient>
+          )}
         </PressableScale>
       </ScrollView>
     </SafeAreaView>
@@ -469,12 +596,13 @@ const s = StyleSheet.create({
   introSub:     { fontSize: 13, color: dark.textSub, marginTop: 4, marginBottom: 16 },
 
   heroWrap: {
-    borderRadius: 20, overflow: 'hidden', marginBottom: 24, backgroundColor: dark.glass,
+    borderRadius: 20, overflow: 'hidden', marginBottom: 24,
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 4,
   },
   heroTop: {
-    backgroundColor: dark.neon, alignItems: 'center', paddingVertical: 22, paddingHorizontal: 20,
+    alignItems: 'center', paddingVertical: 22, paddingHorizontal: 20,
   },
+  heroGlowWrap: { position: 'absolute', top: -20, alignItems: 'center', justifyContent: 'center' },
   heroIconBg: {
     width: 56, height: 56, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center', justifyContent: 'center', marginBottom: 10,
@@ -483,9 +611,7 @@ const s = StyleSheet.create({
 
   heroBottom: { padding: 18 },
   heroBadges: { flexDirection: 'row', gap: 8, marginBottom: 12 },
-  badge:      { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5 },
-  badgeGreen: { backgroundColor: '#D1FAE5' },
-  badgeBlue:  { backgroundColor: dark.glass },
+  clayBadge:  { paddingHorizontal: 12, paddingVertical: 5 },
   badgeText:      { fontSize: 12, fontWeight: '700' },
   badgeTextGreen: { color: '#065F46' },
   badgeTextBlue:  { color: dark.neon },
@@ -493,17 +619,13 @@ const s = StyleSheet.create({
 
   progressPill: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: dark.glass, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8,
-    alignSelf: 'flex-start',
+    paddingHorizontal: 12, paddingVertical: 8, alignSelf: 'flex-start',
   },
-  progressPillText: { fontSize: 12, fontWeight: '700', color: '#fff' },
+  progressPillText: { fontSize: 12, fontWeight: '700', color: dark.text },
 
   sectionLabel: { fontSize: 11, fontWeight: '800', color: dark.textSub, letterSpacing: 1.2, marginBottom: 10 },
 
-  domainCard: {
-    backgroundColor: dark.glass, borderRadius: 16, padding: 14, marginBottom: 10,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2,
-  },
+  domainCard: { padding: 14, marginBottom: 10 },
   domainCardHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
   domainNumPill: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, alignSelf: 'flex-start' },
   domainNumText: { fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
@@ -531,37 +653,31 @@ const s = StyleSheet.create({
   ageContent: { paddingHorizontal: 20, paddingTop: 16 },
 
   selectedDomainCard: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: dark.glass, borderRadius: 14, padding: 14,
-    borderLeftWidth: 4, marginBottom: 16,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2,
+    flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, marginBottom: 16,
   },
   selectedDomainKicker: { fontSize: 10, fontWeight: '800', color: dark.textSub, letterSpacing: 0.6 },
   selectedDomainLabel:  { fontSize: 15, fontWeight: '800', color: '#1E1B33', marginTop: 2 },
 
-  ageCard: {
-    flexDirection: 'row', alignItems: 'center', gap: 14,
-    backgroundColor: dark.glass, borderRadius: 16, padding: 16, marginBottom: 10,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2,
-  },
+  ageCard: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, marginBottom: 10 },
   ageIconBg: { width: 46, height: 46, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   ageLabel:  { fontSize: 16, fontWeight: '800', color: '#1E1B33' },
   ageMeta:   { fontSize: 12, color: dark.textSub, marginTop: 3 },
 
   // ── questions step ──
+  heroBrainFlourish: { position: 'absolute', top: 0, right: -16, alignItems: 'center', justifyContent: 'center' },
+
   qTopBar: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 20, paddingVertical: 12,
+    paddingHorizontal: 20, paddingVertical: 12, gap: 10,
   },
-  timerPill: {
-    backgroundColor: dark.glass, borderRadius: 20,
-    paddingHorizontal: 14, paddingVertical: 6,
-  },
-  timerText:    { fontSize: 13, fontWeight: '700', color: dark.neon },
-  progressText: { fontSize: 13, fontWeight: '600', color: dark.textSub, minWidth: 48, textAlign: 'right' },
+  timerPill:  { paddingHorizontal: 14, paddingVertical: 6 },
+  timerRow:   { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  timerText:  { fontSize: 13, fontWeight: '700', color: dark.neon },
+  counterPill:  { paddingHorizontal: 12, paddingVertical: 6 },
+  progressText: { fontSize: 13, fontWeight: '600', color: dark.textSub },
 
-  progressTrack: { height: 4, backgroundColor: dark.glassBorder, marginHorizontal: 20, borderRadius: 2, overflow: 'hidden' },
-  progressFill:  { height: '100%', backgroundColor: dark.neon, borderRadius: 2 },
+  progressTrack:   { height: 6, backgroundColor: dark.glassBorder, marginHorizontal: 20, borderRadius: 3, overflow: 'hidden' },
+  progressCaption: { fontSize: 11, color: dark.textSub, marginHorizontal: 20, marginTop: 6, fontWeight: '600' },
 
   scroll:        { flex: 1 },
   scrollContent: { paddingHorizontal: 20, paddingTop: 18, paddingBottom: 40 },
@@ -572,49 +688,39 @@ const s = StyleSheet.create({
     paddingHorizontal: 12, paddingVertical: 9, marginBottom: 12,
   },
   checkpointText: { flex: 1, fontSize: 12, fontWeight: '700', color: '#065F46' },
-  frameworkRow:   { flexDirection: 'row', gap: 8, marginBottom: 10, flexWrap: 'wrap' },
-  frameworkBadge: {
-    backgroundColor: dark.glass, borderRadius: 10,
-    paddingHorizontal: 12, paddingVertical: 5,
-  },
-  frameworkText: { fontSize: 11, fontWeight: '700', color: dark.neon, letterSpacing: 0.5 },
+  frameworkRow:   { flexDirection: 'row', gap: 8, marginBottom: 16, flexWrap: 'wrap' },
+  chip:           { paddingHorizontal: 12, paddingVertical: 6 },
+  chipRow:        { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  chipText:       { fontSize: 11, fontWeight: '700', color: dark.neon, letterSpacing: 0.3 },
 
-  diffBadge: { alignSelf: 'flex-start', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, marginBottom: 16 },
-  diffEasy:  { backgroundColor: '#D1FAE5' },
-  diffMid:   { backgroundColor: '#FEF3C7' },
-  diffHard:  { backgroundColor: '#FEE2E2' },
-  diffText:  { fontSize: 11, fontWeight: '700' },
-  diffTextEasy: { color: '#065F46' },
-  diffTextMid:  { color: '#92400E' },
-  diffTextHard: { color: '#991B1B' },
+  questionCard: { padding: 18, marginBottom: 16 },
+  questionText: { fontSize: 17, fontWeight: '700', color: '#1E1B33', lineHeight: 26 },
+  questionCaption: { fontSize: 12, color: dark.textSub, marginTop: 8 },
 
-  questionText: { fontSize: 17, fontWeight: '700', color: '#1E1B33', lineHeight: 26, marginBottom: 24 },
-
-  optionsWrap: { gap: 10, marginBottom: 8 },
-  optionCard:  {
-    backgroundColor: dark.glass, borderRadius: 14, paddingVertical: 13, paddingHorizontal: 14,
-    borderWidth: 1.5, borderColor: dark.glassBorder,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1,
-  },
-  optionCardSelected: { backgroundColor: dark.neon, borderColor: dark.neon },
+  optionsWrap: { gap: 12, marginBottom: 4 },
+  optionCard:  { paddingVertical: 13, paddingHorizontal: 14 },
   optionRow:          { flexDirection: 'row', alignItems: 'center', gap: 12, paddingRight: 30 },
-  optionNum: {
-    width: 30, height: 30, borderRadius: 15, backgroundColor: dark.glass,
-    alignItems: 'center', justifyContent: 'center',
+  optionNumOnSelected: {
+    backgroundColor: 'rgba(255,255,255,0.28)',
+    borderTopColor: 'rgba(255,255,255,0.6)', borderLeftColor: 'rgba(255,255,255,0.6)',
+    borderRightColor: 'rgba(255,255,255,0.15)', borderBottomColor: 'rgba(255,255,255,0.15)',
   },
-  optionNumSelected:     { backgroundColor: 'rgba(255,255,255,0.25)' },
   optionNumText:         { fontSize: 13, fontWeight: '800', color: dark.textSub },
   optionNumTextSelected: { color: '#fff' },
-  optionLabel:        { flex: 1, fontSize: 15, fontWeight: '600', color: '#1E1B33' },
+  optionLabel:        { fontSize: 15, fontWeight: '600', color: '#1E1B33' },
   optionLabelSelected:{ color: '#fff' },
+  optionHint:         { fontSize: 12, color: dark.textSub, marginTop: 2 },
+  optionHintSelected: { color: 'rgba(255,255,255,0.85)' },
   optionCheck:        { position: 'absolute', right: 14, top: 0, bottom: 0, justifyContent: 'center' },
 
+  motivationText: { fontSize: 12.5, fontWeight: '600', color: dark.textSub, textAlign: 'center', marginTop: 18, marginBottom: 4 },
+
   nextBtn: {
-    backgroundColor: dark.neon, borderRadius: 28, paddingVertical: 16,
-    alignItems: 'center', marginTop: 16,
+    borderRadius: 28, overflow: 'hidden', marginTop: 10,
     shadowColor: dark.neon, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5,
   },
-  nextBtnDisabled:    { backgroundColor: dark.glassBorder, shadowOpacity: 0 },
+  nextBtnDisabled: { backgroundColor: dark.glassBorder, shadowOpacity: 0, paddingVertical: 16, alignItems: 'center' },
+  nextBtnGradient: { paddingVertical: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   nextBtnText:        { fontSize: 16, fontWeight: '700', color: '#fff' },
   nextBtnTextDisabled:{ color: dark.textMute },
 });
